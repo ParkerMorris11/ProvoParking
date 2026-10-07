@@ -1,0 +1,75 @@
+erDiagram
+    APP_USER ||--o{ USER_PERMIT : "holds (1-to-many)"
+    PERMIT ||--o{ USER_PERMIT : "held by (1-to-many)"
+    APP_USER ||--o{ FAVORITE_AREA : "saves (1-to-many)"
+    PARKING_AREA ||--o{ FAVORITE_AREA : "saved in (1-to-many)"
+    APP_USER ||--o{ PARKING_SESSION : "starts (1-to-many)"
+    PARKING_AREA ||--o{ PARKING_SESSION : "hosts (1-to-many)"
+    PARKING_AREA ||--o{ PARKING_RULE : "has (1-to-many)"
+    PERMIT |o--o{ PARKING_RULE : "required by (1-to-many, optional)"
+    TOW_COMPANY |o--o{ PARKING_AREA : "tows for (1-to-many)"
+
+    APP_USER {
+        int user_id PK
+        varchar display_name
+        varchar email
+        boolean location_permission
+        boolean notifications_enabled
+        timestamptz created_at
+    }
+    PERMIT {
+        int permit_id PK
+        varchar permit_code
+        varchar permit_name
+        varchar issuer
+        text description
+    }
+    USER_PERMIT {
+        int user_id PK,FK
+        int permit_id PK,FK
+    }
+    PARKING_AREA {
+        int area_id PK
+        varchar area_name
+        varchar operator
+        numeric latitude
+        numeric longitude
+        int total_spaces
+        int est_available_spaces
+        timestamptz availability_updated_at
+        boolean is_free
+        int tow_company_id FK
+    }
+    PARKING_RULE {
+        int rule_id PK
+        int area_id FK
+        int permit_id FK "NULL = open to all"
+        varchar days_of_week
+        time start_time
+        time end_time
+        int max_stay_minutes
+        text rule_note
+    }
+    FAVORITE_AREA {
+        int user_id PK,FK
+        int area_id PK,FK
+        timestamptz saved_at
+    }
+    PARKING_SESSION {
+        int session_id PK
+        int user_id FK
+        int area_id FK
+        timestamptz started_at
+        int planned_minutes
+        timestamptz leave_by
+        int reminder_minutes_before
+        varchar car_note
+        timestamptz ended_at
+        varchar status
+    }
+    TOW_COMPANY {
+        int tow_company_id PK
+        varchar company_name
+        varchar phone
+        boolean is_sample_data
+    }

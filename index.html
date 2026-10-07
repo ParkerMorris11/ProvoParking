@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, and save favorites.">
+  <title>Provo Parking</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Provo Parking</h1>
+    <p class="sample-note">Rules and availability are sample data, not verified.</p>
+  </header>
+
+  <nav class="tabs" aria-label="Screens">
+    <button type="button" class="tab" id="tab-areas" aria-controls="view-areas" aria-current="page">Parking areas</button>
+    <button type="button" class="tab" id="tab-favorites" aria-controls="view-favorites">
+      Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
+    </button>
+  </nav>
+
+  <main>
+    <p id="status" class="status" role="status" aria-live="polite">Loading parking areas…</p>
+
+    <section id="view-areas" aria-labelledby="tab-areas">
+      <ul id="area-list" class="cards"></ul>
+    </section>
+
+    <section id="view-favorites" aria-labelledby="tab-favorites" hidden>
+      <ul id="fav-list" class="cards"></ul>
+      <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
