@@ -23,6 +23,9 @@ erDiagram
         varchar permit_name
         varchar issuer
         text description
+        varchar cost_note
+        text source_url
+        date last_verified_on
     }
     USER_PERMIT {
         int user_id PK,FK
@@ -31,6 +34,7 @@ erDiagram
     PARKING_AREA {
         int area_id PK
         varchar area_name
+        varchar lot_code
         varchar operator
         numeric latitude
         numeric longitude
@@ -48,6 +52,11 @@ erDiagram
         time start_time
         time end_time
         int max_stay_minutes
+        time blocked_start
+        time blocked_end
+        varchar vehicle_type
+        text source_url
+        date last_verified_on
         text rule_note
     }
     FAVORITE_AREA {

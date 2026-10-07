@@ -4,7 +4,7 @@ IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, Jam
 
 Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
 
-> Parking rules, capacities, availability, and tow details in the database are **sample data**, not verified.
+> Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
 
 ## App Summary
 Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version implements the parking area list and the **Save to favorites** heart, which stores favorites in a real database so they survive a refresh. Eligibility is based on the permit the user selects, not on a verified BYU account.
@@ -60,7 +60,7 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 The working button is the **heart (Save to favorites)** on each parking area.
 
 1. Open the app. The **Favorites** tab shows a count (2 from the sample data).
-2. Tap the empty heart on **Sample paid garage**. The heart fills, the message says "Saved Sample paid garage to favorites," and the count goes to 3.
+2. Tap the empty heart on **Sample downtown garage**. The heart fills, the message says "Saved Sample downtown garage to favorites," and the count goes to 3.
    - Behind the scenes, `app.js` sends an insert request to Supabase, a row is added to `favorite_area`, and Supabase returns the saved row, which the page then displays.
 3. **Refresh the page.** The garage's heart is still filled and the count is still 3.
 4. Open the **Favorites** tab: the garage is listed.
