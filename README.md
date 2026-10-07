@@ -59,10 +59,10 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 ## Verifying the Vertical Slice
 The working button is the **heart (Save to favorites)** on each parking area.
 
-1. Open the app. The **Favorites** tab shows a count (2 from the sample data).
-2. Tap the empty heart on **Sample downtown garage**. The heart fills, the message says "Saved Sample downtown garage to favorites," and the count goes to 3.
+1. Open the app and note the number on the **Favorites** tab (it was 2 with the original sample data; it changes as people test).
+2. Tap an empty heart, for example on **Sample downtown garage**. The heart fills, the message says "Saved Sample downtown garage to favorites," and the count goes up by 1.
    - Behind the scenes, `app.js` sends an insert request to Supabase, a row is added to `favorite_area`, and Supabase returns the saved row, which the page then displays.
-3. **Refresh the page.** The garage's heart is still filled and the count is still 3.
+3. **Refresh the page.** The garage's heart is still filled and the count is unchanged.
 4. Open the **Favorites** tab: the garage is listed.
 5. Optional: in Supabase **Table Editor > favorite_area**, there is a new row with `user_id = 1` and the garage's `area_id`.
 6. Tap the heart again to remove it; after a refresh it stays removed.
