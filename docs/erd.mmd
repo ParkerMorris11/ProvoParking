@@ -1,4 +1,9 @@
 ---
+config:
+  er:
+    nodeSpacing: 25
+    rankSpacing: 40
+    entityPadding: 8
 title: "Provo Parking ERD (USER_PERMIT and FAVORITE_AREA are link tables for many-to-many)"
 ---
 erDiagram
@@ -11,7 +16,7 @@ erDiagram
     PARKING_SESSION }o--|| PARKING_AREA : "happens in (M:1)"
     PERMIT |o--o{ PARKING_RULE : "required by (1:M, optional)"
     PARKING_RULE }o--|| PARKING_AREA : "applies to (M:1)"
-    TOW_COMPANY |o--o{ PARKING_AREA : "tows for (1:M)"
+    PARKING_AREA }o--o| TOW_COMPANY : "towed by (M:1)"
 
     APP_USER {
         int user_id PK
