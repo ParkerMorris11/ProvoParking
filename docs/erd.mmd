@@ -1,13 +1,17 @@
+---
+title: "Provo Parking ERD (USER_PERMIT and FAVORITE_AREA are link tables for many-to-many)"
+---
 erDiagram
-    APP_USER ||--o{ USER_PERMIT : "holds (1-to-many)"
-    PERMIT ||--o{ USER_PERMIT : "held by (1-to-many)"
-    APP_USER ||--o{ FAVORITE_AREA : "saves (1-to-many)"
-    PARKING_AREA ||--o{ FAVORITE_AREA : "saved in (1-to-many)"
-    APP_USER ||--o{ PARKING_SESSION : "starts (1-to-many)"
-    PARKING_AREA ||--o{ PARKING_SESSION : "hosts (1-to-many)"
-    PARKING_AREA ||--o{ PARKING_RULE : "has (1-to-many)"
-    PERMIT |o--o{ PARKING_RULE : "required by (1-to-many, optional)"
-    TOW_COMPANY |o--o{ PARKING_AREA : "tows for (1-to-many)"
+    direction LR
+    APP_USER ||--o{ USER_PERMIT : "has (1:M)"
+    USER_PERMIT }o--|| PERMIT : "is for (M:1)"
+    APP_USER ||--o{ FAVORITE_AREA : "saves (1:M)"
+    FAVORITE_AREA }o--|| PARKING_AREA : "points to (M:1)"
+    APP_USER ||--o{ PARKING_SESSION : "starts (1:M)"
+    PARKING_SESSION }o--|| PARKING_AREA : "happens in (M:1)"
+    PERMIT |o--o{ PARKING_RULE : "required by (1:M, optional)"
+    PARKING_RULE }o--|| PARKING_AREA : "applies to (M:1)"
+    TOW_COMPANY |o--o{ PARKING_AREA : "tows for (1:M)"
 
     APP_USER {
         int user_id PK

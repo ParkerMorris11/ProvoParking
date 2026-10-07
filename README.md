@@ -16,8 +16,8 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 
 | Relationship | Cardinality |
 |---|---|
-| app_user ↔ permit (through `user_permit`) | many-to-many |
-| app_user ↔ parking_area as favorites (through `favorite_area`) | many-to-many |
+| app_user ↔ permit, through the link table `user_permit` (one user can hold many permits; one permit type is held by many users) | many-to-many |
+| app_user ↔ parking_area as favorites, through the link table `favorite_area` | many-to-many |
 | app_user → parking_session | one-to-many |
 | parking_area → parking_session | one-to-many |
 | parking_area → parking_rule | one-to-many |
