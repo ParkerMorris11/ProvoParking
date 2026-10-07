@@ -3,11 +3,11 @@ title: "Provo Parking ERD (USER_PERMIT and FAVORITE_AREA are link tables for man
 ---
 erDiagram
     direction LR
-    APP_USER ||--o{ USER_PERMIT : "has (1:M)"
-    USER_PERMIT }o--|| PERMIT : "is for (M:1)"
+    PERMIT ||--o{ USER_PERMIT : "is for (1:M)"
+    USER_PERMIT }o--|| APP_USER : "belongs to (M:1)"
     APP_USER ||--o{ FAVORITE_AREA : "saves (1:M)"
-    FAVORITE_AREA }o--|| PARKING_AREA : "points to (M:1)"
     APP_USER ||--o{ PARKING_SESSION : "starts (1:M)"
+    FAVORITE_AREA }o--|| PARKING_AREA : "points to (M:1)"
     PARKING_SESSION }o--|| PARKING_AREA : "happens in (M:1)"
     PERMIT |o--o{ PARKING_RULE : "required by (1:M, optional)"
     PARKING_RULE }o--|| PARKING_AREA : "applies to (M:1)"
