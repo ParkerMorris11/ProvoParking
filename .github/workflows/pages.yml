@@ -25,6 +25,10 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Repository secrets SUPABASE_URL and SUPABASE_ANON_KEY must be set (Settings > Secrets and variables > Actions > Secrets tab > Repository secrets)."
+            exit 1
+          fi
           mkdir -p site
           cp index.html styles.css app.js site/
           printf 'window.APP_CONFIG = { SUPABASE_URL: "%s", SUPABASE_ANON_KEY: "%s" };\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > site/config.js
