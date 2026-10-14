@@ -17,6 +17,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
+| + | **Help** (extra tab) | Key BYU and Provo rules, what to do about a citation, with source links; static, no database | none |
 
 Eligibility rule: an area is usable if a rule that applies on the chosen day and time is open to everyone or lists your permit, and the time is not inside that rule's no-parking window (for example BYU's 1-5 a.m.). A valid permit does not mean a space is open; availability is always labeled an estimate. Reminders only show while the page is open (no push notifications), and walking-directions links point at sample lot locations.
 

@@ -7,7 +7,7 @@
 const DEMO_USER_ID = 1;
 const PERMIT_KEY = "provoParking.permitId";
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const VIEWS = ["find", "areas", "area", "favorites", "car"];
+const VIEWS = ["find", "areas", "area", "favorites", "car", "help"];
 
 const $ = (id) => document.getElementById(id);
 const statusEl = $("status");

@@ -20,6 +20,7 @@
       Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
     </button>
     <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
+    <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
   </nav>
 
   <main>
@@ -109,6 +110,38 @@
         <button type="submit" class="primary">Start parking timer</button>
         <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
       </form>
+    </section>
+
+    <!-- Screen 6 tab: Help — key rules and what to do about a ticket -->
+    <section id="view-help" aria-labelledby="h-help" hidden>
+      <h2 id="h-help" tabindex="-1">Help</h2>
+      <div class="panel help">
+        <h3>Key BYU rules (Y permit)</h3>
+        <ul>
+          <li>A Y permit is valid in <strong>Y and U lots only</strong>. A, C, G, B, D, YM, YV and visitor lots can get you a ticket.</li>
+          <li><strong>No parking 1:00–5:00 a.m.</strong> in any campus lot (this does not apply to on-campus housing).</li>
+          <li><strong>Visitor parking is off-limits</strong> to current students, even for a short stop.</li>
+        </ul>
+        <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> · checked 2026-10-07</p>
+
+        <h3>Downtown Provo</h3>
+        <ul>
+          <li>Use garages for stays longer than two hours.</li>
+          <li>Enforcement works around the clock.</li>
+        </ul>
+        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-10-07</p>
+
+        <h3>If you get a Provo citation</h3>
+        <ul>
+          <li>Respond within <strong>5 business days</strong>.</li>
+          <li>No late fees while an appeal filed in time is pending.</li>
+          <li>If the appeal is denied, pay within <strong>7 days</strong> of the decision to avoid late fees.</li>
+        </ul>
+        <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
+
+        <h3>About this app</h3>
+        <p class="hint">Permit eligibility comes from the permit you pick, not a verified BYU account. Lot locations, capacities, availability and tow numbers are sample data. Rules can change, so confirm with the source links before relying on them.</p>
+      </div>
     </section>
   </main>
 
