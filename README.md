@@ -22,7 +22,8 @@ Students who drive to BYU often circle lots that are full or that their permit d
 Eligibility rule: an area is usable if a rule that applies on the chosen day and time is open to everyone or lists your permit, and the time is not inside that rule's no-parking window (for example BYU's 1-5 a.m.). A valid permit does not mean a space is open; availability is always labeled an estimate. Reminders only show while the page is open (no push notifications), and walking-directions links point at sample lot locations.
 
 ## Screenshots
-Phone-width screenshots of the five tabs. They were captured from the real page code, but with the sample rows from `supabase/schema.sql` served by a local stand-in for Supabase, not from the team's live database. The countdown and "updated" times change when you run it yourself.
+### Phone (390 px wide)
+Screenshots of the five tabs. They were captured from the real page code, but with the sample rows from `supabase/schema.sql` served by a local stand-in for Supabase, not from the team's live database. The countdown and "updated" times change when you run it yourself.
 
 | 1. Find | 2. Areas | 3. Favorites |
 |---|---|---|
@@ -31,6 +32,29 @@ Phone-width screenshots of the five tabs. They were captured from the real page 
 | 4. My car | 5. Help |
 |---|---|
 | ![My car screen](docs/screens/4-my-car.png) | ![Help screen](docs/screens/5-help.png) |
+
+### Desktop (1280 px wide)
+The layout is a single centered column, so on a desktop browser it looks like the phone view with more empty space around it.
+
+**1. Find**
+
+<img src="docs/screens/desktop-1-find.png" alt="1. Find screen on desktop" width="640">
+
+**2. Areas**
+
+<img src="docs/screens/desktop-2-areas.png" alt="2. Areas screen on desktop" width="640">
+
+**3. Favorites**
+
+<img src="docs/screens/desktop-3-favorites.png" alt="3. Favorites screen on desktop" width="640">
+
+**4. My car**
+
+<img src="docs/screens/desktop-4-my-car.png" alt="4. My car screen on desktop" width="640">
+
+**5. Help**
+
+<img src="docs/screens/desktop-5-help.png" alt="5. Help screen on desktop" width="640">
 
 ## ERD
 ![Provo Parking ERD](docs/erd.png)
