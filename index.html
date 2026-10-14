@@ -14,14 +14,51 @@
   </header>
 
   <nav class="tabs" aria-label="Screens">
-    <button type="button" class="tab" id="tab-areas" aria-controls="view-areas" aria-current="page">Parking areas</button>
-    <button type="button" class="tab" id="tab-favorites" aria-controls="view-favorites">
+    <button type="button" class="tab" data-view="start" id="tab-start" aria-controls="view-start">Getting started</button>
+    <button type="button" class="tab" data-view="areas" id="tab-areas" aria-controls="view-areas" aria-current="page">Parking areas</button>
+    <button type="button" class="tab" data-view="favorites" id="tab-favorites" aria-controls="view-favorites">
       Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
     </button>
+    <button type="button" class="tab" data-view="permit" id="tab-permit" aria-controls="view-permit">My BYU pass</button>
+    <button type="button" class="tab" data-view="settings" id="tab-settings" aria-controls="view-settings">Settings</button>
   </nav>
 
   <main>
     <p id="status" class="status" role="status" aria-live="polite">Loading parking areas…</p>
+
+    <section id="view-start" aria-labelledby="tab-start" hidden>
+      <h2 class="page-title">Welcome to Provo Parking</h2>
+      <p class="lead">Park where your permit is valid, avoid tickets, and save the spots you use most. Three quick steps:</p>
+      <ol class="steps">
+        <li class="step" id="step-permit">
+          <span class="step-mark" aria-hidden="true">1</span>
+          <div class="step-body">
+            <h3>Choose your BYU parking pass</h3>
+            <p>Pick the permit you hold so we can show where it is valid.</p>
+            <button type="button" class="btn" data-goto="permit">Select my pass</button>
+            <p class="step-state" data-state></p>
+          </div>
+        </li>
+        <li class="step" id="step-areas">
+          <span class="step-mark" aria-hidden="true">2</span>
+          <div class="step-body">
+            <h3>Browse parking areas</h3>
+            <p>See each area's operator, cost, and an estimate of how many spaces are open.</p>
+            <button type="button" class="btn" data-goto="areas">View parking areas</button>
+          </div>
+        </li>
+        <li class="step" id="step-favs">
+          <span class="step-mark" aria-hidden="true">3</span>
+          <div class="step-body">
+            <h3>Save your favorites</h3>
+            <p>Tap the heart on an area to keep it on your Favorites tab for next time.</p>
+            <button type="button" class="btn" data-goto="favorites">Open favorites</button>
+            <p class="step-state" data-state></p>
+          </div>
+        </li>
+      </ol>
+      <button type="button" class="btn primary" id="start-done">Got it, show me parking</button>
+    </section>
 
     <section id="view-areas" aria-labelledby="tab-areas">
       <ul id="area-list" class="cards"></ul>
@@ -30,6 +67,46 @@
     <section id="view-favorites" aria-labelledby="tab-favorites" hidden>
       <ul id="fav-list" class="cards"></ul>
       <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
+    </section>
+
+    <section id="view-permit" aria-labelledby="tab-permit" hidden>
+      <h2 class="page-title">My BYU parking pass</h2>
+      <p class="lead">Select the one pass you hold. Eligibility is based on your selection, not a verified BYU account.</p>
+      <p id="current-permit" class="current"></p>
+      <fieldset class="permit-fieldset">
+        <legend class="visually-hidden">BYU parking passes</legend>
+        <ul id="permit-list" class="cards"></ul>
+      </fieldset>
+      <button type="button" class="btn" id="permit-clear" hidden>I don't have a BYU pass</button>
+    </section>
+
+    <section id="view-settings" aria-labelledby="tab-settings" hidden>
+      <h2 class="page-title">Settings</h2>
+      <p class="settings-user" id="settings-user"></p>
+      <ul class="cards">
+        <li class="card setting">
+          <div class="card-body">
+            <h3 id="lbl-location">Use my location</h3>
+            <p class="meta">Lets the app find parking areas near you.</p>
+          </div>
+          <button type="button" class="switch" role="switch" id="set-location" aria-labelledby="lbl-location" aria-checked="false" data-field="location_permission"></button>
+        </li>
+        <li class="card setting">
+          <div class="card-body">
+            <h3 id="lbl-notify">Parking reminders</h3>
+            <p class="meta">Notify me before my parking time runs out.</p>
+          </div>
+          <button type="button" class="switch" role="switch" id="set-notify" aria-labelledby="lbl-notify" aria-checked="false" data-field="notifications_enabled"></button>
+        </li>
+        <li class="card setting">
+          <div class="card-body">
+            <h3>Getting started guide</h3>
+            <p class="meta">Show the welcome steps again next time you open the app.</p>
+          </div>
+          <button type="button" class="btn" id="reset-guide">Show again</button>
+        </li>
+      </ul>
+      <p class="meta about">Provo Parking · Team 007 · Sample data, not verified.</p>
     </section>
   </main>
 
