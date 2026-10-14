@@ -22,3 +22,24 @@ CREATE POLICY "demo user can add favorites" ON favorite_area
 
 CREATE POLICY "demo user can remove favorites" ON favorite_area
   FOR DELETE TO anon USING (user_id = 1);
+
+-- ---------- Added for the Find, Area details, and My Car screens ----------
+-- Reference data the app only reads.
+CREATE POLICY "anyone can read permits" ON permit
+  FOR SELECT TO anon USING (true);
+
+CREATE POLICY "anyone can read parking rules" ON parking_rule
+  FOR SELECT TO anon USING (true);
+
+CREATE POLICY "anyone can read tow companies" ON tow_company
+  FOR SELECT TO anon USING (true);
+
+-- Demo user's parking timer sessions (user 1 only).
+CREATE POLICY "demo user sessions are readable" ON parking_session
+  FOR SELECT TO anon USING (user_id = 1);
+
+CREATE POLICY "demo user can start a session" ON parking_session
+  FOR INSERT TO anon WITH CHECK (user_id = 1);
+
+CREATE POLICY "demo user can update own session" ON parking_session
+  FOR UPDATE TO anon USING (user_id = 1) WITH CHECK (user_id = 1);

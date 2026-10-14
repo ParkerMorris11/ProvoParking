@@ -3,33 +3,112 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, and save favorites.">
+  <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="top">
     <h1>Provo Parking</h1>
-    <p class="sample-note">Rules and availability are sample data, not verified.</p>
+    <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
   </header>
 
   <nav class="tabs" aria-label="Screens">
-    <button type="button" class="tab" id="tab-areas" aria-controls="view-areas" aria-current="page">Parking areas</button>
-    <button type="button" class="tab" id="tab-favorites" aria-controls="view-favorites">
+    <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
+    <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
+    <button type="button" class="tab" id="tab-favorites" data-view="favorites">
       Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
     </button>
+    <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
   </nav>
 
   <main>
     <p id="status" class="status" role="status" aria-live="polite">Loading parking areas…</p>
 
-    <section id="view-areas" aria-labelledby="tab-areas">
+    <!-- Screen 1: Find — pick permit + arrival time -->
+    <section id="view-find" aria-labelledby="h-find" hidden>
+      <h2 id="h-find" tabindex="-1">Find parking</h2>
+      <form id="find-form" class="panel">
+        <label for="permit-select">Your permit</label>
+        <select id="permit-select"></select>
+        <p id="permit-info" class="hint"></p>
+
+        <div class="row">
+          <div>
+            <label for="arrive-day">Arrival day</label>
+            <select id="arrive-day">
+              <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
+              <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+          </div>
+          <div>
+            <label for="arrive-time">Arrival time</label>
+            <input type="time" id="arrive-time" required>
+          </div>
+        </div>
+        <p class="hint">Eligibility comes from the permit you pick here, not from a verified BYU account.</p>
+        <button type="submit" class="primary">Show parking areas</button>
+      </form>
+    </section>
+
+    <!-- Screen 2: Areas — list with eligibility -->
+    <section id="view-areas" aria-labelledby="h-areas" hidden>
+      <h2 id="h-areas" tabindex="-1">Parking areas</h2>
+      <p id="areas-summary" class="summary"></p>
       <ul id="area-list" class="cards"></ul>
     </section>
 
-    <section id="view-favorites" aria-labelledby="tab-favorites" hidden>
+    <!-- Screen 3: Area details — plain-language rules -->
+    <section id="view-area" aria-labelledby="h-area" hidden>
+      <a href="#areas" class="back" id="area-back">← Back to areas</a>
+      <div id="area-detail"></div>
+    </section>
+
+    <!-- Screen 4: Favorites -->
+    <section id="view-favorites" aria-labelledby="h-favorites" hidden>
+      <h2 id="h-favorites" tabindex="-1">Favorites</h2>
       <ul id="fav-list" class="cards"></ul>
       <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
+    </section>
+
+    <!-- Screen 5: My car — parking timer + where I parked -->
+    <section id="view-car" aria-labelledby="h-car" hidden>
+      <h2 id="h-car" tabindex="-1">My car</h2>
+      <div id="car-active" hidden></div>
+      <form id="car-form" class="panel" hidden>
+        <label for="car-area">Where are you parking?</label>
+        <select id="car-area"></select>
+
+        <div class="row">
+          <div>
+            <label for="car-minutes">How long?</label>
+            <select id="car-minutes">
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240" selected>4 hours</option>
+              <option value="480">8 hours</option>
+            </select>
+          </div>
+          <div>
+            <label for="car-reminder">Remind me</label>
+            <select id="car-reminder">
+              <option value="5">5 min before</option>
+              <option value="10" selected>10 min before</option>
+              <option value="15">15 min before</option>
+              <option value="30">30 min before</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="car-note">Where is your car? (optional)</label>
+        <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
+        <p id="car-warning" class="hint warn" hidden></p>
+        <button type="submit" class="primary">Start parking timer</button>
+        <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
+      </form>
     </section>
   </main>
 
