@@ -21,6 +21,17 @@ Students who drive to BYU often circle lots that are full or that their permit d
 
 Eligibility rule: an area is usable if a rule that applies on the chosen day and time is open to everyone or lists your permit, and the time is not inside that rule's no-parking window (for example BYU's 1-5 a.m.). A valid permit does not mean a space is open; availability is always labeled an estimate. Reminders only show while the page is open (no push notifications), and walking-directions links point at sample lot locations.
 
+## Screenshots
+Phone-width screenshots of the five tabs. They were captured from the real page code, but with the sample rows from `supabase/schema.sql` served by a local stand-in for Supabase, not from the team's live database. The countdown and "updated" times change when you run it yourself.
+
+| 1. Find | 2. Areas | 3. Favorites |
+|---|---|---|
+| ![Find screen](docs/screens/1-find.png) | ![Areas screen](docs/screens/2-areas.png) | ![Favorites screen](docs/screens/3-favorites.png) |
+
+| 4. My car | 5. Help |
+|---|---|
+| ![My car screen](docs/screens/4-my-car.png) | ![Help screen](docs/screens/5-help.png) |
+
 ## ERD
 ![Provo Parking ERD](docs/erd.png)
 
