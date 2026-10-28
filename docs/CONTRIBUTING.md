@@ -58,6 +58,8 @@ Rules of thumb:
 - Every new table needs Row Level Security and a policy before the app can read it.
 
 ## Sprint 1 file map (who is likely to touch what)
+Step-by-step instructions for each card are in [docs/sprint-1-cards.md](sprint-1-cards.md).
+
 | Card | Main files |
 |---|---|
 | Verified BYU lot data (Liam) | new `supabase/2026-xx-xx-verified-lots.sql`, `docs/parking-rules-reference.md` |
