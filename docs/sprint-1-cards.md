@@ -137,6 +137,7 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 2. Empty: in `js/pages/areas.js`, if `state.areas.length === 0`, show "No parking areas yet." in `#area-list` instead of an empty list.
 3. Error: `init()` in `main.js` catches failures. Make sure the message says what to do ("Could not load parking areas. Check your connection and reload.") and is red (`setStatus(message, true)`).
 4. Test the error by turning Wi-Fi off, then reloading.
+4. Text fixes spotted on the Areas page: the summary reads "with the Y permit permit" (the permit name already ends in "permit"; see `renderAreas` in `js/pages/areas.js`), and a second near-identical summary line appears above the heading (`#status` from `main.js` and `#areas-summary`). Keep one.
 **Done when:** you have seen all three states in the browser and have a screenshot of each.
 
 ### J4. Icon plus text status and keyboard focus (3 pts)
