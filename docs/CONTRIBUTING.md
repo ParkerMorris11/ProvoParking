@@ -65,10 +65,10 @@ Step-by-step instructions for each card are in [docs/sprint-1-cards.md](sprint-1
 | Verified BYU lot data (Liam) | new `supabase/2026-xx-xx-verified-lots.sql`, `docs/parking-rules-reference.md` |
 | Permit picker on Areas (Liam) | `js/pages/areas.js`, `index.html` (view-areas), `css/styles.css` |
 | Favorite heart survives refresh (Liam) | `js/pages/favorites.js`, `js/data/favorites.js` |
-| Mobile and desktop layout (James) | `css/styles.css`, `index.html` |
+| Mobile layout (James), desktop layout (Spencer) | `css/styles.css`, `index.html` |
 | Loading, empty and error states (James) | `js/pages/areas.js`, `js/lib/dom.js`, `css/styles.css` |
 | Icon + text status, keyboard focus (James) | `js/components/area-card.js`, `css/styles.css` |
-| Design feedback, Lighthouse fixes (Spencer) | `index.html`, `css/styles.css`, page files as needed |
+| Lighthouse fixes (Spencer), design feedback (James) | `index.html`, `css/styles.css`, page files as needed |
 | README (Spencer) | `README.md` |
 | Supabase check, merge and deploy (Parker) | `supabase/`, GitHub Actions |
 

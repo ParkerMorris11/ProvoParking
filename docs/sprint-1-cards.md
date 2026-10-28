@@ -120,15 +120,13 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 3. All styles are in `css/styles.css`. Add changes next to the `.card` / `.heart` rules. Prefer relative units and `flex-wrap` over fixed widths.
 4. Take before and after screenshots for the PR.
 **Done when:** no sideways scroll at 360, 375 and 390 px, every tap target is at least 44 px.
-**Watch out:** J2 also edits `css/styles.css`. Pull `main` before you start and before you open the PR.
+**Watch out:** S1 (Spencer's desktop layout) also edits `css/styles.css`. Pull `main` before you start and before you open the PR.
 
-### J2. Desktop layout (5 pts)
-**Goal:** Areas uses the width of a laptop screen.
-**Steps**
-1. Today `main` is limited to 720 px. At 1024 px and wider, put the cards in a two-column grid: for example `@media (min-width: 1024px) { main { max-width: 1100px; } .cards { grid-template-columns: 1fr 1fr; } }`.
-2. Check the Favorites page too, since it uses the same `.cards` list.
-3. Screenshot at 1280 px.
-**Done when:** at 1280 px the Areas page shows two columns and nothing overlaps; at 375 px it is still one column.
+### J2. Design feedback (5 pts)
+1. Show the live Areas page to at least 3 people outside the team (phone in hand). Ask them: "Which lots can you park in with your permit? What would you tap next?"
+2. Write each critique on its own Trello card or FigJam sticky (course asks one item per critique).
+3. For each, write: what we changed, or why we did not.
+**Done when:** at least 3 people, every comment answered.
 
 ### J3. Loading, empty and error states (3 pts)
 **Check first:** `index.html` has "Loading parking areas…" in the status line. Look for what happens when Supabase fails or there are zero areas.
@@ -152,15 +150,18 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 
 ## Spencer
 
-### S1. Design feedback (5 pts)
-1. Show the live Areas page to at least 3 people outside the team (phone in hand). Ask them: "Which lots can you park in with your permit? What would you tap next?"
-2. Write each critique on its own Trello card or FigJam sticky (course asks one item per critique).
-3. For each, write: what we changed, or why we did not.
-**Done when:** at least 3 people, every comment answered.
+### S1. Desktop layout (5 pts)
+**Goal:** Areas uses the width of a laptop screen.
+**Steps**
+1. Today `main` is limited to 720 px. At 1024 px and wider, put the cards in a two-column grid: for example `@media (min-width: 1024px) { main { max-width: 1100px; } .cards { grid-template-columns: 1fr 1fr; } }`.
+2. Check the Favorites page too, since it uses the same `.cards` list.
+3. Screenshot at 1280 px.
+**Done when:** at 1280 px the Areas page shows two columns and nothing overlaps; at 375 px it is still one column.
+**Watch out:** James's mobile card (J1) also edits `css/styles.css`. Pull `main` before you start and before you open the PR. If you have never edited CSS, ask James at the scrum; this card is a good place to learn it.
 
 ### S2. Lighthouse accessibility (5 pts)
 1. In Chrome open the live Areas page, F12 > Lighthouse > Accessibility only, run it once on Mobile and once on Desktop.
-2. Fix what it lists (usually contrast, missing labels). Run it after James's cards (J1 to J4) are merged so you do not fix the same thing twice.
+2. Fix what it lists (usually contrast, missing labels). Run it after J1, J3, J4 and your own S1 are merged so you do not fix the same thing twice.
 3. Save a screenshot of both scores to `docs/screenshots/lighthouse-areas.png`.
 **Done when:** both scores are 90 or higher, and the screenshot is in the PR.
 
