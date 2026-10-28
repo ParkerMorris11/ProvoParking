@@ -8,7 +8,7 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 
 ## The plan at a glance (65 points)
 
-Every person has a mix: one data or backend card, one screen card, and one card that is not code. Totals follow the course range (about 16 to 20 points, 4 to 5 hours each).
+Everyone has a mix of code and non-code cards. Parker and Liam own the database cards, James and Spencer own screen work. Totals follow the course range (about 16 to 20 points, 4 to 5 hours each).
 
 | Person | Backend or data | Screen (HTML/CSS/JS) | Not code | Total |
 |---|---|---|---|---|
