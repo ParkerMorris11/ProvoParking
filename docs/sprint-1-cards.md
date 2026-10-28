@@ -6,6 +6,41 @@ Points are 1 pt = about 15 minutes. If a card is taking more than double its est
 
 Some cards are partly done already because the app existed before Sprint 1. Each card says **Check first** so you do not redo working code. These notes come from reading the code, not from running it against the live database, so confirm what you see on your own screen.
 
+## The plan at a glance (65 points)
+
+Every person has a mix: one data or backend card, one screen card, and one card that is not code. Totals follow the course range (about 16 to 20 points, 4 to 5 hours each).
+
+| Person | Backend or data | Screen (HTML/CSS/JS) | Not code | Total |
+|---|---|---|---|---|
+| Parker (Scrum Master) | P2 Run pending SQL, verify Supabase (5) | P5 Account page placeholder (3) | P1 Scrum Master duties (2), P3 Architecture diagram (3), P4 Review, merge, deploy (3) | 16 |
+| Liam | L1 Verified BYU lot data (8) | L2 Permit picker on Areas (5) | L3 README (3) | 16 |
+| James | | J1 Mobile layout (5), J3 Loading, empty, error states (3), J4 Icon + text and keyboard focus (3) | J2 Design feedback (5) | 16 |
+| Spencer (Product Owner) | | S1 Desktop layout (5), S2 Lighthouse fixes (5), S3 Favorites check and fix (3) | S4 KR definitions (1), S5 PO acceptance (3) | 17 |
+
+## Build order
+
+Cards are ordered so nobody waits on someone else for long. Merge in this order to avoid conflicts in `css/styles.css` and `index.html`.
+
+| When | Who | What |
+|---|---|---|
+| **Tonight (Wed Oct 28)** | Parker | Merge PR #2 (P4, first part). Run the pending SQL (P2) and check the permit dropdown fills on the live site. Tell the team "main is ready". |
+| **Thu Oct 29** (Scrum 1 after class) | Parker | P5 Account placeholder, then merge it. |
+| | Liam | L1 lot research and SQL file (needs P2). |
+| | James | J1 Mobile layout (merge before Spencer's S1). |
+| | Spencer | S4 KR definitions on Trello (15 minutes), then start S1 Desktop layout after J1 merges. |
+| **Fri Oct 30 to Sun Nov 1** | Liam | L1 finish, then L2 Permit picker. |
+| | James | J3 States, J4 Focus, then J2 Design feedback (needs a working page to show). |
+| | Spencer | S1 Desktop, S3 Favorites check and fix (needs P2). |
+| | Parker | P3 Architecture diagram, review PRs as they come in (P4). |
+| **Mon Nov 2** (Scrum 2) | Spencer | S2 Lighthouse, once J1, J3, J4 and S1 are merged. Fix what it lists. |
+| | Liam | L3 README (add the diagram and Lighthouse score last). |
+| | Everyone | Merge anything left. Freeze goal: all PRs merged by end of Mon if you can. |
+| **Tue Nov 3** (Scrum 3) | Spencer | S5 PO acceptance on every Done card. Anything that fails goes back with a reason. |
+| | Parker | Burndown screenshot, commit screenshots, FigJam "Sprint 1 Review" page. |
+| | Everyone | Freeze at end of day: nothing new merges after this. |
+
+**If someone gets stuck:** say so at the scrum or in the team chat the same day. The order above lets James or Parker pick up a small card from someone else without redoing work.
+
 ## Every card
 
 1. **Trello:** make sure you are the one Member on the card, move it to **In progress**, start the timer.
@@ -63,11 +98,16 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 2. For every later PR: confirm a different person reviewed it, CI is green, then squash and merge. After each merge open the live site.
 **Done when:** every merged PR had a second person, and the live site still loads after each one.
 
-### P5. Tester list (3 pts)
-**Goal:** the names we will ask to sign up in Sprint 3 (target 25 sign-ups).
-1. Make `docs/testers.md` with a table: name or group, how we reach them, who on the team owns the ask. Do not put phone numbers or emails in the repo; keep contact details in the team's private chat.
-2. List at least 25 people or groups (roommates, ward, classes).
-**Done when:** the table has 25 rows and each has an owner.
+### P5. Account page placeholder and tab order (3 pts)
+**Goal:** the five-page structure exists, so Sprint 2 (sign-in) and Sprint 3 (Account) have a place to land. No new features yet.
+**Check first:** `js/router.js` lists the pages in `VIEWS`. Today they are find, areas, area, favorites, car, help.
+**Steps**
+1. Follow "Adding a new page" in `docs/CONTRIBUTING.md` for an **Account** page: a tab button and `<section id="view-account">` in `index.html`, `js/pages/account.js` with `renderAccount()`, `"account"` added to `VIEWS` in `js/router.js`, and a call in `showView()`.
+2. The page says: "Account. Sign-in and saved settings arrive in Sprint 2." and has an `<h2 tabindex="-1">` like the other pages.
+3. Tab order: Areas, Favorites, My car, Account. Keep Find and Help working for now (Liam's permit-picker card decides what happens to Find later).
+4. Run `npm test` and click every tab.
+**Done when:** all tabs open a page, the Account tab shows the placeholder, no console errors, CI green.
+**Do before:** the layout cards (J1, S1) start, since you both edit `index.html` and `css/styles.css`. Merge this one first.
 
 ---
 
@@ -98,15 +138,10 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 **Done when:** changing the dropdown changes the icon and words on at least two lots; reload and the choice is still there; the dropdown can be used with the keyboard only.
 **Depends on:** P2.
 
-### L3. Favorite heart survives refresh (3 pts)
-**Check first:** this may already work. `loadData()` reads `favorite_area` and `addFavorite` / `removeFavorite` in `js/data/favorites.js` write to it. Test it before changing anything.
-**Steps**
-1. Tap a heart on Areas. Reload. Is it still filled? Open Favorites: is the lot there?
-2. Turn off Wi-Fi and tap a heart. You should see a red error message (from `toggleFavorite` in `js/pages/favorites.js`) and the heart should not change.
-3. With a screen reader (or Chrome dev tools Accessibility tab), check the button announces "pressed" and its label changes between Save and Remove.
-4. Fix anything that fails. If everything passes, write the test results in the PR and ask the PO to accept.
-**Done when:** all four checks pass on the live site.
-**Depends on:** P2.
+### L3. README (3 pts)
+Make sure `README.md` explains: what the app is and who it is for, how to run it (`npm start`, `config.js`), the stack, the folder structure, links to the live site and the architecture diagram (from P3), and the Lighthouse score.
+**Done when:** a new teammate could run the app from the README alone.
+**Depends on:** P3 (architecture diagram) and S2 (Lighthouse score). Write the structure and run instructions early, add the diagram and score last.
 
 ---
 
@@ -165,9 +200,15 @@ Some cards are partly done already because the app existed before Sprint 1. Each
 3. Save a screenshot of both scores to `docs/screenshots/lighthouse-areas.png`.
 **Done when:** both scores are 90 or higher, and the screenshot is in the PR.
 
-### S3. README (3 pts)
-Make sure `README.md` explains: what the app is and who it is for, how to run it (`npm start`, `config.js`), the stack, the folder structure, links to the live site and the architecture diagram (from P3), and the Lighthouse score.
-**Done when:** a new teammate could run the app from the README alone.
+### S3. Favorites check and fix (3 pts)
+**Check first:** this may already work. `loadData()` reads `favorite_area` and `addFavorite` / `removeFavorite` in `js/data/favorites.js` write to it. Test it before changing anything.
+**Steps**
+1. Tap a heart on Areas. Reload. Is it still filled? Open Favorites: is the lot there?
+2. Turn off Wi-Fi and tap a heart. You should see a red error message (from `toggleFavorite` in `js/pages/favorites.js`) and the heart should not change.
+3. With a screen reader (or Chrome dev tools Accessibility tab), check the button announces "pressed" and its label changes between Save and Remove.
+4. Fix anything that fails. If everything passes, write the test results in the PR and ask the PO to accept.
+**Done when:** all four checks pass on the live site, and you have written the results in your PR. This is a good first code card: most of the time you are testing, and any fix is small.
+**Depends on:** P2.
 
 ### S4. KR definitions (1 pt)
 Copy the four definitions from the Product Vision doc into the Trello OKR card and the matching Track KR cards.

@@ -62,14 +62,19 @@ Step-by-step instructions for each card are in [docs/sprint-1-cards.md](sprint-1
 
 | Card | Main files |
 |---|---|
-| Verified BYU lot data (Liam) | new `supabase/2026-xx-xx-verified-lots.sql`, `docs/parking-rules-reference.md` |
-| Permit picker on Areas (Liam) | `js/pages/areas.js`, `index.html` (view-areas), `css/styles.css` |
-| Favorite heart survives refresh (Liam) | `js/pages/favorites.js`, `js/data/favorites.js` |
-| Mobile layout (James), desktop layout (Spencer) | `css/styles.css`, `index.html` |
-| Loading, empty and error states (James) | `js/pages/areas.js`, `js/lib/dom.js`, `css/styles.css` |
-| Icon + text status, keyboard focus (James) | `js/components/area-card.js`, `css/styles.css` |
-| Lighthouse fixes (Spencer), design feedback (James) | `index.html`, `css/styles.css`, page files as needed |
-| README (Spencer) | `README.md` |
-| Supabase check, merge and deploy (Parker) | `supabase/`, GitHub Actions |
+| P2 Verify Supabase, run pending SQL (Parker) | `supabase/` |
+| P3 Architecture diagram (Parker) | `README.md`, `docs/architecture.png` |
+| P5 Account page placeholder (Parker) | `index.html`, `js/router.js`, new `js/pages/account.js` |
+| L1 Verified BYU lot data (Liam) | new `supabase/2026-xx-xx-verified-lots.sql`, `docs/parking-rules-reference.md` |
+| L2 Permit picker on Areas (Liam) | `js/pages/areas.js`, `index.html` (view-areas), `js/main.js`, `css/styles.css` |
+| L3 README (Liam) | `README.md` |
+| J1 Mobile layout (James) | `css/styles.css`, `index.html` |
+| J3 Loading, empty and error states (James) | `js/pages/areas.js`, `js/main.js`, `js/lib/dom.js`, `css/styles.css` |
+| J4 Icon + text status, keyboard focus (James) | `js/components/area-card.js`, `css/styles.css` |
+| S1 Desktop layout (Spencer) | `css/styles.css` |
+| S2 Lighthouse fixes (Spencer) | `index.html`, `css/styles.css`, page files as needed |
+| S3 Favorites check and fix (Spencer) | `js/pages/favorites.js`, `js/data/favorites.js` |
+
+J2 Design feedback, P1, P4, S4 and S5 do not change code.
 
 Two people editing `css/styles.css` at once is the most likely merge conflict. Pull `main` before you start and again before you open your PR.
