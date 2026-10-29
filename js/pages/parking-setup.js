@@ -27,9 +27,9 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
     for (const option of reminder.options) option.disabled = Number(option.value) >= Number(duration.value);
     if (Number(reminder.value) >= Number(duration.value)) {
       reminder.value = "0";
-      find("reminder-hint").textContent = "Reminder changed to no reminder. Choose a time shorter than your parking duration.";
+      find("reminder-hint").textContent = "Reminder changed to no reminder.";
     } else {
-      find("reminder-hint").textContent = "Choose a reminder shorter than your parking duration.";
+      find("reminder-hint").textContent = "";
     }
   }
   find("reminder-hint").setAttribute("aria-live", "polite");
@@ -73,7 +73,6 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
       description.textContent = value;
       summary.append(term, description);
     }
-    find("payload").textContent = JSON.stringify(payload, null, 2);
     form.hidden = true;
     confirmation.hidden = false;
     find("confirmation-title").focus();

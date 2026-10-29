@@ -27,14 +27,14 @@
         </div>
         <div>
           <label for="setup-reminder">Reminder preference</label>
-          <select id="setup-reminder" required aria-describedby="setup-reminder-hint">
+          <select id="setup-reminder" required>
             <option value="0">No reminder</option>
             <option value="5">5 minutes before</option>
             <option value="10" selected>10 minutes before</option>
             <option value="15">15 minutes before</option>
             <option value="30">30 minutes before</option>
           </select>
-          <p class="hint" id="setup-reminder-hint">Choose a reminder shorter than your parking duration.</p>
+          <p class="sr-text" id="setup-reminder-hint" role="status"></p>
         </div>
       </div>
       <p class="hint">Reminders appear on the timer page while it is open. Background notifications are not supported.</p>
@@ -51,10 +51,6 @@
       <h2 id="setup-confirmation-title" tabindex="-1">Review your parking session</h2>
       <p class="hint">Check these details, then confirm to start your timer. The session is saved only in this browser on this device.</p>
       <dl id="setup-summary"></dl>
-      <details>
-        <summary>View submitted session data</summary>
-        <pre id="setup-payload"></pre>
-      </details>
       <p id="setup-confirm-error" class="setup-error" role="alert" hidden></p>
       <button type="button" class="primary" id="setup-confirm-start" hidden>Confirm &amp; Start Timer</button>
       <button type="button" class="secondary" id="setup-edit">Edit parking setup</button>
