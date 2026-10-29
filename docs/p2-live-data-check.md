@@ -8,15 +8,17 @@ The live GitHub Pages app connects to the existing `provo-parking` Supabase proj
 
 The browser-role assertion in `supabase/tests-reference-reads.sql` failed before the fix with `Browser role cannot read permits`. This is a visibility problem, not missing seed data or a missing browser key. Do not rerun schema.sql or duplicate the seed rows.
 
-## Prepared fix — pending approval
+## Approved fix — applied October 29, 2026
 
-`supabase/migrations/20261029143325_enable_parking_reference_reads.sql` adds SELECT policies for `anon` on `permit`, `parking_rule`, and `tow_company`. RLS remains enabled. It adds no policies for profiles, user permit selections, or parking sessions, and adds no write policies.
+`supabase/migrations/20261029143325_enable_parking_reference_reads.sql` adds SELECT policies for `anon` on `permit`, `parking_rule`, and `tow_company`. RLS remains enabled. It adds no policies for profiles, user permit selections, or parking sessions. Visitor write privileges on these three reference tables are explicitly revoked.
 
-Automatic approval review rejected applying this public read-access change. It has **not** been applied to the live database. Obtain explicit approval for unauthenticated visitors to read those three reference tables, then apply the migration once through the normal database change process.
+The user explicitly approved public reference-data reads after reviewing the tradeoff. The migration was then successfully applied to the live `provo-parking` project through Supabase's migration tool.
 
-The existing broad table privileges are unchanged; RLS controls row access. This migration is not a general security audit or the Sprint 2 sign-in implementation.
+This migration is not a general security audit or the Sprint 2 sign-in implementation.
 
-## Verify after approval and application
+Verified after application: the rollback-only browser-role assertions pass, including denied visitor write privileges and hidden profiles, user permits, and sessions. The live picker lists all 11 permit types. With Y at 8:00 a.m., Y/U lots are allowed and the residential permit street is not covered. At 3:00 a.m., Y/U lots display the 1–5 a.m. restriction. Switching to PP at 8:00 a.m. reverses the permit results. The lot detail page now displays permit names, restriction hours, a source link, and the checked date. Screenshots are captured from the live GitHub Pages site, not a database stand-in.
+
+## Repeat the verification
 
 1. Run `supabase/tests-reference-reads.sql`. It checks the actual browser role can read all three reference tables while profiles, user permit selections, and parking sessions remain hidden. It runs in a transaction and writes no rows.
 2. Reload https://parkermorris11.github.io/ProvoParking/ and check Find now lists permit options.

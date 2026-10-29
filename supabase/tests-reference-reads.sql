@@ -4,6 +4,12 @@ BEGIN;
 SET LOCAL ROLE anon;
 DO $$
 BEGIN
+  ASSERT NOT has_table_privilege('anon', 'public.permit', 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'),
+    'Permit reference data must be read-only for visitors';
+  ASSERT NOT has_table_privilege('anon', 'public.parking_rule', 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'),
+    'Parking rule reference data must be read-only for visitors';
+  ASSERT NOT has_table_privilege('anon', 'public.tow_company', 'INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER'),
+    'Tow reference data must be read-only for visitors';
   ASSERT (SELECT count(*) FROM public.permit) > 0,
     'Browser role cannot read permits';
   ASSERT (SELECT count(*) FROM public.parking_rule) > 0,

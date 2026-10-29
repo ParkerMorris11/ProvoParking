@@ -4,6 +4,8 @@ BEGIN;
 ALTER TABLE public.permit ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.parking_rule ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tow_company ENABLE ROW LEVEL SECURITY;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  ON public.permit, public.parking_rule, public.tow_company FROM anon;
 GRANT SELECT ON public.permit, public.parking_rule, public.tow_company TO anon;
 
 DROP POLICY IF EXISTS "anyone can read permits" ON public.permit;
