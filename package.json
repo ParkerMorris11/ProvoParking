@@ -1,0 +1,12 @@
+{
+  "name": "provo-parking",
+  "private": true,
+  "type": "module",
+  "description": "Provo Parking (IS 401 Team 7). Static HTML/JS app on GitHub Pages with a Supabase database. No build step.",
+  "scripts": {
+    "start": "npx --yes serve .",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check js/main.js && node --test tests/*.test.js"
+  },
+  "engines": { "node": ">=20" }
+}

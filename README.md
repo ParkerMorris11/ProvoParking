@@ -74,14 +74,31 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 ## Tech Stack
 | Layer | What we use |
 |---|---|
-| Frontend | Plain HTML, CSS, and JavaScript (`index.html`, `styles.css`, `app.js`) |
+| Frontend | Plain HTML, CSS, and JavaScript ES modules, no build step (`index.html`, `css/styles.css`, `js/`) |
 | Backend / API | Supabase auto-generated REST API, called with `supabase-js` 2.45.4 |
 | Database | Supabase PostgreSQL (`supabase/schema.sql`), with Row Level Security (`supabase/policies.sql`) |
 | Hosting | GitHub Pages, deployed by GitHub Actions (`.github/workflows/pages.yml`) |
+| Checks | Syntax check and unit tests on every pull request (`.github/workflows/ci.yml`, `npm test`) |
 
 **Why this fits our team:** Supabase gives us a real PostgreSQL database and an API on a free tier without anyone running or deploying a server. Everyone can see the tables in Supabase's Table Editor and all the code in GitHub. Supabase does not host web pages, so the frontend is hosted free on GitHub Pages from this same repo.
 
 **Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The anon key is meant to be used in a browser; Row Level Security limits it to reading parking areas and managing the demo user's favorites.
+
+## Project Structure
+```
+index.html        screens and tab bar
+css/styles.css    styles
+js/main.js        entry point
+js/router.js      hash routes
+js/state.js       shared state
+js/pages/         one file per screen
+js/data/          every Supabase call
+js/domain/        eligibility rules (unit tested)
+js/components/    shared HTML pieces
+tests/            unit tests (npm test)
+supabase/         schema, policies, dated change files
+```
+How to add a page, branch naming, pull requests and database changes: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 ## How to Get It Running
 
@@ -96,7 +113,7 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 ### 2. Run it on your computer
 1. Clone the repo: `git clone https://github.com/ParkerMorris11/ProvoParking.git` and `cd ProvoParking`.
 2. Copy `config.example.js` to `config.js` and paste in your Project URL and anon key.
-3. Start a local web server in the folder, for example `npx serve .` (Node) or `python3 -m http.server 8000`.
+3. Start a local web server in the folder, for example `npm start` (Node) or `python3 -m http.server 8000`. Opening `index.html` directly as a file does not work, because the app uses JavaScript modules.
 4. Open the address it prints (e.g. `http://localhost:8000`). You should see "4 parking areas loaded."
 
 ### 3. Live site (GitHub Pages)
@@ -109,7 +126,7 @@ The working button is the **heart (Save to favorites)** on each parking area.
 
 1. Open the app and note the number on the **Favorites** tab (it was 2 with the original sample data; it changes as people test).
 2. Tap an empty heart, for example on **Sample downtown garage**. The heart fills, the message says "Saved Sample downtown garage to favorites," and the count goes up by 1.
-   - Behind the scenes, `app.js` sends an insert request to Supabase, a row is added to `favorite_area`, and Supabase returns the saved row, which the page then displays.
+   - Behind the scenes, `js/data/favorites.js` sends an insert request to Supabase, a row is added to `favorite_area`, and Supabase returns the saved row, which the page then displays.
 3. **Refresh the page.** The garage's heart is still filled and the count is unchanged.
 4. Open the **Favorites** tab: the garage is listed.
 5. Optional: in Supabase **Table Editor > favorite_area**, there is a new row with `user_id = 1` and the garage's `area_id`.
@@ -123,5 +140,7 @@ The working button is the **heart (Save to favorites)** on each parking area.
 3. **Area details:** tap *Rules & details* on any area. You should see the rules, a source link with a checked date, and the tow contact (a sample number).
 4. **My car:** tap *Park here — start timer* on an area (or use the My car tab), pick a duration, and press **Start parking timer**. A countdown appears. Refresh: it is still running. Check Supabase **Table Editor > parking_session** for the new row (`status = active`).
 5. Press **I left — end timer**. The row's `status` becomes `ended` (or `expired` if you were over time).
+
+Run `npm test` for the eligibility unit tests (Node 20+, nothing to install).
 
 Testing note: the screen logic was checked in a headless browser against an in-memory stand-in for Supabase seeded with the sample rows. It has **not** yet been run against the team's real Supabase project, so do the steps above once after running the policies.
