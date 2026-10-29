@@ -102,6 +102,8 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 
 ## How to Get It Running
 
+Existing team database: if parking areas load but Find has no permit choices, see [P2 live-data diagnosis and verification](docs/p2-live-data-check.md). The prepared reference-read migration requires approval before application; do not recreate the database or rerun the sample seed to fix this symptom.
+
 ### 1. Create the database (once per team)
 1. Sign in at [supabase.com](https://supabase.com) and create a new project (free tier).
 2. Open **SQL Editor**, paste all of [`supabase/schema.sql`](supabase/schema.sql), and click **Run**. This creates 8 tables with sample rows.
