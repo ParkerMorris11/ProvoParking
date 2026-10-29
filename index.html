@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <header class="top">
     <h1>Provo Parking</h1>
-    <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
+    <p class="sample-note">Rules are cited. BYU lot outlines come from BYU&#39;s public parking map; areas marked "Sample" and all availability numbers are sample data.</p>
   </header>
 
   <nav class="tabs" aria-label="Screens">
@@ -57,6 +59,9 @@
     <section id="view-areas" aria-labelledby="h-areas" hidden>
       <h2 id="h-areas" tabindex="-1">Parking areas</h2>
       <p id="areas-summary" class="summary"></p>
+      <div id="area-map" class="area-map" role="region" aria-label="Map of parking areas. The same areas are listed below the map."></div>
+      <ul id="map-legend" class="map-legend" aria-label="Map colors"></ul>
+      <p id="map-note" class="hint"></p>
       <ul id="area-list" class="cards"></ul>
     </section>
 
@@ -140,13 +145,15 @@
         <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
 
         <h3>About this app</h3>
-        <p class="hint">Permit eligibility comes from the permit you pick, not a verified BYU account. Lot locations, capacities, availability and tow numbers are sample data. Rules can change, so confirm with the source links before relying on them.</p>
+        <p class="hint">Permit eligibility comes from the permit you pick, not a verified BYU account. BYU lot outlines and posted hours come from BYU&#39;s public Campus Parking Lots map layer. Areas marked "Sample", capacities, availability and tow numbers are sample data. Rules can change, so confirm with the source links before relying on them.</p>
       </div>
     </section>
   </main>
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

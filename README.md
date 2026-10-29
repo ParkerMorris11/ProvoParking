@@ -4,7 +4,7 @@ IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, Jam
 
 Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
 
-> Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
+> Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). BYU lot outlines and posted hours come from BYU's public [Campus Parking Lots](https://byu.maps.arcgis.com/home/item.html?id=0010decde49642f5b86e0c2b164578eb) map layer (see [BYU lot map](#byu-lot-map)). Areas named "Sample", capacities, availability, and tow details are still **sample data**.
 
 ## App Summary
 Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version has five screens (see below). Favorites and parking timers are stored in a real database so they survive a refresh. Eligibility is based on the permit the user selects, not on a verified BYU account.
@@ -13,7 +13,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | # | Screen | What it does | Data it uses |
 |---|---|---|---|
 | 1 | **Find** | Pick your permit, arrival day, and arrival time | `permit` (your permit choice is remembered in the browser) |
-| 2 | **Areas** | Parking areas sorted so the ones you can use come first; each shows ✓ / ! / ✕ eligibility in text, plus an availability estimate | `parking_area`, `parking_rule`, `favorite_area` |
+| 2 | **Areas** | A map of BYU lots colored by eligibility (tap a lot for its rules), then the same areas as a list sorted so the ones you can use come first; each shows ✓ / ! / ✕ eligibility in text, plus an availability estimate | `parking_area` (incl. `boundary`), `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
@@ -79,6 +79,7 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 | Frontend | Plain HTML, CSS, and JavaScript ES modules, no build step (`index.html`, `css/styles.css`, `js/`) |
 | Backend / API | Supabase auto-generated REST API, called with `supabase-js` 2.45.4 |
 | Database | Supabase PostgreSQL (`supabase/schema.sql`), with Row Level Security (`supabase/policies.sql`) |
+| Map | [Leaflet](https://leafletjs.com/) 1.9.4 with OpenStreetMap tiles (no API key); BYU lot outlines stored as GeoJSON in `parking_area.boundary` |
 | Hosting | GitHub Pages, deployed by GitHub Actions (`.github/workflows/pages.yml`) |
 | Checks | Syntax check and unit tests on every pull request (`.github/workflows/ci.yml`, `npm test`) |
 
@@ -131,6 +132,20 @@ Existing team database: if parking areas load but Find has no permit choices, se
 2. Copy `config.example.js` to `config.js` and paste in your Project URL and anon key.
 3. Start a local web server in the folder, for example `npm start` (Node) or `python3 -m http.server 8000`. Opening `index.html` directly as a file does not work, because the app uses JavaScript modules.
 4. Open the address it prints (e.g. `http://localhost:8000`). You should see "4 parking areas loaded."
+
+### BYU lot map
+BYU publishes its campus parking lots as a public ArcGIS layer: [Campus Parking Lots](https://byu.maps.arcgis.com/home/item.html?id=0010decde49642f5b86e0c2b164578eb) (189 lot outlines with lot number, permit type, and posted hours). The layer has no license text, so we credit BYU on the map and in each lot's details. BYU's parking regulations page sends drivers to map.byu.edu's parking tab for current designations; we have not confirmed that map.byu.edu reads this exact layer.
+
+To load or refresh the BYU lots in a database:
+1. Run [`supabase/migrations/20261029214000_parking_area_map_fields.sql`](supabase/migrations/20261029214000_parking_area_map_fields.sql) once in the SQL Editor. It adds `boundary`, `source_ref`, `source_url`, and `last_verified_on` to `parking_area`, and lets `total_spaces` be empty (BYU lists no stall counts).
+2. On your computer: `node scripts/import-byu-lots.mjs > byu-lots-import.sql`. It downloads the layer and prints how many lots and rules it made.
+3. Paste `byu-lots-import.sql` into the SQL Editor and run it. Running it again updates the same lots instead of duplicating them.
+
+How the posted hours become rules (`js/domain/byu-lots.js`, tested in `tests/byu-lots.test.js`):
+- "Permit required from 7:00 a.m. to 4:00 p.m. Monday through Friday" becomes a rule for each permit valid in that lot type during those hours, based on our cited permit list (for example a G lot accepts G and A).
+- Outside those hours the layer lists no permit requirement, so the lot is treated as open to everyone. **This is our reading, not a BYU statement**, and each such rule says so in its note.
+- The 1–5 a.m. ban applies to every lot except on-campus housing lots (B, C, D, BCD, YM, YV).
+- Timed lots (T) get their posted limit, for example 30 minutes. Restricted and special lots (R, EV) get no rules and show "No rules on file". "No BYU Parking" shapes are skipped.
 
 ### 3. Live site (GitHub Pages)
 1. In the GitHub repo, go to **Settings > Secrets and variables > Actions** and add two repository secrets: `SUPABASE_URL` and `SUPABASE_ANON_KEY`.

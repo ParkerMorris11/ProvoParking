@@ -54,6 +54,7 @@ export function renderAreaDetail(areaId) {
     </div>
     <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
       <span class="when">(${DAY_NAMES[state.find.day]} ${fmtTime(state.find.time)})</span></p>
+    ${area.source_url ? `<p class="hint">Lot outline and hours: <a href="${escapeHtml(area.source_url)}" target="_blank" rel="noopener">BYU Campus Parking Lots map layer</a> · imported ${escapeHtml(area.last_verified_on || "")}</p>` : ""}
     <p class="avail ${avail.cls}">${avail.text}. Updated ${timeAgo(area.availability_updated_at)}. A valid permit does not guarantee an open space.</p>
 
     <h3>Rules</h3>

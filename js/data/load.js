@@ -13,6 +13,16 @@ export async function loadData() {
   ]);
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes]) if (res.error) throw res.error;
 
+  // Lot shapes for the map. Asked for separately so the app still loads (as dots on the map)
+  // if the map-fields migration has not been run on this database yet.
+  const shapesRes = await db.from("parking_area").select("area_id, boundary, source_url, last_verified_on");
+  if (shapesRes.error) console.warn("No lot shapes yet:", shapesRes.error.message);
+  const shapeById = new Map((shapesRes.data || []).map((s) => [s.area_id, s]));
+  for (const a of areasRes.data) {
+    const s = shapeById.get(a.area_id);
+    Object.assign(a, { boundary: s?.boundary || null, source_url: s?.source_url || null, last_verified_on: s?.last_verified_on || null });
+  }
+
   state.areas = areasRes.data;
   state.permits = permitRes.data;
   state.favoriteIds = new Set(favRes.data.map((f) => f.area_id));
