@@ -5,22 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
+  <meta name="theme-color" content="#0426e8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <header class="top">
-    <h1>Provo Parking</h1>
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">P</span>
+      <h1>Provo Parking</h1>
+    </div>
     <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
   </header>
 
   <nav class="tabs" aria-label="Screens">
-    <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
-    <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
-    <button type="button" class="tab" id="tab-favorites" data-view="favorites">
-      Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
+    <button type="button" class="tab" id="tab-find" data-view="find"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="tab-label">Find</span></button>
+    <button type="button" class="tab" id="tab-areas" data-view="areas"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg><span class="tab-label">Areas</span></button>
+    <button type="button" class="tab" id="tab-favorites" data-view="favorites"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span class="tab-label">Favorites</span>
+      <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
     </button>
-    <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
-    <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
+    <button type="button" class="tab" id="tab-car" data-view="car"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span class="tab-label">My car</span></button>
+    <button type="button" class="tab" id="tab-help" data-view="help"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="tab-label">Help</span></button>
   </nav>
 
   <main>
@@ -28,8 +35,12 @@
 
     <!-- Screen 1: Find — pick permit + arrival time -->
     <section id="view-find" aria-labelledby="h-find" hidden>
-      <h2 id="h-find" tabindex="-1">Find parking</h2>
+      <div class="page-head">
+        <p class="eyebrow">Find parking</p>
+        <h2 id="h-find" tabindex="-1">Where are you parking?</h2>
+      </div>
       <form id="find-form" class="panel">
+        <p class="overline">Your trip</p>
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
@@ -55,29 +66,43 @@
 
     <!-- Screen 2: Areas — list with eligibility -->
     <section id="view-areas" aria-labelledby="h-areas" hidden>
-      <h2 id="h-areas" tabindex="-1">Parking areas</h2>
+      <div class="page-head">
+        <p class="eyebrow">Ordered by what you can use</p>
+        <h2 id="h-areas" tabindex="-1">Parking areas</h2>
+      </div>
       <p id="areas-summary" class="summary"></p>
       <ul id="area-list" class="cards"></ul>
     </section>
 
     <!-- Screen 3: Area details — plain-language rules -->
     <section id="view-area" aria-labelledby="h-area" hidden>
-      <a href="#areas" class="back" id="area-back">← Back to areas</a>
+      <a href="#areas" class="back" id="area-back"><svg class="icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg>Back to areas</a>
       <div id="area-detail"></div>
     </section>
 
     <!-- Screen 4: Favorites -->
     <section id="view-favorites" aria-labelledby="h-favorites" hidden>
-      <h2 id="h-favorites" tabindex="-1">Favorites</h2>
+      <div class="page-head">
+        <p class="eyebrow">Status for your chosen time</p>
+        <h2 id="h-favorites" tabindex="-1">Favorites</h2>
+      </div>
       <ul id="fav-list" class="cards"></ul>
-      <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
+      <div id="fav-empty" class="empty-state" hidden>
+        <span class="empty-icon"><svg class="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+        <p class="empty-title">No favorites yet</p>
+        <p class="empty">Tap the heart on a parking area to save it here.</p>
+      </div>
     </section>
 
     <!-- Screen 5: My car — parking timer + where I parked -->
     <section id="view-car" aria-labelledby="h-car" hidden>
-      <h2 id="h-car" tabindex="-1">My car</h2>
+      <div class="page-head">
+        <p class="eyebrow">Parking timer</p>
+        <h2 id="h-car" tabindex="-1">My car</h2>
+      </div>
       <div id="car-active" hidden></div>
       <form id="car-form" class="panel" hidden>
+        <p class="overline">Start a parking timer</p>
         <label for="car-area">Where are you parking?</label>
         <select id="car-area"></select>
 
@@ -114,33 +139,41 @@
 
     <!-- Screen 6 tab: Help — key rules and what to do about a ticket -->
     <section id="view-help" aria-labelledby="h-help" hidden>
-      <h2 id="h-help" tabindex="-1">Help</h2>
-      <div class="panel help">
-        <h3>Key BYU rules (Y permit)</h3>
-        <ul>
-          <li>A Y permit is valid in <strong>Y and U lots only</strong>. A, C, G, B, D, YM, YV and visitor lots can get you a ticket.</li>
-          <li><strong>No parking 1:00–5:00 a.m.</strong> in any campus lot (this does not apply to on-campus housing).</li>
-          <li><strong>Visitor parking is off-limits</strong> to current students, even for a short stop.</li>
-        </ul>
-        <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> · checked 2026-10-07</p>
-
-        <h3>Downtown Provo</h3>
-        <ul>
-          <li>Use garages for stays longer than two hours.</li>
-          <li>Enforcement works around the clock.</li>
-        </ul>
-        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-10-07</p>
-
-        <h3>If you get a Provo citation</h3>
-        <ul>
-          <li>Respond within <strong>5 business days</strong>.</li>
-          <li>No late fees while an appeal filed in time is pending.</li>
-          <li>If the appeal is denied, pay within <strong>7 days</strong> of the decision to avoid late fees.</li>
-        </ul>
-        <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
-
-        <h3>About this app</h3>
-        <p class="hint">Permit eligibility comes from the permit you pick, not a verified BYU account. Lot locations, capacities, availability and tow numbers are sample data. Rules can change, so confirm with the source links before relying on them.</p>
+      <div class="page-head">
+        <p class="eyebrow">Rules and tickets</p>
+        <h2 id="h-help" tabindex="-1">Help</h2>
+      </div>
+      <div class="help-grid">
+        <div class="panel help">
+          <h3>Key BYU rules (Y permit)</h3>
+          <ul>
+            <li>A Y permit is valid in <strong>Y and U lots only</strong>. A, C, G, B, D, YM, YV and visitor lots can get you a ticket.</li>
+            <li><strong>No parking 1:00–5:00 a.m.</strong> in any campus lot (this does not apply to on-campus housing).</li>
+            <li><strong>Visitor parking is off-limits</strong> to current students, even for a short stop.</li>
+          </ul>
+          <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> · checked 2026-10-07</p>
+        </div>
+        <div class="panel help">
+          <h3>Downtown Provo</h3>
+          <ul>
+            <li>Use garages for stays longer than two hours.</li>
+            <li>Enforcement works around the clock.</li>
+          </ul>
+          <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-10-07</p>
+        </div>
+        <div class="panel help">
+          <h3>If you get a Provo citation</h3>
+          <ul>
+            <li>Respond within <strong>5 business days</strong>.</li>
+            <li>No late fees while an appeal filed in time is pending.</li>
+            <li>If the appeal is denied, pay within <strong>7 days</strong> of the decision to avoid late fees.</li>
+          </ul>
+          <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
+        </div>
+        <div class="panel help">
+          <h3>About this app</h3>
+          <p class="hint">Permit eligibility comes from the permit you pick, not a verified BYU account. Lot locations, capacities, availability and tow numbers are sample data. Rules can change, so confirm with the source links before relying on them.</p>
+        </div>
       </div>
     </section>
   </main>

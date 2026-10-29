@@ -4,6 +4,11 @@ import { $, setStatus } from "../lib/dom.js";
 import { escapeHtml, fmtClock, fmtDuration, nowHHMM, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
+import { lotTile } from "../components/area-card.js";
+import { icon } from "../lib/icons.js";
+
+const RING_R = 108;
+const RING_C = 2 * Math.PI * RING_R;
 
 let timerHandle = null;
 let lastReminderState = "";
@@ -19,24 +24,55 @@ export function renderCar() {
     form.hidden = true;
     active.hidden = false;
     const area = state.areas.find((a) => a.area_id === session.area_id);
+    const started = new Date(session.started_at), leaveBy = new Date(session.leave_by);
     active.innerHTML = `
-      <div class="panel session">
-        <p class="meta">You parked at</p>
-        <h3>${escapeHtml(area ? area.area_name : "Unknown area")}</h3>
-        <p class="countdown" id="countdown" aria-hidden="true"></p>
-        <p id="countdown-text" class="sr-text"></p>
-        <p id="reminder" class="reminder" hidden></p>
-        <p class="meta">Started ${fmtClock(new Date(session.started_at))} · leave by <strong>${fmtClock(new Date(session.leave_by))}</strong> · reminder ${session.reminder_minutes_before} min before</p>
+      <div class="session">
+        <div class="timer-card">
+          <div class="ring">
+            <svg viewBox="0 0 240 240" aria-hidden="true" focusable="false">
+              <circle class="ring-track" cx="120" cy="120" r="${RING_R}"/>
+              <circle class="ring-fill" id="ring-fill" cx="120" cy="120" r="${RING_R}"
+                      stroke-dasharray="${RING_C.toFixed(1)}" stroke-dashoffset="0" transform="rotate(-90 120 120)"/>
+            </svg>
+            <div class="ring-center">
+              <p class="overline">Time left</p>
+              <p class="countdown" id="countdown" aria-hidden="true"></p>
+              <p id="countdown-text" class="sr-text"></p>
+              <p class="leave-by">Leave by ${fmtClock(leaveBy)}</p>
+            </div>
+          </div>
+          <p id="reminder" class="reminder" hidden></p>
+        </div>
 
-        <form id="note-form">
-          <label for="note-edit">Where is your car?</label>
-          <input type="text" id="note-edit" maxlength="200" value="${escapeHtml(session.car_note || "")}" placeholder="e.g. Row C near the stairs">
-          <button type="submit" class="secondary">Save note</button>
-        </form>
+        <div class="session-side">
+          <div class="panel">
+            <div class="card-top">
+              ${area ? lotTile(area) : ""}
+              <div class="card-name">
+                <p class="meta">You parked at</p>
+                <h3>${escapeHtml(area ? area.area_name : "Unknown area")}</h3>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat"><strong>${fmtClock(started)}</strong><span>Started</span></div>
+              <div class="stat"><strong>${fmtDuration(session.planned_minutes || Math.round((leaveBy - started) / 60000))}</strong><span>Planned stay</span></div>
+              <div class="stat"><strong>${fmtClock(leaveBy)}</strong><span>Leave by</span></div>
+            </div>
+          </div>
 
-        <div class="actions">
-          ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">Walking directions (sample location)</a>` : ""}
-          <button type="button" class="primary" id="end-session">I left — end timer</button>
+          <p class="note-pill">${icon("bell", 18)}<span>Reminder ${session.reminder_minutes_before} min before you need to leave, shown on this page while it is open.</span></p>
+
+          <form id="note-form" class="panel">
+            <label for="note-edit">Where is your car?</label>
+            <input type="text" id="note-edit" maxlength="200" value="${escapeHtml(session.car_note || "")}" placeholder="e.g. Row C near the stairs">
+            <button type="submit" class="secondary">Save note</button>
+          </form>
+
+          <div class="actions two">
+            ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">Walking directions (sample location)</a>` : ""}
+            <button type="button" class="primary danger" id="end-session">I left — end timer</button>
+          </div>
+          <p class="hint center">A reminder, not a guarantee against tickets.</p>
         </div>
       </div>`;
     tick();
@@ -66,6 +102,11 @@ function tick() {
   const clock = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   el.textContent = over ? `Over by ${clock}` : clock;
   el.classList.toggle("over", over);
+  const span = new Date(session.leave_by).getTime() - new Date(session.started_at).getTime();
+  const left = over || span <= 0 ? 0 : Math.min(1, msLeft / span);
+  const ring = $("ring-fill");
+  ring.setAttribute("stroke-dashoffset", (RING_C * (1 - left)).toFixed(1));
+  ring.classList.toggle("over", over);
   $("countdown-text").textContent = over ? `Time is up. You are over by ${fmtDuration(Math.max(1, Math.round(total / 60)))}.` : `${fmtDuration(Math.max(1, Math.ceil(total / 60)))} left.`;
 
   const remindMs = session.reminder_minutes_before * 60000;

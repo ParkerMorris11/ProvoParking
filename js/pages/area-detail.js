@@ -2,7 +2,8 @@
 import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl } from "../lib/format.js";
-import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
+import { availabilityText, evaluateArea, heartHtml, lotTile, statusHtml } from "../components/area-card.js";
+import { icon } from "../lib/icons.js";
 
 function groupRules(rules) {
   const groups = new Map();
@@ -46,24 +47,34 @@ export function renderAreaDetail(areaId) {
   const groups = groupRules(rulesFor(area.area_id));
   box.innerHTML = `
     <div class="detail-head">
-      <div>
+      ${lotTile(area)}
+      <div class="card-name">
         <h2 id="h-area" tabindex="-1">${escapeHtml(area.area_name)}</h2>
-        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}</p>
+        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}</p>
       </div>
       ${heartHtml(area)}
     </div>
-    <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
-      <span class="when">(${DAY_NAMES[state.find.day]} ${fmtTime(state.find.time)})</span></p>
-    <p class="avail ${avail.cls}">${avail.text}. Updated ${timeAgo(area.availability_updated_at)}. A valid permit does not guarantee an open space.</p>
+    <div class="chips">
+      <span class="chip avail ${avail.cls}">${avail.text}</span>
+      ${area.is_free ? `<span class="chip">Free</span>` : ""}
+    </div>
 
-    <h3>Rules</h3>
+    <div class="panel answer">
+      <p class="overline">Can I park here?</p>
+      ${statusHtml(ev, " big")}
+      <p class="meta">For ${DAY_NAMES[state.find.day]} at ${fmtTime(state.find.time)}. Availability updated ${timeAgo(area.availability_updated_at)}. A valid permit does not guarantee an open space.</p>
+    </div>
+
+    <h3 class="section-title">Rules</h3>
     ${groups.length ? `<ul class="rules">${groups.map(ruleGroupHtml).join("")}</ul>` : `<p class="empty">No rules on file for this area yet.</p>`}
 
-    <h3>If you are towed</h3>
-    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p>
+    <div class="panel tow">
+      <p class="overline">If you are towed</p>
+      <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${icon("phone", 16)} ${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p>
+    </div>
 
-    <div class="actions">
-      <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
+    <div class="actions two">
       <a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">Walking directions (sample location)</a>
+      <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
     </div>`;
 }

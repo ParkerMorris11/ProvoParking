@@ -14,7 +14,7 @@ js/
   main.js               Entry point: loads data, wires shared clicks (hearts, tabs, Park here)
   router.js             Hash routes (#find, #areas, #area/3, #favorites, #car, #help)
   state.js              Shared state (areas, permits, rules, favorites, session, Find choices)
-  lib/                  Helpers with no app logic: format.js, dom.js, storage.js
+  lib/                  Helpers with no app logic: format.js, dom.js, storage.js, icons.js (inline SVG icons)
   domain/eligibility.js "Can this permit park here at this time?" Pure functions, unit tested
   data/                 Every Supabase call: load.js, favorites.js, sessions.js
   components/           Reusable HTML pieces (area-card.js)
