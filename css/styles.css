@@ -89,4 +89,24 @@ select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:fo
 .setup-confirmation summary:focus-visible { outline: 3px solid #2b6cb0; outline-offset: 2px; }
 .setup-confirmation pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; }
 @media (max-width: 520px) { .setup-form .row { grid-template-columns: 1fr; } }
+/* P6 active timer: a single quiet layout with the clock as the primary element. */
+.parking-timer #timer-session { padding: 20px 0; }
+.timer-state { font-weight: 600; margin: 0; color: var(--brand); }
+.timer-clock { font-size: clamp(3rem, 12vw, 5rem); line-height: 1.2; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; margin: 8px 0 0; color: var(--brand); }
+.timer-clock.timer-completed { font-size: 2.5rem; }
+.parking-timer[data-phase="reminder"] .timer-state { color: var(--low); }
+.parking-timer[data-phase="expired"] .timer-state, .parking-timer[data-phase="expired"] .timer-clock { color: var(--heart); }
+.parking-timer #timer-notice { margin-top: 20px; }
+.timer-location { margin: 28px 0 16px; font-size: 1.3rem; overflow-wrap: anywhere; }
+.timer-details { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 0; }
+.timer-details dt { color: var(--muted); font-size: .9rem; }
+.timer-details dd { margin: 4px 0 0; font-weight: 600; overflow-wrap: anywhere; }
+.timer-notes { margin: 24px 0 16px; border-top: 1px solid var(--border); padding-top: 16px; }
+.timer-notes h3 { font-size: .95rem; margin: 0; }
+.timer-notes p { margin: 8px 0 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.parking-timer .actions { margin-top: 24px; }
+.timer-demo-tools { border-top: 1px solid var(--border); margin-top: 24px; padding-top: 16px; }
+.parking-timer dialog { color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; width: min(440px, calc(100% - 32px)); }
+.parking-timer dialog::backdrop { background: rgb(0 20 40 / 45%); }
+@media (max-width: 380px) { .timer-details { grid-template-columns: 1fr; } }
 @media (max-width: 380px) { .tab { font-size: .78rem; } }

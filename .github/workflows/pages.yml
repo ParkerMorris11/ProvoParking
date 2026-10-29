@@ -30,7 +30,7 @@ jobs:
             exit 1
           fi
           mkdir -p site
-          cp index.html parking-setup.html site/
+          cp index.html parking-setup.html parking-timer.html site/
           cp -r css js site/
           printf 'window.APP_CONFIG = { SUPABASE_URL: "%s", SUPABASE_ANON_KEY: "%s" };\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > site/config.js
       - uses: actions/configure-pages@v5

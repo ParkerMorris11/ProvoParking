@@ -2,7 +2,7 @@
 
 Open `/parking-setup.html` using a local HTTP server (for example `npm start`). No `config.js`, Supabase, login, Maps API, or active timer is needed. The existing My car screen links to this demo; its database-backed timer is unchanged. The standalone page has a back link rather than another global navigation bar.
 
-This is a setup demonstration: submitting shows a confirmation and the JSON payload. It does not start a countdown, schedule reminders, persist data, or enforce parking rules. Leaving/reloading resets the form. Background notifications are not supported. Check posted parking rules; the chosen duration does not grant permission to park.
+Submitting the form shows a review and JSON payload. P6 adds a separate **Confirm & Start Timer** action: only this final action creates and saves a session, then opens `parking-timer.html`. Leaving/reloading the unconfirmed form resets the form. Confirmed sessions survive a refresh and can be reopened through **View parking timer** in the same browser. No database, map, background notifications, or parking-rule enforcement is involved. Check posted parking rules; the chosen duration does not grant permission to park.
 
 ## Integration
 
@@ -19,9 +19,12 @@ const setup = initParkingSetup(document.querySelector("#parking-setup"), {
     isSample: false,
   },
   async onStart(session) {
-    // Future P6 integration: hand off this validated snapshot to the active timer.
-    // await startActiveTimer(session);
-    // Navigate only after successful handoff.
+    // Optional review-stage hook, kept for compatibility with the original P5 contract.
+    // This is called before showing the review; do not start a timer here.
+  },
+  async onConfirm(session) {
+    // Final confirmation hook used by P6. The default entry point saves locally
+    // with startLocalTimer(session), then navigates to parking-timer.html.
   },
 });
 
@@ -50,7 +53,7 @@ No map code is implemented. Supply a nonempty string `id` (convert numeric datab
 
 Durations are integers 30…720 in 30-minute increments (default 120). Reminder values are 0 (none), 5, 10 (default), 15, or 30, and must be strictly shorter than the duration. Shortening the duration disables incompatible options and resets an incompatible selection to no reminder, with an announced explanation. Notes are optional, trimmed text, maximum 200 characters. The payload deliberately contains no timer timestamps, database session ID, or user identity: the future active timer owns these.
 
-The optional callback can return a promise. Controls are disabled while pending to prevent duplicate submissions. Resolution shows the demo confirmation; rejection shows a retry message and preserves the form. Callback mutations cannot change the confirmation snapshot. Add persistence/navigation only in that callback when the future feature exists.
+Both optional callbacks can return a promise. `onStart` remains the review-stage hook for backward compatibility: resolution shows the review; rejection preserves the form. `onConfirm` is the final submission hook added by P6; the confirmation button is visible only when this callback is supplied. It receives a copy of the reviewed payload. Controls are disabled while callbacks are pending, and rejection keeps the relevant step available for retry. Callback mutations cannot change the review snapshot. `js/parking-setup.js` connects only `onConfirm` to local persistence and navigation, so the countdown begins at final confirmation rather than at form submission.
 
 ## Checks
 

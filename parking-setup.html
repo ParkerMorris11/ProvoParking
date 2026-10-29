@@ -12,6 +12,7 @@
     <a href="index.html#car" class="back">← Back to Provo Parking</a>
     <h1>Parking timer setup</h1>
     <p class="summary">Choose your parking time and save a few details for your return.</p>
+    <p class="summary"><a class="link" href="parking-timer.html">View parking timer</a> · Your saved session is available here when you return.</p>
     <form class="panel setup-form" id="setup-form" novalidate>
       <div class="setup-field">
         <label for="setup-location">Where are you parking?</label>
@@ -36,7 +37,7 @@
           <p class="hint" id="setup-reminder-hint">Choose a reminder shorter than your parking duration.</p>
         </div>
       </div>
-      <p class="hint">This demo saves your reminder preference only. Background notifications and reminders are not yet supported.</p>
+      <p class="hint">Reminders appear on the timer page while it is open. Background notifications are not supported.</p>
       <div class="setup-field setup-notes">
         <label for="setup-notes">Car location notes <span class="hint">(optional)</span></label>
         <input type="text" id="setup-notes" maxlength="200" placeholder="Level 3, Row C, near elevator." aria-describedby="setup-notes-hint">
@@ -44,16 +45,18 @@
       </div>
       <p id="setup-error" class="setup-error" role="alert" hidden></p>
       <button type="submit" class="primary">Start Parking Timer</button>
-      <p class="hint">Demo only: submitting shows your session details. No countdown starts and nothing is saved after leaving this page.</p>
+      <p class="hint">Review your choices on the next screen. Your timer starts only after you confirm.</p>
     </form>
     <section class="panel setup-confirmation" id="setup-confirmation" aria-labelledby="setup-confirmation-title" hidden>
-      <h2 id="setup-confirmation-title" tabindex="-1">Parking session ready</h2>
-      <p class="hint">Your setup was submitted. This demo does not start an active timer or send notifications.</p>
+      <h2 id="setup-confirmation-title" tabindex="-1">Review your parking session</h2>
+      <p class="hint">Check these details, then confirm to start your timer. The session is saved only in this browser on this device.</p>
       <dl id="setup-summary"></dl>
       <details>
         <summary>View submitted session data</summary>
         <pre id="setup-payload"></pre>
       </details>
+      <p id="setup-confirm-error" class="setup-error" role="alert" hidden></p>
+      <button type="button" class="primary" id="setup-confirm-start" hidden>Confirm &amp; Start Timer</button>
       <button type="button" class="secondary" id="setup-edit">Edit parking setup</button>
     </section>
     <noscript><p>Enable JavaScript to set up a parking session.</p></noscript>

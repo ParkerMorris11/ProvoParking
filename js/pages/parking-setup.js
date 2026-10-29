@@ -1,12 +1,14 @@
 import { SAMPLE_LOCATION, DURATIONS, createParkingSession, durationLabel, validateLocation } from "../domain/parking-setup.js";
 
 /** Mount once per root. onStart may be async; see docs/parking-timer-setup.md. */
-export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = () => {} } = {}) {
+export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = () => {}, onConfirm = null } = {}) {
   const find = (id) => root.querySelector(`#setup-${id}`);
   const form = find("form"), error = find("error"), confirmation = find("confirmation");
   const duration = find("duration"), reminder = find("reminder"), notes = find("notes");
   const button = form.querySelector('[type="submit"]');
-  let selectedLocation, locationError = "", submitting = false;
+  const confirmButton = find("confirm-start"), confirmError = find("confirm-error");
+  let selectedLocation, locationError = "", submitting = false, reviewedPayload = null;
+  if (confirmButton) confirmButton.hidden = typeof onConfirm !== "function";
 
   duration.replaceChildren(...DURATIONS.map((minutes) => {
     const option = document.createElement("option");
@@ -35,6 +37,7 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
   function setLocation(nextLocation) {
     if (submitting) throw new Error("Wait for the current submission before changing location.");
     clearError();
+    reviewedPayload = null;
     try {
       // Missing/null input uses the explicit sample; malformed supplied data never silently does.
       selectedLocation = validateLocation(nextLocation ?? SAMPLE_LOCATION);
@@ -55,6 +58,8 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
   }
 
   function showConfirmation(payload) {
+    reviewedPayload = structuredClone(payload);
+    if (confirmError) confirmError.hidden = true;
     const summary = find("summary");
     summary.replaceChildren();
     for (const [label, value] of [
@@ -115,14 +120,32 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
   }
 
   function edit() {
+    if (submitting) return;
     confirmation.hidden = true;
     form.hidden = false;
     duration.focus();
+  }
+  async function confirmStart() {
+    if (submitting || !reviewedPayload || typeof onConfirm !== "function") return;
+    submitting = true;
+    confirmButton.disabled = true;
+    find("edit").disabled = true;
+    confirmError.hidden = true;
+    try { await onConfirm(structuredClone(reviewedPayload)); }
+    catch (err) {
+      confirmError.textContent = err.message || "Could not start your timer. Please try again.";
+      confirmError.hidden = false;
+    } finally {
+      submitting = false;
+      confirmButton.disabled = false;
+      find("edit").disabled = false;
+    }
   }
   function change() { clearError(); syncReminder(); }
   duration.addEventListener("change", change);
   form.addEventListener("submit", submit);
   find("edit").addEventListener("click", edit);
+  confirmButton?.addEventListener("click", confirmStart);
   setLocation(location);
   syncReminder();
   return {
@@ -131,6 +154,7 @@ export function initParkingSetup(root, { location = SAMPLE_LOCATION, onStart = (
       duration.removeEventListener("change", change);
       form.removeEventListener("submit", submit);
       find("edit").removeEventListener("click", edit);
+      confirmButton?.removeEventListener("click", confirmStart);
     },
   };
 }
