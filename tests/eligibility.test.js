@@ -64,3 +64,64 @@ test("overnight windows wrap past midnight", () => {
   assert.equal(inWindow(23 * 60, 22 * 60, 6 * 60), true);
   assert.equal(inWindow(12 * 60, 22 * 60, 6 * 60), false);
 });
+
+test("an overnight rule covers both sides of midnight, with inclusive schedule endpoints", () => {
+  const night = [rule({ permit_id: Y, start_time: "22:00:00", end_time: "06:00:00" })];
+  for (const time of ["22:00", "23:59", "00:00", "06:00"]) {
+    assert.equal(evaluate(night, Y, TUE, time).kind, "ok", time);
+  }
+  for (const time of ["21:59", "06:01", "12:00"]) {
+    assert.equal(evaluate(night, Y, TUE, time).kind, "unknown", time);
+  }
+});
+
+test("overnight schedules still require the selected calendar day and permit", () => {
+  const night = [rule({ permit_id: Y, days_of_week: "Mon-Fri", start_time: "22:00", end_time: "06:00" })];
+  assert.equal(evaluate(night, PP, TUE, "23:00").kind, "no-permit");
+  assert.equal(evaluate(night, Y, 6, "02:00").kind, "unknown");
+});
+
+test("an unreadable day cannot grant parking, even in a partly valid list", () => {
+  for (const days of [null, "", "Weekdays", "Mon-Fry", "Mon,Typo", "Mon-Fri-Sat"]) {
+    assert.equal(evaluate([rule({ days_of_week: days })], Y, TUE, "08:00").kind, "unknown", String(days));
+  }
+});
+
+test("invalid arrival values cannot return an allowed result", () => {
+  for (const time of [null, "", "24:00", "12:60", "08:00junk"]) {
+    assert.equal(evaluate([rule({})], Y, TUE, time).kind, "unknown", String(time));
+  }
+  for (const day of [-1, 7, 1.5, null]) {
+    assert.equal(evaluate([rule({})], Y, day, "08:00").kind, "unknown", String(day));
+  }
+});
+
+test("incomplete or unreadable restrictions cannot grant parking", () => {
+  for (const extra of [
+    { blocked_start: "01:00", blocked_end: null },
+    { blocked_start: null, blocked_end: "05:00" },
+    { blocked_start: "bad", blocked_end: "05:00" },
+    { start_time: null }, { end_time: "24:00" },
+  ]) {
+    assert.equal(evaluate([rule(extra)], Y, TUE, "08:00").kind, "unknown", JSON.stringify(extra));
+  }
+});
+
+test("overnight blocked hours start inclusively and end exclusively", () => {
+  const nightBan = [rule({ blocked_start: "22:00", blocked_end: "06:00" })];
+  for (const time of ["22:00", "23:59", "00:00", "05:59"]) {
+    assert.equal(evaluate(nightBan, Y, TUE, time).kind, "blocked", time);
+  }
+  for (const time of ["21:59", "06:00"]) {
+    assert.equal(evaluate(nightBan, Y, TUE, time).kind, "ok", time);
+  }
+});
+
+test("switching day, time and permit rechecks the current choice", () => {
+  const weekday = [rule({ permit_id: Y, days_of_week: "Mon-Fri", blocked_start: "01:00", blocked_end: "05:00" })];
+  assert.equal(evaluate(weekday, Y, TUE, "08:00").kind, "ok");
+  assert.equal(evaluate(weekday, PP, TUE, "08:00").kind, "no-permit");
+  assert.equal(evaluate(weekday, Y, TUE, "03:00").kind, "blocked");
+  assert.equal(evaluate(weekday, Y, 6, "08:00").kind, "unknown");
+  assert.equal(evaluate(weekday, Y, TUE, "08:00").kind, "ok");
+});
