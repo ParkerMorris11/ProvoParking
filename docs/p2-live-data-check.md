@@ -18,6 +18,28 @@ This migration is not a general security audit or the Sprint 2 sign-in implement
 
 Verified after application: the rollback-only browser-role assertions pass, including denied visitor write privileges and hidden profiles, user permits, and sessions. The live picker lists all 11 permit types. With Y at 8:00 a.m., Y/U lots are allowed and the residential permit street is not covered. At 3:00 a.m., Y/U lots display the 1–5 a.m. restriction. Switching to PP at 8:00 a.m. reverses the permit results. The lot detail page now displays permit names, restriction hours, a source link, and the checked date. Screenshots are captured from the live GitHub Pages site, not a database stand-in.
 
+## Accessibility and responsive evidence — October 29, 2026
+
+Google Lighthouse 13.6.0 audited the live site with a fresh browser session at each route. All six runs completed without run warnings:
+
+| Screen | Phone 390 × 844 | Laptop 1440 × 900 |
+|---|---:|---:|
+| Find (`#find`) | 100/100 | 100/100 |
+| Areas (`#areas`) | 100/100 | 100/100 |
+| Lot rules (`#area/1`) | 100/100 | 100/100 |
+
+These scores cover automated accessibility checks, not a complete screen-reader audit. Lighthouse screenshots were visually inspected: controls, cards, and rule text wrap within the phone layout, and the laptop view stays readable. Fresh-session Areas screenshots correctly ask for a permit; the selected-permit interactions were separately checked in the normal browser at 1280 × 720. Enter activates Show parking areas and Rules & details, and navigation focuses the destination heading. The normal browser had no horizontal overflow at that width.
+
+The in-app browser ignored its requested phone-width override, and the Chrome browser connector was unavailable by policy. Therefore phone layout evidence comes from Lighthouse's emulated viewport; interactive clicking was not manually retested at phone width. Human review on a real phone remains useful before acceptance.
+
+![Live Find at phone width](screens/p2-phone-find.png)
+![Live rules at phone width](screens/p2-phone-rules.png)
+![Live rules at laptop width](screens/p2-laptop-rules.png)
+
+Repeat an audit with an installed Chrome and Node using `npx lighthouse https://parkermorris11.github.io/ProvoParking/#find --only-categories=accessibility --output=html --screenEmulation.width=390 --screenEmulation.height=844 --screenEmulation.deviceScaleFactor=1 --chrome-flags=--headless`. Add `--preset=desktop` and use 1440 × 900 for laptop, and change the hash route for the other screens.
+
+Local `npm run check` passes all 10 baseline tests. GitHub Checks passed for commit `ad588d0` (run 40897967693). P5's extra tests and eligibility changes remain in their separate PR.
+
 ## Repeat the verification
 
 1. Run `supabase/tests-reference-reads.sql`. It checks the actual browser role can read all three reference tables while profiles, user permit selections, and parking sessions remain hidden. It runs in a transaction and writes no rows.

@@ -102,6 +102,18 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 
 ## How to Get It Running
 
+### P2 behavioral requirement status
+
+| Requirement | Status |
+|---|---|
+| Live permit choices load from Supabase | Complete — 11 options |
+| Areas and lot details display database parking rules | Complete — checked with Y and residential permits and daytime/overnight arrivals |
+| Public reference reads work while reference writes and personal data stay protected | Complete — browser-role SQL assertions pass |
+| Phone/laptop layouts and Lighthouse Accessibility ≥90 | Complete for captured layouts and automated checks — Find, Areas and details scored 100/100 at both sizes; real-phone interaction review remains pending |
+| Teammate review, merge to main and PO acceptance | Not complete — [PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5) |
+
+Detailed checks, evidence and limits: [P2 verification](docs/p2-live-data-check.md). Lot locations, availability and tow contacts remain sample data.
+
 Existing team database: if parking areas load but Find has no permit choices, see [P2 live-data diagnosis and verification](docs/p2-live-data-check.md). The reference-read migration was approved and applied to the team project on October 29, 2026; do not recreate the database or rerun the sample seed to fix this symptom.
 
 ### 1. Create the database (once per team)
