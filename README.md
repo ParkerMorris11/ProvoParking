@@ -4,6 +4,8 @@ IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, Jam
 
 Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
 
+P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review → **Confirm & Start Timer** → [Parking timer](parking-timer.html). Serve the repository locally; no Supabase configuration is needed. The session is saved in this browser so you can return through **View parking timer** or refresh without resetting its timestamps. See [the P5 contract](docs/parking-timer-setup.md) and [P6 timer contract and sample states](docs/active-parking-timer.md). The existing Supabase My car timer remains available separately; these sessions do not sync with it or across devices.
+
 > Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
 
 ## App Summary
