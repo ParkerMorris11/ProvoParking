@@ -38,7 +38,7 @@ The in-app browser ignored its requested phone-width override, and the Chrome br
 
 Repeat an audit with an installed Chrome and Node using `npx lighthouse https://parkermorris11.github.io/ProvoParking/#find --only-categories=accessibility --output=html --screenEmulation.width=390 --screenEmulation.height=844 --screenEmulation.deviceScaleFactor=1 --chrome-flags=--headless`. Add `--preset=desktop` and use 1440 × 900 for laptop, and change the hash route for the other screens.
 
-Local `npm run check` passes all 10 baseline tests. GitHub Checks passed for commit `ad588d0` (run 40897967693). P5's extra tests and eligibility changes remain in their separate PR.
+Local `npm run check` passes all 10 baseline tests. GitHub Checks passed for commit `ad588d0` (run 40897967693). P5's eligibility changes and extra tests were merged separately in [PR #4](https://github.com/ParkerMorris11/ProvoParking/pull/4); main now passes 17 tests.
 
 ## Repeat the verification
 
@@ -48,4 +48,4 @@ Local `npm run check` passes all 10 baseline tests. GitHub Checks passed for com
 4. Change the arrival to 3:00 a.m. and confirm the campus overnight restriction appears. Change the permit and confirm results refresh.
 5. Refresh and check the selected permit still appears. Check at phone and laptop widths and save screenshots.
 
-Lot locations, availability, and tow details remain sample data. Liam's L1 card owns verified lot data. P5's eligibility fixes remain in their separate draft PR. Do not mark P2 Done until the live verification and the course Definition of Done are satisfied.
+Lot locations, availability, and tow details remain sample data. Liam's L1 card owns verified lot data. P5's eligibility fixes were merged in PR #4. Do not mark P2 Done until the live verification and the course Definition of Done are satisfied.

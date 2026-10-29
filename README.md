@@ -112,7 +112,7 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 | Areas and lot details display database parking rules | Complete — checked with Y and residential permits and daytime/overnight arrivals |
 | Public reference reads work while reference writes and personal data stay protected | Complete — browser-role SQL assertions pass |
 | Phone/laptop layouts and Lighthouse Accessibility ≥90 | Complete for captured layouts and automated checks — Find, Areas and details scored 100/100 at both sizes; real-phone interaction review remains pending |
-| Teammate review, merge to main and PO acceptance | Not complete — [PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5) |
+| Teammate review, merge to main and PO acceptance | Merged to main October 29, 2026 ([PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5)); PO acceptance pending |
 
 Detailed checks, evidence and limits: [P2 verification](docs/p2-live-data-check.md). Lot locations, availability and tow contacts remain sample data.
 
