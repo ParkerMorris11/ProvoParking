@@ -62,15 +62,24 @@
       </div>
       <div class="parking-workspace">
         <div class="map-panel">
-          <div class="map-toolbar"><h3>Explore campus</h3><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button></div>
+          <div class="map-toolbar"><h3>Explore campus</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button></div></div>
           <div class="map-stage">
-            <div id="parking-map" class="parking-map" role="region" aria-label="BYU parking map" aria-describedby="map-note"></div>
+            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul></div>
           <p id="map-note" class="map-note">Colors show permit categories, not open spaces. Tap a lot for its recorded rules; check posted signs.</p>
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
+          <section class="nearby-panel" aria-labelledby="nearby-heading">
+            <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
+            <p id="location-status" class="location-status" role="status">Use your location to find nearby mapped lots.</p>
+            <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
+            <div id="nearby-controls" hidden><label for="nearby-permit">Permit category</label><select id="nearby-permit"><option value="">All permit types</option></select><p class="nearby-note">Exact category match only; this does not check permit privileges or hours.</p></div>
+            <ul id="nearby-list" class="nearby-list"></ul>
+            <p id="nearby-empty" class="nearby-note" hidden></p>
+            <p class="nearby-note">Distances are straight-line estimates to lot centers. Open spaces and permission to park are not verified.</p>
+          </section>
           <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading">Parking areas</h3></div><span class="sample-label">Sample data</span></div>
           <p class="results-note">These sample areas demonstrate permit checks. They are separate from the campus boundaries.</p>
           <ul id="area-list" class="cards"></ul>

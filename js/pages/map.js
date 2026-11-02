@@ -1,6 +1,93 @@
 import { escapeHtml } from "../lib/format.js";
 
+import { nearbyLots } from "../domain/nearby.js";
+import { createLocationTracker } from "../lib/location.js";
+
 let map;
+let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
+const lotLayers = new Map();
+
+function clearUserLocation() {
+  if (userMarker) map.removeLayer(userMarker);
+  if (accuracyRing) map.removeLayer(accuracyRing);
+  userMarker = accuracyRing = null;
+}
+
+function renderNearby() {
+  const list = document.getElementById("nearby-list");
+  if (!list) return;
+  const controls = document.getElementById("nearby-controls");
+  const empty = document.getElementById("nearby-empty");
+  controls.hidden = !latestPosition;
+  if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; nearby = []; return; }
+  const activeButton = document.activeElement?.closest?.("[data-nearby-index]");
+  const focusedLot = activeButton && list.contains(activeButton) ? nearby[Number(activeButton.dataset.nearbyIndex)] : null;
+  nearby = nearbyLots(features, latestPosition, document.getElementById("nearby-permit").value);
+  empty.hidden = nearby.length > 0;
+  empty.textContent = "No mapped lots in this category within 5 km. Try another category or explore the campus map.";
+  list.innerHTML = nearby.map((lot, index) => {
+    const distance = lot.distanceMeters < 1000 ? `${Math.max(10, Math.round(lot.distanceMeters / 10) * 10)} m` : `${(lot.distanceMeters / 1000).toFixed(1)} km`;
+    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Permit ${escapeHtml(lot.permit)} · Check lot rules</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
+  }).join("");
+  if (focusedLot) {
+    const index = nearby.findIndex(lot => lot.name === focusedLot.name && lot.permit === focusedLot.permit);
+    if (index >= 0) list.querySelector(`[data-nearby-index="${index}"]`)?.focus({ preventScroll: true });
+    else document.getElementById("nearby-permit").focus({ preventScroll: true });
+  }
+}
+
+function initLocation() {
+  const button = document.getElementById("locate-me");
+  if (!button || tracker) return;
+  button.disabled = false;
+  let firstFix = true;
+  tracker = createLocationTracker({ geolocation: window.navigator?.geolocation, onChange: update => {
+    const wasLive = Boolean(latestPosition);
+    latestPosition = update.position;
+    const active = update.status === "live" || update.status === "waiting";
+    button.textContent = active ? "Stop tracking" : "Use my location";
+    button.setAttribute("aria-pressed", String(active));
+    document.getElementById("location-status").textContent = update.message;
+    document.getElementById("location-status").classList.toggle("is-live", update.status === "live");
+    if (latestPosition) {
+      const point = [latestPosition.latitude, latestPosition.longitude];
+      const L = window.L;
+      if (!userMarker) {
+        accuracyRing = L.circle(point, { radius: latestPosition.accuracy, color: "#3168dc", weight: 1, fillOpacity: 0.07, interactive: false }).addTo(map);
+        userMarker = L.circleMarker(point, { radius: 8, color: "#ffffff", weight: 3, fillColor: "#3168dc", fillOpacity: 1 }).bindPopup("Your current location").addTo(map);
+      } else {
+        userMarker.setLatLng(point);
+        accuracyRing.setLatLng(point).setRadius(latestPosition.accuracy);
+      }
+      if (firstFix) { map.setView(point, 16); firstFix = false; }
+    } else {
+      if (wasLive) clearUserLocation();
+      firstFix = true;
+    }
+    renderNearby();
+  } });
+  button.addEventListener("click", () => {
+    if (button.getAttribute("aria-pressed") === "true") tracker.stop(); else tracker.start();
+  });
+  const select = document.getElementById("nearby-permit");
+  const codes = [...new Set(features.map(f => f.properties?.permit_typ).filter(code => code && !["R", "No BYU Parking"].includes(code)))].sort();
+  select.innerHTML = '<option value="">All permit types</option>' + codes.map(code => `<option value="${escapeHtml(code)}">${escapeHtml(code)}</option>`).join("");
+  select.addEventListener("change", renderNearby);
+  document.getElementById("nearby-list").addEventListener("click", event => {
+    const control = event.target.closest("[data-nearby-index]");
+    const lot = control && nearby[Number(control.dataset.nearbyIndex)];
+    if (!lot) return;
+    map.setView([lot.point.latitude, lot.point.longitude], 17);
+    lotLayers.get(lot.feature)?.openPopup();
+    document.getElementById("parking-map").focus({ preventScroll: false });
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) pauseMapLocation(); });
+  window.addEventListener("pagehide", pauseMapLocation);
+}
+
+export function pauseMapLocation() {
+  tracker?.stop("Location paused. Use your location again when you return to the map.");
+}
 
 function setMapStatus(message) {
   const el = document.getElementById("map-status");
@@ -53,14 +140,17 @@ export async function initMap() {
       if (!response.ok) throw new Error(`Boundary request failed (${response.status})`);
       const geometry = await response.json();
       if (geometry.type !== "FeatureCollection" || !Array.isArray(geometry.features)) throw new Error("Invalid boundary snapshot");
+      features = geometry.features;
       L.geoJSON(geometry, {
         style: boundaryStyle,
         onEachFeature: (feature, layer) => {
+          lotLayers.set(feature, layer);
           const p = feature.properties || {};
           layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Permit ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
         }
       }).addTo(map);
       setMapStatus(`${geometry.features.length} mapped boundaries`);
+      initLocation();
     } catch (error) {
       console.warn("[map] boundary snapshot unavailable", error);
       setMapStatus("Lot boundaries unavailable. The parking list is still available.");

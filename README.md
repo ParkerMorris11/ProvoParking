@@ -164,3 +164,7 @@ Testing note: the screen logic was checked in a headless browser against an in-m
 ### Map integration (PR #11)
 
 The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. Implementation is ready for teammate review; merge and live deployment verification are pending.
+
+### Nearby lots with your location
+
+On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).

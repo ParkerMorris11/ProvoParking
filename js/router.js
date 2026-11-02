@@ -8,7 +8,7 @@ import { renderAreaDetail } from "./pages/area-detail.js";
 import { renderFavorites } from "./pages/favorites.js";
 import { renderCar, stopTimer } from "./pages/car.js";
 
-import { initMap } from "./pages/map.js";
+import { initMap, pauseMapLocation } from "./pages/map.js";
 
 export const VIEWS = ["find", "areas", "area", "favorites", "car", "help"];
 
@@ -29,7 +29,7 @@ export function showView() {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
   renderViews();
-  if (state.currentView === "areas") void initMap();
+  if (state.currentView === "areas") void initMap(); else pauseMapLocation();
   if (state.currentView === "car") renderCar(); else stopTimer();
   document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   window.scrollTo(0, 0);

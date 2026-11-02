@@ -154,3 +154,31 @@ body:has(#view-areas:not([hidden])) .tab[aria-current="page"] { background: #e0e
   .parking-results .heart { width: 44px; height: 44px; }
 }
 .map-stage:has(.parking-map[hidden]) .map-status { position: static; margin: 14px; max-width: none; box-shadow: none; }
+/* Explicit, foreground-only location sharing and nearby suggestions. */
+.map-tools { display: flex; gap: 7px; align-items: center; }
+.location-button { min-height: 38px; padding: 0 12px; border: 1px solid #3168dc; border-radius: 9px; background: #3168dc; color: #fff; font: inherit; font-size: .75rem; font-weight: 650; cursor: pointer; }
+.location-button[aria-pressed="true"] { background: #edf3ff; color: #254f9f; }
+.location-button:disabled { opacity: .5; cursor: default; }
+.location-button:focus-visible, .nearby-card button:focus-visible { outline: 3px solid #3168dc; outline-offset: 3px; }
+.nearby-panel { padding: 20px; border: 1px solid #d8e2f1; border-radius: 18px; background: #fff; margin-bottom: 26px; }
+.nearby-panel h3 { color: #172d49; font-size: 1.35rem; letter-spacing: -.025em; margin: 0 0 12px; }
+.location-status { color: #455a75; font-size: .8rem; line-height: 1.55; margin: 0 0 8px; }
+.location-status.is-live { color: #176f58; font-weight: 650; }
+.location-privacy, .nearby-note { color: #5b6d83; font-size: .7rem; line-height: 1.6; margin: 8px 0; }
+#nearby-controls { margin-top: 18px; }
+#nearby-controls label { font-size: .72rem; color: #455a75; font-weight: 650; display: block; margin-bottom: 6px; }
+#nearby-controls select { border-color: #d2ddeb; font-size: .8rem; }
+.nearby-list { list-style: none; padding: 0; margin: 14px 0; display: grid; gap: 10px; }
+.nearby-card { background: #f5f8fd; border: 1px solid #e1e8f3; border-radius: 12px; padding: 14px; }
+.nearby-card-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.nearby-card h4 { margin: 0; font-size: .95rem; color: #203d67; }
+.nearby-card-head > span { color: #345e9e; font-size: .78rem; font-weight: 700; white-space: nowrap; }
+.nearby-category { font-size: .68rem; color: #496185; font-weight: 600; margin: 7px 0; }
+.nearby-description { color: #566b83; font-size: .72rem; line-height: 1.5; margin: 6px 0; }
+.nearby-card button { background: none; border: 0; padding: 6px 0; color: #2759ae; font: inherit; font-size: .73rem; font-weight: 650; min-height: 36px; cursor: pointer; }
+@media (max-width: 600px) {
+  .map-toolbar { gap: 6px; flex-wrap: wrap; }
+  .map-toolbar h3 { font-size: .8rem; }
+  .map-reset, .location-button { padding: 0 9px; font-size: .68rem; min-height: 40px; }
+  .nearby-panel { padding: 18px; }
+}
