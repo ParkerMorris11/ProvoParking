@@ -132,6 +132,17 @@ supabase/         schema, policies, dated change files
 ```
 How to add a page, branch naming, pull requests and database changes: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
+## Parker — Sprint 1 status (November 2, 2026)
+
+| Card / behavioral requirement | Status |
+|---|---|
+| P2: load live permit choices and display database rules | Complete — merged and deployed; awaiting PO acceptance |
+| P4: choose permit/time → see rules → save a favorite → refresh | Complete — verified on the published site against the current sample areas; awaiting PO acceptance |
+| P5: handle permit, day and restricted-hour changes | Logic complete — 17 eligibility tests pass; live Y daytime/overnight and residential-permit changes pass |
+| P5: confirm allowed/blocked results for verified lots | Not complete — live `parking_area` still contains four sample areas; requires L1 verified lot/rule data |
+
+[Verification record and limits](docs/sprint-1-parker-verification.md). P21 sign-in remains delegated/paused and is not part of this Sprint 1 completion check. No course goals, estimates, or Definition of Done were changed.
+
 ## How to Get It Running
 
 ### P2 behavioral requirement status
@@ -142,7 +153,8 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 | Areas and lot details display database parking rules | Complete — checked with Y and residential permits and daytime/overnight arrivals |
 | Public reference reads work while reference writes and personal data stay protected | Complete — browser-role SQL assertions pass |
 | Phone/laptop layouts and Lighthouse Accessibility ≥90 | Complete for captured layouts and automated checks — Find, Areas and details scored 100/100 at both sizes; real-phone interaction review remains pending |
-| Teammate review, merge to main and PO acceptance | Not complete — [PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5) |
+| Review and merge to main | Complete — [PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5) merged and deployed |
+| PO acceptance | Not complete — Spencer reviews the Done card |
 
 Detailed checks, evidence and limits: [P2 verification](docs/p2-live-data-check.md). Lot locations, availability and tow contacts remain sample data.
 
