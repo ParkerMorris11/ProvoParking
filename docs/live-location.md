@@ -22,4 +22,4 @@ Denied permission, unavailable/unsupported location, timeouts, invalid fixes and
 - The active simulated layout was visually inspected at 390px with no horizontal document overflow. The real app's idle location controls were also checked against the current Supabase data.
 - Lighthouse attempts for this revision captured the database loading screen, so their numerical scores are not valid accessibility evidence for the new controls. Earlier map/UI audits remain documented separately. Real-device GPS, OS/browser permission UX and screen-reader testing remain for human review.
 
-No database changes, timer integration, Trello updates or production deployment. Included in map PR #11; teammate review and live Pages verification remain pending.
+No database changes, timer integration, Trello updates or production deployment. Included in map PR #11; the team approved integration on November 1 with original commits preserved. See `integration-2026-11-01.md`; live Pages verification follows deployment.
