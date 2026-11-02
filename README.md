@@ -1,5 +1,7 @@
 # Provo Parking
 
+P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
+
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
 
 Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
