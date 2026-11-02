@@ -37,7 +37,7 @@ The CLI-generated, additive migration is:
 
 Review it, verify the exact target project, and apply the whole transaction using the project's SQL Editor or the team's authenticated migration workflow. It creates only the P7 table, indexes, policies, trigger, and three RPC functions. Reapplying it is safe and covered by tests. It does not edit legacy migrations, tables, session rows, Auth settings, project/account settings, credentials, or any other project. Do not run `schema.sql` against an existing project. Do not upload the local test fixture.
 
-If applying directly in SQL Editor, schema application and CLI migration-history tracking are separate operations. Record the actual rollout and reconcile that migration version using the team's normal migration workflow; do not assume an editor execution added a history entry. Keep this feature PR unmerged until an explicit future merge decision.
+If applying directly in SQL Editor, schema application and CLI migration-history tracking are separate operations. Record the actual rollout and reconcile that migration version using the team's normal migration workflow; do not assume an editor execution added a history entry. The team approved merging this feature source on November 1 while preserving original commits. Live schema application and authentication/frontend integration remain separate pending work.
 
 The browser uses its existing publishable/anon project key plus a real user's access token. A publishable key alone does not authorize session access. Never use a service-role/secret key in a browser or commit credentials. This feature does not require creating or rotating any credentials.
 

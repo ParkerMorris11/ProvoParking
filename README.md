@@ -164,3 +164,11 @@ The working button is the **heart (Save to favorites)** on each parking area.
 Run `npm test` for the eligibility unit tests (Node 20+, nothing to install).
 
 Testing note: the screen logic was checked in a headless browser against an in-memory stand-in for Supabase seeded with the sample rows. It has **not** yet been run against the team's real Supabase project, so do the steps above once after running the policies.
+
+### Map integration (PR #11)
+
+The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. The team approved integration with merge commits to retain contributor history; see [integration verification](docs/integration-2026-11-01.md).
+
+### Nearby lots with your location
+
+On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).

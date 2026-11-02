@@ -47,7 +47,7 @@ Rules of thumb:
 - One branch per Trello card: `<name>/<short-card-title>`, for example `liam/permit-picker`.
 - Keep PRs small (one card). Fill in the PR template, link the Trello card, and ask one teammate to review.
 - The **Checks** workflow runs syntax checks and unit tests on every PR. Fix red checks before asking for review.
-- The reviewer pulls the branch, runs it, and clicks through the change before approving. Merge with "Squash and merge".
+- The reviewer pulls the branch, runs it, and clicks through the change before approving. Use "Create a merge commit" to preserve each contributor's original commits and author metadata. Do not squash or rebase unless the team explicitly chooses to rewrite that history.
 - After merging, check the live site once the **Deploy to GitHub Pages** run finishes.
 
 ## Database changes

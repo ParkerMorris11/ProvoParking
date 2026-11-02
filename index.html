@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -55,9 +56,35 @@
 
     <!-- Screen 2: Areas — list with eligibility -->
     <section id="view-areas" aria-labelledby="h-areas" hidden>
-      <h2 id="h-areas" tabindex="-1">Parking areas</h2>
-      <p id="areas-summary" class="summary"></p>
-      <ul id="area-list" class="cards"></ul>
+      <div class="areas-heading">
+        <div><p class="eyebrow">PROVO, UTAH / CAMPUS PARKING</p><h2 id="h-areas" tabindex="-1">Parking around BYU<span>.</span></h2><p id="areas-summary" class="summary"></p></div>
+        <a class="permit-link" href="#find">Change permit <span aria-hidden="true">↗</span></a>
+      </div>
+      <div class="parking-workspace">
+        <div class="map-panel">
+          <div class="map-toolbar"><h3>Explore campus</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button></div></div>
+          <div class="map-stage">
+            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU parking map" aria-describedby="map-note"></div>
+            <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
+          </div>
+          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul></div>
+          <p id="map-note" class="map-note">Colors show permit categories, not open spaces. Tap a lot for its recorded rules; check posted signs.</p>
+        </div>
+        <aside class="parking-results" aria-labelledby="results-heading">
+          <section class="nearby-panel" aria-labelledby="nearby-heading">
+            <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
+            <p id="location-status" class="location-status" role="status">Use your location to find nearby mapped lots.</p>
+            <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
+            <div id="nearby-controls" hidden><label for="nearby-permit">Permit category</label><select id="nearby-permit"><option value="">All permit types</option></select><p class="nearby-note">Exact category match only; this does not check permit privileges or hours.</p></div>
+            <ul id="nearby-list" class="nearby-list"></ul>
+            <p id="nearby-empty" class="nearby-note" hidden></p>
+            <p class="nearby-note">Distances are straight-line estimates to lot centers. Open spaces and permission to park are not verified.</p>
+          </section>
+          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading">Parking areas</h3></div><span class="sample-label">Sample data</span></div>
+          <p class="results-note">These sample areas demonstrate permit checks. They are separate from the campus boundaries.</p>
+          <ul id="area-list" class="cards"></ul>
+        </aside>
+      </div>
     </section>
 
     <!-- Screen 3: Area details — plain-language rules -->
@@ -148,6 +175,7 @@
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
