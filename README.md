@@ -1,8 +1,12 @@
 # Provo Parking
 
+P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
+
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
 
 Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
+
+P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review → **Confirm & Start Timer** → [Parking timer](parking-timer.html). Serve the repository locally; no Supabase configuration is needed. The session is saved in this browser so you can return through **View parking timer** or refresh without resetting its timestamps. See [the P5 contract](docs/parking-timer-setup.md) and [P6 timer contract and sample states](docs/active-parking-timer.md). The existing Supabase My car timer remains available separately; these sessions do not sync with it or across devices.
 
 > Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
 
@@ -163,7 +167,7 @@ Testing note: the screen logic was checked in a headless browser against an in-m
 
 ### Map integration (PR #11)
 
-The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. Implementation is ready for teammate review; merge and live deployment verification are pending.
+The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. The team approved integration with merge commits to retain contributor history; see [integration verification](docs/integration-2026-11-01.md).
 
 ### Nearby lots with your location
 
