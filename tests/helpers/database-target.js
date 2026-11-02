@@ -8,3 +8,8 @@ export function assertDisposableTestTarget(connectionString) {
   if (url.pathname !== "/provo_parking_p7_test") throw new Error("Use the exact disposable test database name.");
   if (url.search || url.hash) throw new Error("Database test URIs must not contain query overrides or fragments.");
 }
+
+export function isolatedPostgresEnvironment(environment) {
+  // PGHOSTADDR/PGSERVICE can redirect libpq even when the URI looks local.
+  return Object.fromEntries(Object.entries(environment).filter(([name]) => !name.toUpperCase().startsWith("PG")));
+}

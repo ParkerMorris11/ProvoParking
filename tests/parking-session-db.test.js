@@ -2,15 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { assertDisposableTestTarget } from "./helpers/database-target.js";
+import { assertDisposableTestTarget, isolatedPostgresEnvironment } from "./helpers/database-target.js";
 import { sessionFromRow, getSessionTiming } from "../js/domain/session-contract.js";
 
 const database = process.env.P7_TEST_DATABASE_URL;
+const postgresEnvironment = isolatedPostgresEnvironment(process.env);
 const ownerA = "11111111-1111-4111-8111-111111111111";
 const ownerB = "22222222-2222-4222-8222-222222222222";
 const migration = new URL("../supabase/migrations/20261029224555_parking_session_persistence.sql", import.meta.url);
 function query(sql) {
-  const result = spawnSync(process.env.P7_PSQL || "psql", ["-X", "-q", "-t", "-A", "-v", "ON_ERROR_STOP=1", "-d", database, "-c", sql], { encoding: "utf8" });
+  const result = spawnSync(process.env.P7_PSQL || "psql", ["-X", "-q", "-t", "-A", "-v", "ON_ERROR_STOP=1", "-d", database, "-c", sql], { encoding: "utf8", env: postgresEnvironment });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(result.stderr.trim());
   return result.stdout.trim();
@@ -20,7 +21,7 @@ const createSql = "select row_to_json(s) from public.p7_create_parking_session('
 function concurrentQuery(owner, sql) {
   return new Promise((resolve, reject) => {
     const child = spawn(process.env.P7_PSQL || "psql", ["-X", "-q", "-t", "-A", "-v", "ON_ERROR_STOP=1", "-d", database,
-      "-c", `BEGIN; SET LOCAL ROLE authenticated; SET LOCAL request.jwt.claims = '{"sub":"${owner}"}'; ${sql}; COMMIT;`]);
+      "-c", `BEGIN; SET LOCAL ROLE authenticated; SET LOCAL request.jwt.claims = '{"sub":"${owner}"}'; ${sql}; COMMIT;`], { env: postgresEnvironment });
     let output = "", error = "";
     child.stdout.on("data", data => output += data);
     child.stderr.on("data", data => error += data);

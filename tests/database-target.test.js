@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertDisposableTestTarget } from "./helpers/database-target.js";
+import { assertDisposableTestTarget, isolatedPostgresEnvironment } from "./helpers/database-target.js";
 
 test("disposable database target accepts explicit local PostgreSQL URIs", () => {
   for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
@@ -17,4 +17,8 @@ test("libpq host, hostaddr, dbname and service overrides are rejected before con
   for (const suffix of ["?host=remote.example", "?hostaddr=192.0.2.1", "?dbname=postgres", "?service=production", "?host=%2Ftmp%2Fsocket", "#fragment"]) {
     assert.throws(() => assertDisposableTestTarget(base + suffix), /overrides or fragments/);
   }
+});
+test("disposable fixtures do not inherit libpq connection overrides", () => {
+  const clean = isolatedPostgresEnvironment({ PATH: '/bin', P7_PSQL: '/bin/psql', PGHOSTADDR: '192.0.2.1', PGSERVICE: 'production', PGDATABASE: 'postgres', PGOPTIONS: '-c role=other' });
+  assert.deepEqual(clean, { PATH: '/bin', P7_PSQL: '/bin/psql' });
 });
