@@ -160,3 +160,7 @@ The working button is the **heart (Save to favorites)** on each parking area.
 Run `npm test` for the eligibility unit tests (Node 20+, nothing to install).
 
 Testing note: the screen logic was checked in a headless browser against an in-memory stand-in for Supabase seeded with the sample rows. It has **not** yet been run against the team's real Supabase project, so do the steps above once after running the policies.
+
+### Map integration (PR #11)
+
+The Areas map combines a BYU boundary snapshot with existing database markers and links to area details. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. Implementation is ready for teammate review; merge and live deployment verification are pending.

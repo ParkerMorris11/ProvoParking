@@ -11,7 +11,6 @@ import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea } from "./pages/car.js";
-import { initMap, refreshMap } from "./pages/map.js";
 
 // Clicks shared across pages: hearts, tabs, "Park here".
 document.addEventListener("click", (e) => {
@@ -28,7 +27,7 @@ document.addEventListener("click", (e) => {
 
 initFind({ go });
 initCar();
-window.addEventListener("hashchange", () => { showView(); refreshMap(); });
+window.addEventListener("hashchange", showView);
 
 (async function init() {
   const cfg = window.APP_CONFIG;
@@ -42,7 +41,6 @@ window.addEventListener("hashchange", () => { showView(); refreshMap(); });
     const saved = loadSavedPermit();
     if (saved && state.permits.some((p) => p.permit_id === saved)) state.find.permitId = saved;
     renderFind();
-    await initMap({ areas: state.areas });
     setStatus(`${state.areas.length} parking areas loaded. Showing data for the demo user.`);
     showView();
   } catch (err) {
