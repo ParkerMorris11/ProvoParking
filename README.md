@@ -1,6 +1,6 @@
 # Provo Parking
 
-**Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in).
+**Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
 
 P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
 
@@ -165,7 +165,7 @@ Existing team database: if parking areas load but Find has no permit choices, se
 2. Open **SQL Editor**, paste all of [`supabase/schema.sql`](supabase/schema.sql), and click **Run**. This creates 8 tables with sample rows.
 3. In a new query, paste [`supabase/policies.sql`](supabase/policies.sql) and click **Run**.
    - Then run every file in [`supabase/migrations/`](supabase/migrations/) in name order. The last one, [`20261102040636_account_sign_in.sql`](supabase/migrations/20261102040636_account_sign_in.sql), turns on accounts.
-   - In **Authentication > Sign In / Providers**, turn **Confirm email** off for the class demo (Supabase's free email allows only 2 emails per hour), and in **Authentication > URL Configuration** set the Site URL to the live site.
+   - Email confirmation remains enabled. Finish the email sender and production Site URL / redirect configuration with the teammate responsible for sign-in before testing public sign-ups. The UI supports confirmation links; do not disable confirmation as an automatic merge step.
    - If you already ran an older `policies.sql` before the Find, Area details, and My car screens existed, run [`supabase/2026-10-14-screens-policies.sql`](supabase/2026-10-14-screens-policies.sql) instead. Without it those screens show a permissions error.
 4. Check: **Table Editor** should list 8 tables, each with rows.
 5. Go to **Project Settings > API** and copy the **Project URL** and the **anon / publishable key**.

@@ -13,7 +13,7 @@ import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea, stopTimer } from "./pages/car.js";
-import { initAuth, showAuth, hideAuth, requireAccount } from "./pages/auth.js";
+import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
@@ -45,28 +45,35 @@ function choosePermit() {
   else state.find.permitId = null;
 }
 
-async function enterApp(note) {
+async function enterApp(note, version = state.authVersion) {
   hideAuth();
   renderAccountBar();
   setStatus("Loading parking areas…");
   try {
-    await loadData();
+    if (!await loadData() || version !== state.authVersion) return;
     choosePermit();
     renderFind();
     const who = state.user ? `Signed in as ${state.user.displayName}.` : "Browsing as a guest. Create an account to save favorites and start a parking timer.";
     setStatus(`${note ? `${note} ` : ""}${state.areas.length} parking areas loaded. ${who}`);
     showView();
   } catch (err) {
+    if (version !== state.authVersion) return;
     console.error(err);
     setStatus(`Could not load parking data: ${err.message}. Refresh to try again.`, true);
   }
 }
 
 async function onSignedIn(session, note = "") {
+  clearPersonalData();
+  const version = state.authVersion;
+  state.authId = session.user.id;
+  showAuth("login", "Loading your account…");
   try {
     const profile = await auth.loadProfile(session.user.id);
+    if (version !== state.authVersion) return;
     if (!profile) {
       await auth.logOut().catch(() => {});
+      if (version !== state.authVersion) return;
       showAuth("login", "Your account was created, but its profile isn't set up yet, so it can't be used. Please tell the team; the account database update may be missing.", true);
       return;
     }
@@ -74,14 +81,16 @@ async function onSignedIn(session, note = "") {
     state.guest = false;
     remember(GUEST_KEY, null);
     remember(RETURNING_KEY, "1");
-    await enterApp(note);
+    await enterApp(note, version);
   } catch (err) {
+    if (version !== state.authVersion) return;
     console.error(err);
     showAuth("login", `Could not load your account. ${describeAuthError(err, { action: "login" }).message}`, true);
   }
 }
 
 async function onGuest() {
+  clearPersonalData();
   state.user = null;
   state.guest = true;
   remember(GUEST_KEY, "1");
@@ -89,6 +98,11 @@ async function onGuest() {
 }
 
 function clearPersonalData() {
+  state.authVersion++;
+  state.authId = null;
+  clearPasswords();
+  $("car-form").reset();
+  $("car-active").innerHTML = "";
   state.user = null;
   state.guest = false;
   state.favoriteIds = new Set();
@@ -99,8 +113,13 @@ function clearPersonalData() {
 
 async function signOut() {
   signingOut = true;
-  try { await auth.logOut(); } catch (err) { console.error(err); } // the local session is cleared either way
-  signingOut = false;
+  clearPersonalData();
+  showAuth("login", "Logging out…");
+  const version = state.authVersion;
+  $("auth-screen").inert = true;
+  try { await auth.logOut(); } catch (err) { console.error(err); }
+  finally { $("auth-screen").inert = false; signingOut = false; }
+  if (version !== state.authVersion) return;
   clearPersonalData();
   showAuth("login", "You're logged out.");
 }
@@ -150,10 +169,19 @@ window.addEventListener("hashchange", showView);
     },
   });
 
-  auth.onAuthChange((event) => {
+  auth.onAuthChange((event, changedSession) => {
+    if (event === "SIGNED_IN" && changedSession?.user.id !== state.authId) {
+      clearPersonalData();
+      const version = state.authVersion;
+      showAuth("login", "Loading your account…");
+      // Defer Supabase calls until its auth callback releases the session lock.
+      setTimeout(() => {
+        if (version === state.authVersion && state.authId !== changedSession.user.id) void onSignedIn(changedSession);
+      }, 0);
+    }
     if (event === "PASSWORD_RECOVERY") showAuth("newpass");
     // Signed out somewhere else (another tab, or the session could not be renewed).
-    if (event === "SIGNED_OUT" && state.user && !signingOut) {
+    if (event === "SIGNED_OUT" && !signingOut) {
       clearPersonalData();
       showAuth("login", "Your session ended. Please log in again.");
     }

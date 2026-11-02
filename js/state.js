@@ -4,6 +4,8 @@ import { nowHHMM } from "./lib/format.js";
 export const state = {
   db: null,               // Supabase client, set in main.js
   user: null,             // signed-in profile { userId, displayName, email, permitIds }, or null
+  authId: null,
+  authVersion: 0, // invalidates requests from a previous account
   guest: false,           // true after "Continue as guest"
   areas: [],
   permits: [],

@@ -1,6 +1,7 @@
 // Page: sign up / log in. Shown instead of the app until someone signs in or continues as a guest.
 //   Sign up step 1: email + password. Step 2: name, "Do you have a parking permit?", permit search.
 //   Log in: email, password, Keep me signed in, Forgot password. Also: reset and new-password forms.
+import { pauseMapLocation } from "./map.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { escapeHtml } from "../lib/format.js";
@@ -22,6 +23,7 @@ let hooks = { onSignedIn: async () => {}, onGuest: async () => {}, authStorage: 
 
 // ---------- showing and hiding ----------
 export function showAuth(view, message = "", isError = false) {
+  pauseMapLocation();
   for (const id of APP_CHROME) $(id).hidden = true;
   $("auth-screen").hidden = false;
   $("auth-screen").dataset.view = view;
@@ -36,6 +38,17 @@ export function showAuth(view, message = "", isError = false) {
   const first = $(VIEWS[view].form).querySelector("input:not([type=checkbox]):not([type=radio])");
   if (first && !first.value) first.focus();
   window.scrollTo(0, 0);
+}
+
+export function clearPasswords() {
+  for (const id of ["su-password", "li-password", "np-password"]) {
+    $(id).value = "";
+    $(id).type = "password";
+  }
+  document.querySelectorAll("#auth-screen .pw-toggle").forEach(button => {
+    button.textContent = "Show";
+    button.setAttribute("aria-label", "Show password");
+  });
 }
 
 export function hideAuth() {
@@ -242,6 +255,7 @@ async function onSignUpStep2(e) {
       displayName: name,
       permitIds: hasPermit ? [...selectedIds] : [],
     });
+    clearPasswords();
     if (session) {
       startAtHome();
       await hooks.onSignedIn(session, `Welcome, ${name}! Your account is ready.`);
@@ -307,6 +321,7 @@ async function onNewPassword(e) {
   busy(button, true, "Saving…");
   try {
     await auth.setNewPassword($("np-password").value);
+    clearPasswords();
     const session = await auth.getCurrentSession();
     if (session) { startAtHome(); await hooks.onSignedIn(session, "Password updated."); }
     else showAuth("login", "Password updated. Log in with your new password.");

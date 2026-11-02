@@ -5,6 +5,7 @@ import { state } from "../state.js";
 
 export async function loadData() {
   const db = state.db;
+  const version = state.authVersion;
   const userId = state.user?.userId ?? null;
   const none = Promise.resolve({ data: [], error: null });
   const [areasRes, favRes, permitRes, ruleRes, towRes, sessRes] = await Promise.all([
@@ -15,6 +16,7 @@ export async function loadData() {
     db.from("tow_company").select("tow_company_id, company_name, phone, is_sample_data"),
     userId ? db.from("parking_session").select("*").eq("user_id", userId).eq("status", "active").order("started_at", { ascending: false }).limit(1) : none,
   ]);
+  if (version !== state.authVersion) return false;
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes]) if (res.error) throw res.error;
 
   state.areas = areasRes.data;
@@ -27,6 +29,7 @@ export async function loadData() {
     state.rulesByArea.get(r.area_id).push(r);
   }
   state.activeSession = sessRes.data[0] || null;
+  return true;
 }
 
 // Public reference data only, for the sign-up permit search before anyone is signed in.
