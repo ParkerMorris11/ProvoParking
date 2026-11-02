@@ -1,5 +1,11 @@
 import { initParkingSetup } from "./pages/parking-setup.js";
+import { startLocalTimer } from "./lib/timer-storage.js";
 
-// Replace these options to supply a map location and connect the future active timer.
-// No config.js, database, authentication, map, or active timer is needed by this demo.
-initParkingSetup(document.querySelector("#parking-setup"));
+// P5 still owns preferences/review; P6 starts only on final confirmation.
+// No config.js, database, authentication, or map is needed.
+initParkingSetup(document.querySelector("#parking-setup"), {
+  onConfirm(preferences) {
+    startLocalTimer(preferences);
+    location.assign("parking-timer.html");
+  },
+});
