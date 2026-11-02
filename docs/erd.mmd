@@ -20,6 +20,7 @@ erDiagram
 
     APP_USER {
         int user_id PK
+        uuid auth_id "Supabase Auth account (unique)"
         varchar display_name
         varchar email
         boolean location_permission

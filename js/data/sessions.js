@@ -1,9 +1,9 @@
 // parking_session reads and writes (the My car timer).
-import { state, DEMO_USER_ID } from "../state.js";
+import { state, currentUserId } from "../state.js";
 
 export async function startSession({ areaId, minutes, reminderMinutes, carNote }) {
   const row = {
-    user_id: DEMO_USER_ID,
+    user_id: currentUserId(),
     area_id: areaId,
     planned_minutes: minutes,
     leave_by: new Date(Date.now() + minutes * 60000).toISOString(),

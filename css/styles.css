@@ -220,3 +220,87 @@ body:has(#view-areas:not([hidden])) .tab[aria-current="page"] { background: #e0e
   .map-reset, .location-button { padding: 0 9px; font-size: .68rem; min-height: 40px; }
   .nearby-panel { padding: 18px; }
 }
+
+/* ---- Account: header bar ---- */
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.account-bar { display: flex; align-items: center; gap: 10px; font-size: .9rem; min-width: 0; }
+.account-name { max-width: 45vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .9; }
+.account-action { min-height: 36px; padding: 0 12px; border: 1px solid currentColor; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+.account-action:focus-visible { outline: 3px solid #2b6cb0; outline-offset: 2px; }
+.app-loading { text-align: center; color: var(--muted); padding: 64px 16px; }
+
+/* ---- Account: sign up / log in screen (everything scoped to .auth) ---- */
+.auth {
+  --ink: #23262f; --soft: #5f6672; --line: #d9dde3; --tint: #eef3f9; --focus: #2b6cb0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink); min-height: 100vh; padding: 24px 16px 48px;
+}
+.auth .auth-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 24px; font-weight: 600; font-size: 1.35rem; }
+.auth .brand-mark { width: 34px; height: 34px; color: var(--brand); flex: none; }
+.auth .auth-card { max-width: 440px; margin: 0 auto; background: var(--card); border: 1px solid #e3e6ea; border-radius: 10px; padding: 32px 22px; }
+.auth .auth-eyebrow { margin: 0; color: var(--soft); font-size: 1rem; }
+.auth h2 { margin: 4px 0 28px; font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+.auth .auth-msg { margin: -12px 0 20px; padding: 10px 12px; border-radius: 8px; background: #e8f1fb; color: var(--brand); border: 1px solid #b9d2ee; font-size: .92rem; }
+.auth .auth-msg.error { background: #fde8eb; color: #8c0b20; border-color: #f2b8c1; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.auth .field { margin: 0 0 18px; padding: 0; border: 0; min-width: 0; }
+.auth .field > label:not(.visually-hidden), .auth .field > legend { display: block; font-weight: 500; margin-bottom: 8px; padding: 0; }
+.auth .field input[type="text"], .auth .field input[type="email"], .auth .field input[type="password"] {
+  width: 100%; min-height: 52px; padding: 12px 16px; font: inherit; font-size: 1rem;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink);
+}
+.auth .field input::placeholder { color: #7d838d; }
+.auth .field input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; border-color: var(--focus); }
+.auth .field input[aria-invalid="true"] { border-color: var(--heart); }
+.auth .auth-hint { margin: 8px 0 0; font-size: .85rem; color: var(--soft); }
+.auth .field-error { margin: 6px 0 0; font-size: .86rem; color: var(--heart); font-weight: 500; }
+.auth .field-error:empty { display: none; }
+.auth .pw-wrap { position: relative; }
+.auth .pw-wrap input { padding-right: 72px; }
+.auth .pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: var(--brand); font: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; border-radius: 6px; }
+.auth .auth-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: -4px 0 28px; }
+.auth .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: .95rem; }
+.auth .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--brand); }
+.auth .auth-submit { width: 100%; min-height: 52px; margin-top: 6px; border: 0; border-radius: 8px; background: var(--brand); color: #fff; font: inherit; font-size: 1.05rem; font-weight: 500; cursor: pointer; }
+.auth .auth-submit:hover { background: #00264d; }
+.auth .auth-submit:disabled { opacity: .7; cursor: wait; }
+.auth .auth-submit:focus-visible, .auth .auth-link:focus-visible, .auth .pw-toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.auth .auth-switch { text-align: center; margin: 20px 0 0; color: var(--soft); font-size: .95rem; }
+.auth .auth-switch.subtle { margin-top: 10px; }
+.auth .auth-link { border: 0; background: none; padding: 4px 2px; color: var(--brand); font: inherit; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.auth .auth-link.quiet { color: var(--soft); font-weight: 400; }
+.auth .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.auth .choice { position: relative; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; font-weight: 500; background: #fff; }
+.auth .choice input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.auth .choice:hover { border-color: #9aa6b8; }
+.auth .choice:has(input:checked) { border-color: var(--brand); background: var(--tint); color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.auth .choice:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.auth .combo { position: relative; }
+.auth .combo-icon { position: absolute; left: 14px; top: 26px; transform: translateY(-50%); width: 18px; height: 18px; color: var(--soft); pointer-events: none; }
+.auth .combo input[type="text"] { padding-left: 42px; padding-right: 48px; }
+.auth .combo-toggle { position: absolute; right: 6px; top: 26px; transform: translateY(-50%); width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--soft); cursor: pointer; }
+.auth .combo-toggle svg { width: 20px; height: 20px; }
+.auth .combo-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px); list-style: none; margin: 0; padding: 6px; max-height: 300px; overflow-y: auto; background: #fff; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 32px rgba(15, 30, 55, .14); }
+.auth .combo-option { display: flex; align-items: flex-start; gap: 12px; padding: 10px; border-radius: 8px; cursor: pointer; }
+.auth .combo-option.active, .auth .combo-option:hover { background: var(--tint); }
+.auth .opt-text { display: grid; gap: 2px; min-width: 0; }
+.auth .opt-name { font-weight: 500; }
+.auth .opt-desc { font-size: .82rem; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth .combo-empty { padding: 12px 10px; color: var(--soft); font-size: .92rem; }
+.auth .code-badge { flex: none; display: inline-grid; place-items: center; min-width: 2.4em; height: 1.6em; margin-top: 1px; padding: 0 6px; border-radius: 6px; background: var(--brand); color: #fff; font-size: .78rem; font-weight: 600; letter-spacing: .02em; }
+.auth .chips { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.auth .chips:empty { display: none; }
+.auth .chip { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 4px 4px 6px; border: 1px solid #b9cbe0; border-radius: 999px; background: var(--tint); font-size: .9rem; }
+.auth .chip .code-badge { margin: 0; }
+.auth .chip-remove { width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--brand); font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.auth .chip-remove:hover { background: #dbe6f2; }
+.auth .chip-remove:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+@media (min-width: 760px) {
+  .auth { padding: 40px 24px 64px; }
+  .auth .auth-card { max-width: 520px; padding: 56px 64px 48px; }
+  .auth h2 { font-size: 2.4rem; margin-bottom: 36px; }
+}
+@media (min-width: 1000px) {
+  .auth { position: relative; padding-top: 100px; }
+  .auth .auth-brand { position: absolute; top: 36px; left: 48px; margin: 0; }
+}

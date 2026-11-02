@@ -103,22 +103,29 @@ export function preselectArea(areaId) {
   updateCarWarning();
 }
 
+let requireAccount = () => true;
+
 async function onStart(e) {
   e.preventDefault();
+  if (!requireAccount("Create a free account to start a parking timer and save where you parked.")) return;
+  const version = state.authVersion;
   const btn = e.submitter;
   btn.disabled = true;
   try {
-    state.activeSession = await sessions.startSession({
+    const created = await sessions.startSession({
       areaId: Number($("car-area").value),
       minutes: Number($("car-minutes").value),
       reminderMinutes: Number($("car-reminder").value),
       carNote: $("car-note").value.trim(),
     });
+    if (version !== state.authVersion) return;
+    state.activeSession = created;
     $("car-note").value = "";
     setStatus("Parking timer started.");
     renderCar();
     $("h-car").focus();
   } catch (err) {
+    if (version !== state.authVersion) return;
     console.error(err);
     setStatus(`Could not start the timer: ${err.message}`, true);
   } finally {
@@ -127,15 +134,18 @@ async function onStart(e) {
 }
 
 async function onEnd(btn) {
+  const version = state.authVersion;
   btn.disabled = true;
   try {
     const expired = Date.now() > new Date(state.activeSession.leave_by).getTime();
     await sessions.endSession(state.activeSession, expired);
+    if (version !== state.authVersion) return;
     state.activeSession = null;
     setStatus(expired ? "Timer ended. You were over your planned time." : "Timer ended. Safe travels!");
     renderCar();
     $("h-car").focus();
   } catch (err) {
+    if (version !== state.authVersion) return;
     console.error(err);
     setStatus(`Could not end the timer: ${err.message}`, true);
     btn.disabled = false;
@@ -144,12 +154,16 @@ async function onEnd(btn) {
 
 async function onSaveNote(e) {
   e.preventDefault();
+  const version = state.authVersion;
   const btn = e.submitter;
   btn.disabled = true;
   try {
-    state.activeSession = await sessions.saveCarNote(state.activeSession, $("note-edit").value.trim() || null);
+    const saved = await sessions.saveCarNote(state.activeSession, $("note-edit").value.trim() || null);
+    if (version !== state.authVersion) return;
+    state.activeSession = saved;
     setStatus("Saved your car note.");
   } catch (err) {
+    if (version !== state.authVersion) return;
     console.error(err);
     setStatus(`Could not save the note: ${err.message}`, true);
   } finally {
@@ -157,7 +171,8 @@ async function onSaveNote(e) {
   }
 }
 
-export function initCar() {
+export function initCar(options = {}) {
+  if (options.requireAccount) requireAccount = options.requireAccount;
   $("car-area").addEventListener("change", updateCarWarning);
   $("car-minutes").addEventListener("change", updateCarWarning);
   document.addEventListener("submit", (e) => {

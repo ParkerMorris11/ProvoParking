@@ -1,12 +1,12 @@
 // Shared app state. Pages read from here; data/*.js and pages update it.
 import { nowHHMM } from "./lib/format.js";
 
-// No login yet: the app acts as the demo user seeded in schema.sql (Emma Carter, user_id 1).
-// Sprint 2 replaces this with the signed-in Supabase Auth user.
-export const DEMO_USER_ID = 1;
-
 export const state = {
   db: null,               // Supabase client, set in main.js
+  user: null,             // signed-in profile { userId, displayName, email, permitIds }, or null
+  authId: null,
+  authVersion: 0, // invalidates requests from a previous account
+  guest: false,           // true after "Continue as guest"
   areas: [],
   permits: [],
   rulesByArea: new Map(), // area_id -> parking_rule rows
@@ -20,4 +20,10 @@ export const state = {
 
 export function rulesFor(areaId) {
   return state.rulesByArea.get(areaId) || [];
+}
+
+// The signed-in user's app_user.user_id. Saving personal data requires an account.
+export function currentUserId() {
+  if (!state.user) throw new Error("Log in to save this.");
+  return state.user.userId;
 }
