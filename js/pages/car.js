@@ -103,8 +103,11 @@ export function preselectArea(areaId) {
   updateCarWarning();
 }
 
+let requireAccount = () => true;
+
 async function onStart(e) {
   e.preventDefault();
+  if (!requireAccount("Create a free account to start a parking timer and save where you parked.")) return;
   const btn = e.submitter;
   btn.disabled = true;
   try {
@@ -157,7 +160,8 @@ async function onSaveNote(e) {
   }
 }
 
-export function initCar() {
+export function initCar(options = {}) {
+  if (options.requireAccount) requireAccount = options.requireAccount;
   $("car-area").addEventListener("change", updateCarWarning);
   $("car-minutes").addEventListener("change", updateCarWarning);
   document.addEventListener("submit", (e) => {

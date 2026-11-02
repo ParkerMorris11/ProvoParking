@@ -6,15 +6,149 @@
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="top">
-    <h1>Provo Parking</h1>
+  <p id="loading" class="app-loading" role="status">Loading…</p>
+
+  <!-- Sign up / log in: shown first until someone signs in or continues as a guest -->
+  <section id="auth-screen" class="auth" aria-labelledby="auth-title" hidden>
+    <div class="auth-brand">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/>
+        <path d="M12 23V9h5.2a4.4 4.4 0 0 1 0 8.8H12" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Provo Parking</span>
+    </div>
+
+    <div class="auth-card">
+      <p class="auth-eyebrow" id="auth-eyebrow">Please enter your details</p>
+      <h2 id="auth-title">Welcome back</h2>
+      <p id="auth-msg" class="auth-msg" role="status" aria-live="polite" hidden></p>
+
+      <!-- Sign up, step 1: email + password -->
+      <form id="signup-form" class="auth-form" novalidate hidden>
+        <div class="field">
+          <label class="visually-hidden" for="su-email">Email address</label>
+          <input id="su-email" type="email" autocomplete="email" required placeholder="Email address">
+          <p class="field-error" id="su-email-err"></p>
+        </div>
+        <div class="field">
+          <label class="visually-hidden" for="su-password">Password</label>
+          <div class="pw-wrap">
+            <input id="su-password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required placeholder="Password (8+ characters)">
+            <button type="button" class="pw-toggle" data-for="su-password" aria-label="Show password">Show</button>
+          </div>
+          <p class="field-error" id="su-password-err"></p>
+        </div>
+        <button type="submit" class="auth-submit" id="su-next">Continue</button>
+        <p class="auth-switch">Already have an account? <button type="button" class="auth-link" data-auth-go="login">Log in</button></p>
+        <p class="auth-switch subtle"><button type="button" class="auth-link quiet" data-auth-go="guest">Continue as guest</button></p>
+      </form>
+
+      <!-- Sign up, step 2: name + permit -->
+      <form id="permit-form" class="auth-form" novalidate hidden>
+        <div class="field">
+          <label for="su-name">What should we call you?</label>
+          <input id="su-name" type="text" autocomplete="name" maxlength="80" required placeholder="Your name">
+          <p class="field-error" id="su-name-err"></p>
+        </div>
+
+        <fieldset class="field">
+          <legend id="su-has-permit">Do you have a parking permit?</legend>
+          <div class="choice-row" role="radiogroup" aria-labelledby="su-has-permit">
+            <label class="choice"><input type="radio" name="has-permit" value="yes" id="su-has-permit-yes"><span>Yes</span></label>
+            <label class="choice"><input type="radio" name="has-permit" value="no" id="su-has-permit-no"><span>No</span></label>
+          </div>
+          <p class="field-error" id="su-has-permit-err"></p>
+        </fieldset>
+
+        <div class="field" id="permit-picker" hidden>
+          <label for="permit-search">Find your permit</label>
+          <div class="combo">
+            <svg class="combo-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13 13l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input id="permit-search" type="text" role="combobox" autocomplete="off"
+                   aria-expanded="false" aria-controls="permit-options" aria-autocomplete="list"
+                   placeholder="Search, e.g. Y or graduate">
+            <button type="button" class="combo-toggle" id="permit-toggle" aria-label="Show all permits" tabindex="-1">
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <ul id="permit-options" class="combo-list" role="listbox" aria-label="Permits" hidden></ul>
+          </div>
+          <ul id="permit-chips" class="chips" aria-label="Selected permits"></ul>
+          <p class="auth-hint">Have more than one? Add each. We don't verify permits with BYU or Provo.</p>
+          <p class="field-error" id="permit-search-err"></p>
+        </div>
+
+        <button type="submit" class="auth-submit" id="su-submit">Create account</button>
+        <p class="auth-switch"><button type="button" class="auth-link" data-auth-go="signup">← Back</button></p>
+      </form>
+
+      <!-- Log in -->
+      <form id="login-form" class="auth-form" novalidate hidden>
+        <div class="field">
+          <label class="visually-hidden" for="li-email">Email address</label>
+          <input id="li-email" type="email" autocomplete="email" required placeholder="Email address">
+          <p class="field-error" id="li-email-err"></p>
+        </div>
+        <div class="field">
+          <label class="visually-hidden" for="li-password">Password</label>
+          <div class="pw-wrap">
+            <input id="li-password" type="password" autocomplete="current-password" required placeholder="Password">
+            <button type="button" class="pw-toggle" data-for="li-password" aria-label="Show password">Show</button>
+          </div>
+          <p class="field-error" id="li-password-err"></p>
+        </div>
+        <div class="auth-row">
+          <label class="check"><input type="checkbox" id="li-remember" checked> Keep me signed in</label>
+          <button type="button" class="auth-link" data-auth-go="forgot">Forgot password</button>
+        </div>
+        <button type="submit" class="auth-submit" id="li-submit">Log in</button>
+        <p class="auth-switch">Don't have an account? <button type="button" class="auth-link" data-auth-go="signup">Sign up</button></p>
+        <p class="auth-switch subtle"><button type="button" class="auth-link quiet" data-auth-go="guest">Continue as guest</button></p>
+      </form>
+
+      <!-- Forgot password -->
+      <form id="forgot-form" class="auth-form" novalidate hidden>
+        <div class="field">
+          <label class="visually-hidden" for="fp-email">Email address</label>
+          <input id="fp-email" type="email" autocomplete="email" required placeholder="Email address">
+          <p class="field-error" id="fp-email-err"></p>
+        </div>
+        <button type="submit" class="auth-submit" id="fp-submit">Send reset link</button>
+        <p class="auth-switch"><button type="button" class="auth-link" data-auth-go="login">← Back to log in</button></p>
+      </form>
+
+      <!-- Choose a new password (after opening the reset email link) -->
+      <form id="newpass-form" class="auth-form" novalidate hidden>
+        <div class="field">
+          <label class="visually-hidden" for="np-password">New password</label>
+          <div class="pw-wrap">
+            <input id="np-password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required placeholder="New password (8+ characters)">
+            <button type="button" class="pw-toggle" data-for="np-password" aria-label="Show password">Show</button>
+          </div>
+          <p class="field-error" id="np-password-err"></p>
+        </div>
+        <button type="submit" class="auth-submit" id="np-submit">Save new password</button>
+      </form>
+    </div>
+  </section>
+
+  <header class="top" id="app-header" hidden>
+    <div class="top-row">
+      <h1>Provo Parking</h1>
+      <div class="account-bar">
+        <span id="account-name" class="account-name"></span>
+        <button type="button" id="account-action" class="account-action"></button>
+      </div>
+    </div>
     <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
   </header>
 
-  <nav class="tabs" aria-label="Screens">
+  <nav class="tabs" id="app-nav" aria-label="Screens" hidden>
     <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
     <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
     <button type="button" class="tab" id="tab-favorites" data-view="favorites">
@@ -24,7 +158,7 @@
     <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
   </nav>
 
-  <main>
+  <main id="app-main" hidden>
     <p id="status" class="status" role="status" aria-live="polite">Loading parking areas…</p>
 
     <!-- Screen 1: Find — pick permit + arrival time -->

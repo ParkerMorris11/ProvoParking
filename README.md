@@ -1,5 +1,7 @@
 # Provo Parking
 
+**Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in).
+
 P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
 
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
@@ -11,12 +13,13 @@ P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review �
 > Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
 
 ## App Summary
-Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version has five screens (see below). Favorites and parking timers are stored in a real database so they survive a refresh. Eligibility is based on the permit the user selects, not on a verified BYU account.
+Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version has a sign-up/log-in screen and five app screens (see below). Each person has their own account; their permits, favorites and parking timers are stored in a real database so they survive a refresh and follow them to another device. Eligibility is based on the permit the user selects, not on a verified BYU account.
 
 ## Screens
 | # | Screen | What it does | Data it uses |
 |---|---|---|---|
-| 1 | **Find** | Pick your permit, arrival day, and arrival time | `permit` (your permit choice is remembered in the browser) |
+| 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
+| 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit) | `permit`, `user_permit` |
 | 2 | **Areas** | Parking areas sorted so the ones you can use come first; each shows ✓ / ! / ✕ eligibility in text, plus an availability estimate | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart | `favorite_area` |
@@ -62,6 +65,29 @@ The layout is a single centered column, so on a desktop browser it looks like th
 
 <img src="docs/screens/desktop-5-help.png" alt="5. Help screen on desktop" width="640">
 
+
+## Accounts and sign-in
+
+| Situation | What the person sees |
+|---|---|
+| First visit on a device | **Create your account**, step 1: email + password. Step 2: name, then *Do you have a parking permit?* **Yes** opens a search box over the `permit` table (type "Y", "grad", "Wymount"); a person with several permits adds each one |
+| Comes back on the same device | Straight into the app, still signed in. supabase-js keeps the session in `localStorage` and renews it automatically |
+| *Keep me signed in* unchecked at log-in | The session is kept in `sessionStorage` and ends when the browser closes |
+| Logged out, or a device that signed in before | **Welcome back** (email, password, *Forgot password*) |
+| A different computer | No session there, so **Create your account** / **Log in** |
+| *Continue as guest* | Can browse areas and rules; tapping a heart or starting a timer asks them to create an account |
+
+**How it is wired**
+
+1. `js/pages/auth.js` validates the form (`js/domain/account.js`) and calls `js/data/auth.js`, which calls Supabase Auth `signUp` with the name and chosen `permit_id`s as user metadata.
+2. In the database, the `on_auth_user_created` trigger (`supabase/migrations/20261102040636_account_sign_in.sql`) creates the `app_user` row (linked by the new `app_user.auth_id`) and one `user_permit` row per permit. Bad metadata never blocks a sign-up.
+3. The browser loads the profile (`app_user` + `user_permit`), presets Find to the account's permit, and loads only that account's `favorite_area` and `parking_session` rows. `js/data/favorites.js` and `js/data/sessions.js` save with the signed-in `user_id`; row security rejects anything else.
+4. Errors from Supabase (wrong password, email already used, rate limits, no internet) are shown in plain language next to the right field.
+
+The migration also removes the old shared *demo user 1* browser policies, so visitors can no longer write data. Demo rows are kept.
+
+**Tests:** `tests/account.test.js` (form checks, error messages, permit search, *Keep me signed in*) and `tests/account-sign-in-db.test.js` (real PostgreSQL: trigger, permits, per-user row security for profiles, favorites and sessions, visitor access, and the team's `tests-reference-reads.sql`). The two database suites share one disposable database, so `npm test` runs test files one at a time.
+
 ## ERD
 ![Provo Parking ERD](docs/erd.png)
 
@@ -88,7 +114,7 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 
 **Why this fits our team:** Supabase gives us a real PostgreSQL database and an API on a free tier without anyone running or deploying a server. Everyone can see the tables in Supabase's Table Editor and all the code in GitHub. Supabase does not host web pages, so the frontend is hosted free on GitHub Pages from this same repo.
 
-**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The anon key is meant to be used in a browser; Row Level Security limits it to reading parking areas and managing the demo user's favorites.
+**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The anon key is meant to be used in a browser; Row Level Security lets visitors read only the public reference data (areas, permits, rules, tow companies); a signed-in user can also read and change only their own profile, permits, favorites and My car sessions.
 
 ## Project Structure
 ```
@@ -126,6 +152,8 @@ Existing team database: if parking areas load but Find has no permit choices, se
 1. Sign in at [supabase.com](https://supabase.com) and create a new project (free tier).
 2. Open **SQL Editor**, paste all of [`supabase/schema.sql`](supabase/schema.sql), and click **Run**. This creates 8 tables with sample rows.
 3. In a new query, paste [`supabase/policies.sql`](supabase/policies.sql) and click **Run**.
+   - Then run every file in [`supabase/migrations/`](supabase/migrations/) in name order. The last one, [`20261102040636_account_sign_in.sql`](supabase/migrations/20261102040636_account_sign_in.sql), turns on accounts.
+   - In **Authentication > Sign In / Providers**, turn **Confirm email** off for the class demo (Supabase's free email allows only 2 emails per hour), and in **Authentication > URL Configuration** set the Site URL to the live site.
    - If you already ran an older `policies.sql` before the Find, Area details, and My car screens existed, run [`supabase/2026-10-14-screens-policies.sql`](supabase/2026-10-14-screens-policies.sql) instead. Without it those screens show a permissions error.
 4. Check: **Table Editor** should list 8 tables, each with rows.
 5. Go to **Project Settings > API** and copy the **Project URL** and the **anon / publishable key**.
@@ -144,13 +172,14 @@ Existing team database: if parking areas load but Find has no permit choices, se
 ## Verifying the Vertical Slice
 The working button is the **heart (Save to favorites)** on each parking area.
 
-1. Open the app and note the number on the **Favorites** tab (it was 2 with the original sample data; it changes as people test).
+1. Open the app and create an account (or log in). The **Favorites** tab starts at 0 for a new account.
 2. Tap an empty heart, for example on **Sample downtown garage**. The heart fills, the message says "Saved Sample downtown garage to favorites," and the count goes up by 1.
    - Behind the scenes, `js/data/favorites.js` sends an insert request to Supabase, a row is added to `favorite_area`, and Supabase returns the saved row, which the page then displays.
 3. **Refresh the page.** The garage's heart is still filled and the count is unchanged.
 4. Open the **Favorites** tab: the garage is listed.
-5. Optional: in Supabase **Table Editor > favorite_area**, there is a new row with `user_id = 1` and the garage's `area_id`.
+5. Optional: in Supabase **Table Editor > favorite_area**, there is a new row with your `user_id` (find it in **app_user** by your email) and the garage's `area_id`.
 6. Tap the heart again to remove it; after a refresh it stays removed.
+7. Log out and create a second account: its favorites start empty, because each account only sees its own.
 
 ![Favorites slice after saving](docs/favorites-slice.png)
 
