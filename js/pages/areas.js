@@ -15,6 +15,6 @@ export function renderAreas() {
   const { permitId, day, time } = state.find;
   const permit = state.permits.find((p) => p.permit_id === permitId);
   $("areas-summary").textContent = permit
-    ? `Showing ${DAY_NAMES[day]} at ${fmtTime(time)} with the ${permit.permit_name} permit. Change this on the Find screen.`
-    : "No permit chosen yet. Go to Find to pick one and see which areas you can use.";
+    ? `${permit.permit_name} · ${DAY_NAMES[day]} at ${fmtTime(time)}`
+    : "Explore the campus map, then choose your permit to check parking rules.";
 }

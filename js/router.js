@@ -29,7 +29,7 @@ export function showView() {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
   renderViews();
-  if (state.currentView === "areas") void initMap({ areas: state.areas });
+  if (state.currentView === "areas") void initMap();
   if (state.currentView === "car") renderCar(); else stopTimer();
   document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   window.scrollTo(0, 0);

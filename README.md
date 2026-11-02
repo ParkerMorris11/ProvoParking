@@ -163,4 +163,4 @@ Testing note: the screen logic was checked in a headless browser against an in-m
 
 ### Map integration (PR #11)
 
-The Areas map combines a BYU boundary snapshot with existing database markers and links to area details. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. Implementation is ready for teammate review; merge and live deployment verification are pending.
+The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. Implementation is ready for teammate review; merge and live deployment verification are pending.

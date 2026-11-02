@@ -7,21 +7,28 @@ function setMapStatus(message) {
   if (el) el.textContent = message;
 }
 
-function coordinates(area) {
-  const lat = area.latitude;
-  const lng = area.longitude;
-  if (lat == null || lng == null || String(lat).trim() === "" || String(lng).trim() === "") return null;
-  const point = [Number(lat), Number(lng)];
-  return Number.isFinite(point[0]) && Math.abs(point[0]) <= 90 &&
-    Number.isFinite(point[1]) && Math.abs(point[1]) <= 180 ? point : null;
+const categories = [
+  { label: "Student · Y / G", color: "#3168dc", codes: ["Y", "G"] },
+  { label: "Employee · A", color: "#b07b23", codes: ["A"] },
+  { label: "Visitor · V", color: "#07859a", codes: ["V"] },
+  { label: "Free · U", color: "#16806b", codes: ["U"] },
+  { label: "Housing", color: "#8062b3", codes: ["B", "C", "D", "YM", "YV", "BCD"] },
+  { label: "Timed · T / EV", color: "#c2643a", codes: ["T", "EV"] },
+  { label: "Restricted / other", color: "#687589", codes: [] },
+];
+
+function boundaryStyle(feature) {
+  const permit = feature?.properties?.permit_typ;
+  const category = categories.find((item) => item.codes.includes(permit)) || categories.at(-1);
+  return { color: category.color, weight: 1.6, fillColor: category.color, fillOpacity: 0.24 };
 }
 
-export async function initMap({ areas }) {
+export async function initMap() {
   const el = document.querySelector("#parking-map");
   if (!el) return;
   if (!window.L) {
     el.hidden = true;
-    setMapStatus("Map unavailable. Use the parking list below to view rules and details.");
+    setMapStatus("Map unavailable. Use the parking list to view rules and details.");
     return;
   }
   if (map) { refreshMap(); return; }
@@ -33,17 +40,12 @@ export async function initMap({ areas }) {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     }).addTo(map);
 
-    // Show database markers immediately, even if the geometry request fails.
-    const markers = [];
-    for (const area of areas || []) {
-      const point = coordinates(area);
-      if (!point) continue;
-      const details = Number.isInteger(area.area_id) && area.area_id > 0
-        ? `<br><a href="#area/${area.area_id}">Rules &amp; details</a>` : "";
-      const marker = L.circleMarker(point, { radius: 7, color: "#17332b", fillColor: "#ffffff", fillOpacity: 0.95, weight: 3 })
-        .bindPopup(`<strong>${escapeHtml(area.area_name)}</strong><br>${escapeHtml(area.lot_code || "")}${details}`)
-        .addTo(map);
-      markers.push(marker);
+    const legend = document.getElementById("map-legend");
+    if (legend) legend.innerHTML = categories.map((item) => `<li><span class="legend-dot" style="background:${item.color}" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join("");
+    const reset = document.getElementById("map-reset");
+    if (reset) {
+      reset.disabled = false;
+      reset.addEventListener("click", () => map.setView([40.2518, -111.6493], 15));
     }
     refreshMap();
     try {
@@ -52,28 +54,23 @@ export async function initMap({ areas }) {
       const geometry = await response.json();
       if (geometry.type !== "FeatureCollection" || !Array.isArray(geometry.features)) throw new Error("Invalid boundary snapshot");
       L.geoJSON(geometry, {
-        style: (feature) => {
-          const permit = feature?.properties?.permit_typ || "";
-          const color = !permit || permit === "No BYU Parking" ? "#5d6878" : permit === "V" ? "#2563eb" : permit === "T" ? "#d97706" : permit === "R" ? "#7c3aed" : permit === "G" ? "#0891b2" : "#126b53";
-          return { color, weight: 2, fillColor: color, fillOpacity: 0.16 };
-        },
+        style: boundaryStyle,
         onEachFeature: (feature, layer) => {
           const p = feature.properties || {};
-          layer.bindPopup(`<strong>${escapeHtml(p.Lot_Type || "BYU parking area")}</strong><br>Permit category: ${escapeHtml(p.permit_typ || "Not recorded")}<br>${escapeHtml(p.Descriptio || "See posted signage.")}`);
+          layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Permit ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
         }
       }).addTo(map);
-      for (const marker of markers) marker.bringToFront();
-      setMapStatus(`${geometry.features.length} boundary shapes loaded. Outlined white dots are database areas; use the list below for permit and time results.`);
+      setMapStatus(`${geometry.features.length} mapped boundaries`);
     } catch (error) {
       console.warn("[map] boundary snapshot unavailable", error);
-      setMapStatus("Lot boundaries unavailable. Database markers and the parking list are still available.");
+      setMapStatus("Lot boundaries unavailable. The parking list is still available.");
     }
   } catch (error) {
     console.warn("[map] unavailable", error);
     if (map) map.remove();
     map = null;
     el.hidden = true;
-    setMapStatus("Map unavailable. Use the parking list below to view rules and details.");
+    setMapStatus("Map unavailable. Use the parking list to view rules and details.");
   }
 }
 

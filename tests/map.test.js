@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { initMap } from '../js/pages/map.js';
 
-test('map skips absent and out-of-range coordinates rather than plotting them at zero', async () => {
+test('map never plots sample database circles', async () => {
   const plotted = [];
   const map = { setView() { return this; }, fitBounds() {}, invalidateSize() {} };
   const layer = { addTo() { return this; }, bindPopup() { return this; }, bringToFront() {} };
@@ -13,7 +13,7 @@ test('map skips absent and out-of-range coordinates rather than plotting them at
     latLngBounds: (points) => points,
   } };
   globalThis.L = window.L;
-  globalThis.document = { querySelector: () => ({ hidden: false }), getElementById: () => ({ textContent: '' }) };
+  globalThis.document = { querySelector: () => ({ hidden: false }), getElementById: (id) => id === 'map-status' ? { textContent: '' } : null };
   const oldFetch = globalThis.fetch;
   globalThis.fetch = async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [] }) });
   try {
@@ -22,7 +22,7 @@ test('map skips absent and out-of-range coordinates rather than plotting them at
       { latitude: null, longitude: null }, { latitude: '', longitude: '' },
       { latitude: 100, longitude: -111 }, { latitude: 40, longitude: -190 },
     ] });
-    assert.deepEqual(plotted, [[40.25, -111.65]]);
+    assert.deepEqual(plotted, []);
   } finally { globalThis.fetch = oldFetch; delete globalThis.L; delete globalThis.window; delete globalThis.document; }
 });
 
@@ -36,7 +36,7 @@ test('missing map library leaves a useful list fallback', async () => {
   const container = { hidden: false };
   const status = { textContent: '' };
   globalThis.window = {};
-  globalThis.document = { querySelector: () => container, getElementById: () => status };
+  globalThis.document = { querySelector: () => container, getElementById: (id) => id === 'map-status' ? status : null };
   try {
     await init({ areas: [] });
     assert.equal(container.hidden, true);
@@ -44,7 +44,7 @@ test('missing map library leaves a useful list fallback', async () => {
   } finally { delete globalThis.window; delete globalThis.document; }
 });
 
-test('failed boundary download keeps database markers available with a visible warning', async () => {
+test('failed boundary download keeps the parking list available with a visible warning', async () => {
   const { initMap: init } = await import('../js/pages/map.js?failed-boundaries');
   const plotted = [];
   const status = { textContent: '' };
@@ -52,16 +52,16 @@ test('failed boundary download keeps database markers available with a visible w
   const layer = { addTo() { return this; }, bindPopup() { return this; } };
   globalThis.window = { L: { map: () => map, tileLayer: () => layer,
     circleMarker: (point) => { plotted.push(point); return layer; } } };
-  globalThis.document = { querySelector: () => ({}), getElementById: () => status };
+  globalThis.document = { querySelector: () => ({}), getElementById: (id) => id === 'map-status' ? status : null };
   const oldFetch = globalThis.fetch;
   const oldWarn = console.warn;
   globalThis.fetch = async () => ({ ok: false, status: 404 });
   console.warn = () => {};
   try {
     await init({ areas: [{ area_id: 1, area_name: 'Test lot', latitude: 40.25, longitude: -111.65 }] });
-    assert.equal(plotted.length, 1);
+    assert.equal(plotted.length, 0);
     assert.match(status.textContent, /boundaries unavailable/);
-    assert.match(status.textContent, /markers and the parking list are still available/);
+    assert.match(status.textContent, /parking list is still available/);
   } finally { globalThis.fetch = oldFetch; console.warn = oldWarn; delete globalThis.window; delete globalThis.document; }
 });
 
@@ -72,7 +72,7 @@ test('boundary colors distinguish visitor permits from YV and mark missing or pr
   const layer = { addTo() { return this; } };
   globalThis.window = { L: { map: () => map, tileLayer: () => layer,
     geoJSON: (_, options) => { style = options.style; return layer; } } };
-  globalThis.document = { querySelector: () => ({}), getElementById: () => ({ textContent: '' }) };
+  globalThis.document = { querySelector: () => ({}), getElementById: (id) => id === 'map-status' ? { textContent: '' } : null };
   const oldFetch = globalThis.fetch;
   globalThis.fetch = async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [] }) });
   try {

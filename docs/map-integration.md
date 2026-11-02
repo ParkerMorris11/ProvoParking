@@ -1,33 +1,31 @@
 # BYU map integration — PR #11
 
-The Areas screen now includes a Leaflet 1.9.4 map over OpenStreetMap tiles, the 189 boundary features supplied in PR #11, and markers for database parking areas with valid coordinates. Tap a boundary for its recorded permit category and description; tap a white database marker to open the existing area details page.
+The Areas screen includes a Leaflet 1.9.4 map with the 189 BYU boundary features supplied in PR #11. Sample database location circles have been removed at Parker's request. Tap a boundary for its recorded permit category and description. The separate parking list retains the existing database permit/day/time checks and detail links.
 
-The map is initialized after Areas becomes visible and resized on return. It does not delay loading the rest of the application. The same parking list remains available for keyboard and screen reader use. Boundary colors describe categories, not eligibility or occupancy; permit/day/time eligibility still comes from the existing database rules and appears in the list. The snapshot has no verified join to database area IDs. Do not infer one from proximity.
+## Interface
 
-## Fixes during integration
+- Map and permit results sit side by side on laptops, then stack on phones.
+- Street tiles are desaturated through CSS so colored parking boundaries stand out; linked OpenStreetMap attribution stays visible.
+- A labeled legend explains student, employee, visitor, U, housing, timed and restricted/other categories. Color is not the only way to identify a category: every boundary popup shows the category text.
+- Reset view returns to the campus center at zoom 15. Wheel zoom is disabled to make page scrolling easier.
+- The map initializes after Areas becomes visible, resizes on return, and does not delay loading the rest of the app. Missing map resources leave the list available with a visible message.
+- The correct [Leaflet stylesheet integrity hash](https://leafletjs.com/download) and `data/` in the Pages artifact fix the original PR's deployment issues.
 
-- Corrected the Leaflet CSS integrity hash to the [official published value](https://leafletjs.com/download).
-- Included `data/` in the GitHub Pages artifact, preventing a missing boundary file after deployment.
-- Kept database markers usable when the boundary download fails, with a visible warning; missing Leaflet falls back to the list.
-- Rejected null, empty, nonfinite and out-of-range coordinates rather than plotting them at zero.
-- Added app detail links to database marker popups and kept these markers above boundary shapes.
-- Used exact permit categories so YV is not mistaken for V; absent / No BYU Parking categories use neutral gray.
-- Used a bounded map height on phones and turned off wheel zoom so scrolling the page does not unexpectedly zoom the map.
-- Preserved linked OpenStreetMap attribution and used the standard tile URL. See the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). No bulk tile downloads or offline prefetching.
+## Data limitations
 
-## Data provenance and limitations
+Colors show categories, not current eligibility or occupancy. The boundary snapshot has no verified join to database area IDs. The list is labeled as sample data and kept visually distinct from the boundary map. No database rows, policies or credentials changed.
 
-`data/byu-campus-parking.json` is the unchanged snapshot supplied by PR #11. Its fields include Lot, Lot_Type, permit_typ and Descriptio. The original ArcGIS service identifier, retrieval date and verification record were not included in that PR, so this integration does not certify its descriptions as current official parking rules. Compare with [BYU's campus map](https://map.byu.edu/) and posted signs when verifying lots. Database lot coordinates, occupancy estimates and tow contacts remain samples. This is not a live occupancy feed or a navigation engine.
+`data/byu-campus-parking.json` remains the original PR snapshot. Its original ArcGIS service identifier, retrieval date and verification record were not supplied, so current official-rule verification remains outstanding. Compare with [BYU's campus map](https://map.byu.edu/) and posted signs. Database lot coordinates, occupancy estimates and tow contacts remain samples.
+
+The map uses the standard OpenStreetMap tile URL, preserves attribution and performs no bulk downloads or offline prefetching. See the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 
 ## Verification — November 1, 2026
 
-- All 22 Node tests pass, including coordinate validation, permit category distinctions, missing-library fallback and failed boundary download. The coordinate and deployment tests failed against the original PR; the category test exposed the YV/V collision before its fix.
-- Every JS file passes `node --check`; `git diff --check` passes.
-- Local preview using the app's existing public Supabase configuration: four areas and 189 boundary shapes load; no browser console errors/warnings observed in the normal path.
-- Y permit / Monday / 08:00: Y and U sample lots allowed, residential street not covered. Boundaries stay category based, as explained on screen.
-- Tapped a boundary and read its popup; tapped the stadium database marker and followed its Rules & details link to the existing area page.
-- Reload and returning from details to Areas retain a correctly sized map. Saved permit choice is preserved; arrival defaults retain existing behavior.
-- Lighthouse accessibility: 100/100 at phone 390×844 and laptop 1440×900, no run warnings. Captures visually inspected; this is emulation, not a manual real-phone or screen-reader certification. Lighthouse also reports an existing unscored visible-label/name mismatch on list links (`Rules & details` versus `Rules and details`); it is outside this map integration.
-- Screenshots: `docs/screens/map/phone.png` and `laptop.png`. Full Lighthouse HTML/JSON reports are in the workspace outputs folder.
+- All 22 Node tests pass. Regression tests verify no database sample circles are plotted, category colors distinguish V/YV and restricted/unknown areas, failed boundary requests preserve the list, and missing Leaflet produces a useful fallback. The no-circle tests failed before removing the markers.
+- Every JS file passes syntax checks; `git diff --check` passes.
+- Interactive local preview against the existing public Supabase configuration: 189 boundaries load, no sample circles, seven legend entries, boundary popup, zoom and Reset view work. No console errors/warnings observed in the normal path.
+- Responsive preview checked at actual viewport widths 433px and 1061px; no horizontal document overflow. Temporary viewport override reset afterward.
+- The earlier Y/Monday/08:00 eligibility and map-to-details checks applied before the visual revision. Map marker-to-details links have now been intentionally removed with the circles; list detail links and eligibility logic remain unchanged.
+- Lighthouse reports must be checked against screenshots of the loaded map: initial audit attempts captured only the loading screen and are not valid evidence. A 15-second FCP/load delay captures the rendered map. The final loaded-map audits at 390×844 and 1440×900 each scored 100/100 accessibility with no run warnings. Both screenshots were inspected. The existing unscored visible-label/name mismatch on list links remains (Rules & details versus Rules and details); manual screen-reader testing is not claimed.
 
-No database schema/policy changes, timer PR merges, Trello edits, or production deployment were performed. Main is unchanged. The repository contribution guide requires a teammate to pull, test and review before squash-merging. After that merge, verify the GitHub Pages deployment and live map.
+Screenshots: `docs/screens/map/phone.png` and `laptop.png`; full reports are in the workspace outputs folder. Review remains pending before squash merge under `docs/CONTRIBUTING.md`, followed by live Pages verification. No timer PR integration, Trello edits or production deployment were performed.
