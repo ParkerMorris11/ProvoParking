@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { assertDisposableTestTarget } from "./helpers/database-target.js";
 import { sessionFromRow, getSessionTiming } from "../js/domain/session-contract.js";
 
 const database = process.env.P7_TEST_DATABASE_URL;
@@ -30,9 +31,7 @@ function concurrentQuery(owner, sql) {
 
 test("P7 PostgreSQL persistence and real RLS", { skip: !database && "Set P7_TEST_DATABASE_URL to the disposable local test database." }, async (t) => {
   // Fixtures may never run against a Supabase project, remote host, or another local DB.
-  const url = new URL(database);
-  assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(url.hostname), "Database tests are local-only.");
-  assert.equal(url.pathname, "/provo_parking_p7_test", "Use the exact disposable test database name.");
+  assertDisposableTestTarget(database);
   query(`
     DROP SCHEMA IF EXISTS auth CASCADE;
     DROP SCHEMA public CASCADE;
