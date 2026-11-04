@@ -35,7 +35,7 @@ export function renderCar() {
         </form>
 
         <div class="actions">
-          ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">Walking directions (sample location)</a>` : ""}
+          ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to lot center"}</a>` : ""}
           <button type="button" class="primary" id="end-session">I left — end timer</button>
         </div>
       </div>`;
@@ -47,7 +47,7 @@ export function renderCar() {
     form.hidden = false;
     const sel = $("car-area");
     const keep = sel.value;
-    sel.innerHTML = state.areas.map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
+    sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
     if (keep) sel.value = keep;
     updateCarWarning();
   }

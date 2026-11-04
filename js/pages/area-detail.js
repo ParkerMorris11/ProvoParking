@@ -57,6 +57,7 @@ export function renderAreaDetail(areaId) {
     <p class="avail ${avail.cls}">${avail.text}. Updated ${timeAgo(area.availability_updated_at)}. A valid permit does not guarantee an open space.</p>
 
     <h3>Rules</h3>
+    ${!area.is_sample_data ? `<p class="hint">Verified from BYU sources on November 4, 2026. Ordinary stalls, regular fall/winter weekly schedule. Vehicle must be registered and active. Posted signs, event closures, holidays, finals and breaks may change these rules. Lot coordinates mark its approximate center, not an entrance. <a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus map</a>.</p>` : ""}
     ${groups.length ? `<ul class="rules">${groups.map(ruleGroupHtml).join("")}</ul>` : `<p class="empty">No rules on file for this area yet.</p>`}
 
     <h3>If you are towed</h3>
@@ -64,6 +65,6 @@ export function renderAreaDetail(areaId) {
 
     <div class="actions">
       <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
-      <a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">Walking directions (sample location)</a>
+      <a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to lot center"}</a>
     </div>`;
 }
