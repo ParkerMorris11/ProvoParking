@@ -1,6 +1,6 @@
 # Provo Parking
 
-**Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
+**Accounts (Sprint 2):** the first screen is now **Create your account**: *Continue with Google*, or email + password on one screen, then an optional permit search with *Skip*. A device that has signed in before shows **Welcome back**. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
 
 P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
 
@@ -70,7 +70,8 @@ The layout is a single centered column, so on a desktop browser it looks like th
 
 | Situation | What the person sees |
 |---|---|
-| First visit on a device | **Create your account**, step 1: email + password. Step 2: name, then *Do you have a parking permit?* **Yes** opens a search box over the `permit` table (type "Y", "grad", "Wymount"); a person with several permits adds each one |
+| First visit on a device | **Create your account**: *Continue with Google*, or email + password. *Create account* creates the account immediately, so a taken email or rejected password is shown on that same screen. Then an optional *Which permit do you have?* search over the `permit` table (type "Y", "grad", "Wymount"), or *skip* |
+| *Continue with Google* | Google's own sign-in page, then straight back signed in; no new password and no confirmation email. A first Google sign-in gets the same optional permit step. The button only appears when Google is turned on in Supabase |
 | Comes back on the same device | Straight into the app, still signed in. supabase-js keeps the session in `localStorage` and renews it automatically |
 | *Keep me signed in* unchecked at log-in | The session is kept in `sessionStorage` and ends when the browser closes |
 | Logged out, or a device that signed in before | **Welcome back** (email, password, *Forgot password*) |
@@ -79,8 +80,8 @@ The layout is a single centered column, so on a desktop browser it looks like th
 
 **How it is wired**
 
-1. `js/pages/auth.js` validates the form (`js/domain/account.js`) and calls `js/data/auth.js`, which calls Supabase Auth `signUp` with the name and chosen `permit_id`s as user metadata.
-2. In the database, the `on_auth_user_created` trigger (`supabase/migrations/20261102040636_account_sign_in.sql`) creates the `app_user` row (linked by the new `app_user.auth_id`) and one `user_permit` row per permit. Bad metadata never blocks a sign-up.
+1. `js/pages/auth.js` validates the form as you type (`js/domain/account.js`) and calls `js/data/auth.js`: Supabase Auth `signUp` (email) or `signInWithOAuth` (Google). The permit step saves `user_permit` rows for the signed-in user.
+2. In the database, the `on_auth_user_created` trigger (`supabase/migrations/20261102040636_account_sign_in.sql`, updated by `20261104202009_google_sign_in_names.sql` to use a Google user's name) creates the `app_user` row (linked by `app_user.auth_id`). Bad metadata never blocks a sign-up.
 3. The browser loads the profile (`app_user` + `user_permit`), presets Find to the account's permit, and loads only that account's `favorite_area` and `parking_session` rows. `js/data/favorites.js` and `js/data/sessions.js` save with the signed-in `user_id`; row security rejects anything else.
 4. Errors from Supabase (wrong password, email already used, rate limits, no internet) are shown in plain language next to the right field.
 
@@ -215,3 +216,8 @@ The Areas map displays a BYU boundary snapshot without sample location circles, 
 ### Nearby lots with your location
 
 On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).
+
+### Supabase settings for smooth sign-in (project owner)
+1. **Authentication > Sign In / Providers:** turn **Confirm email** off, so an email sign-up can use the app immediately (the free email service also sends only 2 emails per hour).
+2. **Authentication > URL Configuration:** Site URL `https://parkermorris11.github.io/ProvoParking/`; Redirect URLs `https://parkermorris11.github.io/ProvoParking/**` and `http://localhost:8000/**`.
+3. **Google:** in [Google Cloud Console](https://console.cloud.google.com/), create an OAuth client (type *Web application*) with the authorized redirect URI `https://rikekjksneoymybnehpo.supabase.co/auth/v1/callback`, and set the consent screen to *In production*. Paste its Client ID and Client secret into **Authentication > Sign In / Providers > Google** and enable it. The app shows *Continue with Google* automatically once this is on.

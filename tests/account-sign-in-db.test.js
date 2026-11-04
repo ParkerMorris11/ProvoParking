@@ -10,6 +10,7 @@ const database = process.env.P7_TEST_DATABASE_URL;
 const env = isolatedPostgresEnvironment(process.env);
 const file = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 const MIGRATION = "supabase/migrations/20261102040636_account_sign_in.sql";
+const GOOGLE_NAMES = "supabase/migrations/20261104202009_google_sign_in_names.sql";
 const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
@@ -56,6 +57,8 @@ test("Account sign-in migration: profiles, permits and per-user row security", {
   const demoBefore = run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f");
   run(file(MIGRATION));
   run(file(MIGRATION)); // repeatable
+  run(file(GOOGLE_NAMES));
+  run(file(GOOGLE_NAMES)); // repeatable
 
   await t.test("migration is repeatable and keeps demo rows", () => {
     assert.equal(run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f"), demoBefore);
@@ -79,6 +82,23 @@ test("Account sign-in migration: profiles, permits and per-user row security", {
     const C = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
     signUp(C, null, null);
     assert.equal(run(`SELECT display_name FROM public.app_user WHERE auth_id = '${C}'`), "Driver");
+  });
+
+  await t.test("Google sign-ins get their Google name", () => {
+    const G = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+    signUp(G, "jamie@gmail.com", { full_name: "Jamie Rivera", name: "Jamie R", email: "jamie@gmail.com" });
+    assert.equal(run(`SELECT display_name FROM public.app_user WHERE auth_id = '${G}'`), "Jamie Rivera");
+    const H = "ffffffff-ffff-4fff-8fff-ffffffffffff";
+    signUp(H, "sky@gmail.com", { name: "Sky" });
+    assert.equal(run(`SELECT display_name FROM public.app_user WHERE auth_id = '${H}'`), "Sky");
+  });
+
+  await t.test("after sign-up, users can save their own permits but not someone else's", () => {
+    const a = userIdFor(A), b = userIdFor(B);
+    assert.equal(asUser(B, `INSERT INTO public.user_permit (user_id, permit_id) VALUES (${b}, 2) ON CONFLICT DO NOTHING RETURNING permit_id`), "2");
+    assert.equal(asUser(B, `INSERT INTO public.user_permit (user_id, permit_id) VALUES (${b}, 2) ON CONFLICT DO NOTHING RETURNING permit_id`), "", "saving twice is harmless");
+    assert.throws(() => asUser(B, `INSERT INTO public.user_permit (user_id, permit_id) VALUES (${a}, 5)`), /row-level security/);
+    asUser(B, `DELETE FROM public.user_permit WHERE user_id = ${b}`);
   });
 
   await t.test("an email already used by a demo profile still gets an account", () => {

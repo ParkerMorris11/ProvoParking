@@ -1,21 +1,23 @@
 // Page: sign up / log in. Shown instead of the app until someone signs in or continues as a guest.
-//   Sign up step 1: email + password. Step 2: name, "Do you have a parking permit?", permit search.
-//   Log in: email, password, Keep me signed in, Forgot password. Also: reset and new-password forms.
+//   Sign up: one screen. "Continue with Google", or email + password; "Create account" creates the
+//   account right away, so a taken email or rejected password is shown on this same screen.
+//   Then an optional "Which permit do you have?" step with Skip (also shown after a first Google sign-in).
+//   Log in: Google, or email + password, Keep me signed in, Forgot password. Also: reset and new-password forms.
 import { pauseMapLocation } from "./map.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { escapeHtml } from "../lib/format.js";
-import { checkEmail, checkPassword, checkName, describeAuthError } from "../domain/account.js";
+import { checkEmail, checkPassword, describeAuthError } from "../domain/account.js";
 import { matchPermits } from "../domain/permit-search.js";
 import { loadPermitChoices } from "../data/load.js";
 import * as auth from "../data/auth.js";
 
 const VIEWS = {
-  signup:  { form: "signup-form",  eyebrow: "Step 1 of 2",               title: "Create your account" },
-  permits: { form: "permit-form",  eyebrow: "Step 2 of 2",               title: "Almost done" },
-  login:   { form: "login-form",   eyebrow: "Please enter your details", title: "Welcome back" },
-  forgot:  { form: "forgot-form",  eyebrow: "We'll email you a link",    title: "Reset your password" },
-  newpass: { form: "newpass-form", eyebrow: "Almost there",              title: "Choose a new password" },
+  signup:  { form: "signup-form",  eyebrow: "Find parking you're allowed to use", title: "Create your account" },
+  permits: { form: "permit-form",  eyebrow: "One last thing (optional)",          title: "Which permit do you have?" },
+  login:   { form: "login-form",   eyebrow: "Please enter your details",          title: "Welcome back" },
+  forgot:  { form: "forgot-form",  eyebrow: "We'll email you a link",             title: "Reset your password" },
+  newpass: { form: "newpass-form", eyebrow: "Almost there",                       title: "Choose a new password" },
 };
 const APP_CHROME = ["app-header", "app-nav", "app-main", "app-footer"];
 
@@ -33,10 +35,10 @@ export function showAuth(view, message = "", isError = false) {
   clearErrors();
   setMessage(message, isError);
   closePermitList();
-  if (view === "signup" || view === "permits") void loadPermits(); // preload so step 2 opens instantly
+  if (view === "signup" || view === "permits") void loadPermits(); // preload so the permit step opens instantly
   if (view === "login" && hooks.authStorage) $("li-remember").checked = hooks.authStorage.remember();
   const first = $(VIEWS[view].form).querySelector("input:not([type=checkbox]):not([type=radio])");
-  if (first && !first.value) first.focus();
+  if (first && !first.value && view !== "permits") first.focus();
   window.scrollTo(0, 0);
 }
 
@@ -61,6 +63,15 @@ export function requireAccount(message) {
   if (state.user) return true;
   showAuth("signup", message);
   return false;
+}
+
+// Only offer "Continue with Google" when the Supabase project has Google turned on.
+export function setSignInOptions(settings) {
+  const google = Boolean(settings?.google);
+  for (const id of ["google-signup", "google-login"]) {
+    $(id).hidden = !google;
+    $(id).nextElementSibling.hidden = !google; // the "or" divider
+  }
 }
 
 function setMessage(message, isError = false) {
@@ -96,12 +107,20 @@ function busy(button, isBusy, text) {
 function showAuthError(error, { action, emailField, passwordField }) {
   console.warn(error);
   const { field, message } = describeAuthError(error, { action });
-  if (field === "email" && emailField) return fieldError(emailField, message);
-  if (field === "password" && passwordField) return fieldError(passwordField, message);
+  if (field === "email" && emailField) { fieldError(emailField, message); return $(emailField).focus(); }
+  if (field === "password" && passwordField) { fieldError(passwordField, message); return $(passwordField).focus(); }
   setMessage(message, true);
 }
+// Checks a field as soon as the person leaves it, and clears the message as soon as they fix it.
+function checkWhileTyping(id, check) {
+  const input = $(id);
+  input.addEventListener("blur", () => { if (input.value) fieldError(id, check(input.value)); });
+  input.addEventListener("input", () => {
+    if (input.getAttribute("aria-invalid") === "true") fieldError(id, check(input.value));
+  });
+}
 
-// ---------- permit search ("Find your permit") ----------
+// ---------- permit search ----------
 let permits = [];
 let permitsRequest = null;
 let selectedIds = [];
@@ -206,12 +225,45 @@ function initPermitSearch() {
     e.preventDefault();
     if (list.hidden) { input.focus(); openPermitList(); } else closePermitList();
   });
-  document.querySelectorAll('input[name="has-permit"]').forEach((radio) => radio.addEventListener("change", () => {
-    const yes = $("su-has-permit-yes").checked;
-    $("permit-picker").hidden = !yes;
-    fieldError("su-has-permit", "");
-    if (yes) input.focus();
-  }));
+}
+
+// ---------- optional permit step (after a new account, or a first Google sign-in) ----------
+let permitStep = null; // { resolve, userId }
+
+// Shows "Which permit do you have?" and resolves once the person saves or skips.
+export function askForPermits(userId) {
+  selectedIds = [];
+  renderChips();
+  $("permit-search").value = "";
+  showAuth("permits");
+  return new Promise((resolve) => { permitStep = { resolve, userId }; });
+}
+
+function finishPermitStep(permitIds) {
+  const step = permitStep;
+  permitStep = null;
+  step?.resolve(permitIds);
+}
+
+async function onSavePermits(e) {
+  e.preventDefault();
+  clearErrors(); setMessage("");
+  if (!permitStep) return;
+  if (!selectedIds.length) {
+    fieldError("permit-search", "Pick a permit from the list, or choose skip below.");
+    return $("permit-search").focus();
+  }
+  const button = $("permit-submit");
+  busy(button, true, "Saving…");
+  try {
+    await auth.savePermits(permitStep.userId, [...selectedIds]);
+    finishPermitStep([...selectedIds]);
+  } catch (err) {
+    console.error(err);
+    fieldError("permit-search", `Couldn't save your permit: ${describeAuthError(err).message}`);
+  } finally {
+    busy(button, false);
+  }
 }
 
 // ---------- forms ----------
@@ -220,52 +272,31 @@ function startAtHome() {
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
 
-function onSignUpStep1(e) {
+async function onSignUp(e) {
   e.preventDefault();
   clearErrors(); setMessage("");
+  const email = $("su-email").value.trim();
   const ok = [
-    fieldError("su-email", checkEmail($("su-email").value)),
+    fieldError("su-email", checkEmail(email)),
     fieldError("su-password", checkPassword($("su-password").value)),
   ].every(Boolean);
   if (!ok) return focusFirstError("signup-form");
-  showAuth("permits");
-}
 
-async function onSignUpStep2(e) {
-  e.preventDefault();
-  clearErrors(); setMessage("");
-  const name = $("su-name").value.trim();
-  const answered = $("su-has-permit-yes").checked || $("su-has-permit-no").checked;
-  const hasPermit = $("su-has-permit-yes").checked;
-  const ok = [
-    fieldError("su-name", checkName(name)),
-    fieldError("su-has-permit", answered ? "" : "Choose Yes or No."),
-    fieldError("permit-search", !hasPermit || selectedIds.length ? "" : "Search for your permit and pick it from the list, or choose No."),
-  ].every(Boolean);
-  if (!ok) return focusFirstError("permit-form");
-
-  const email = $("su-email").value.trim();
   const button = $("su-submit");
   busy(button, true, "Creating account…");
   hooks.authStorage?.setRemember(true); // new accounts stay signed in on this device
   try {
-    const { session } = await auth.signUp({
-      email,
-      password: $("su-password").value,
-      displayName: name,
-      permitIds: hasPermit ? [...selectedIds] : [],
-    });
+    const { session } = await auth.signUp({ email, password: $("su-password").value });
     clearPasswords();
     if (session) {
       startAtHome();
-      await hooks.onSignedIn(session, `Welcome, ${name}! Your account is ready.`);
+      await hooks.onSignedIn(session, "Welcome! Your account is ready.", { isNew: true });
     } else {
+      // Only if the project still requires email confirmation.
       $("li-email").value = email;
-      showAuth("login", `Almost done! We sent a confirmation link to ${email}. Open it, then log in here.`);
+      showAuth("login", `Check your inbox: we sent a link to ${email}. Open it to finish creating your account.`);
     }
   } catch (err) {
-    const { field } = describeAuthError(err, { action: "signup" });
-    if (field === "email" || field === "password") showAuth("signup"); // those fields live on step 1
     showAuthError(err, { action: "signup", emailField: "su-email", passwordField: "su-password" });
   } finally {
     busy(button, false);
@@ -293,6 +324,20 @@ async function onLogIn(e) {
     showAuthError(err, { action: "login", emailField: "li-email" });
   } finally {
     busy(button, false);
+  }
+}
+
+async function onGoogle(button) {
+  clearErrors(); setMessage("");
+  busy(button, true, "Opening Google…");
+  const onLoginScreen = $("auth-screen").dataset.view === "login";
+  hooks.authStorage?.setRemember(onLoginScreen ? $("li-remember").checked : true);
+  try {
+    startAtHome();
+    await auth.signInWithGoogle(); // the browser leaves for Google here
+  } catch (err) {
+    busy(button, false);
+    showAuthError(err, { action: "login" });
   }
 }
 
@@ -335,13 +380,19 @@ async function onNewPassword(e) {
 export function initAuth({ onSignedIn, onGuest, authStorage }) {
   hooks = { onSignedIn, onGuest, authStorage };
   initPermitSearch();
-  $("signup-form").addEventListener("submit", onSignUpStep1);
-  $("permit-form").addEventListener("submit", onSignUpStep2);
+  checkWhileTyping("su-email", checkEmail);
+  checkWhileTyping("su-password", (v) => checkPassword(v));
+  checkWhileTyping("li-email", checkEmail);
+  $("signup-form").addEventListener("submit", onSignUp);
+  $("permit-form").addEventListener("submit", onSavePermits);
   $("login-form").addEventListener("submit", onLogIn);
   $("forgot-form").addEventListener("submit", onForgot);
   $("newpass-form").addEventListener("submit", onNewPassword);
 
   $("auth-screen").addEventListener("click", (e) => {
+    const google = e.target.closest(".google-btn");
+    if (google) return void onGoogle(google);
+    if (e.target.closest("#permit-skip")) return finishPermitStep([]);
     const go = e.target.closest("[data-auth-go]");
     if (go) {
       const view = go.dataset.authGo;

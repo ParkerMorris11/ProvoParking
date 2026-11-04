@@ -51,6 +51,9 @@ export function describeAuthError(error, { action = "signup" } = {}) {
   if (code === "email_address_invalid" || code === "validation_failed" && has(/email/i) || has(/email address .* is invalid|unable to validate email/i)) {
     return { field: "email", message: "That email address can't be used. Check it and try again." };
   }
+  if (code === "provider_disabled" || has(/provider is not enabled|unsupported provider/i)) {
+    return { field: "", message: "Google sign-in isn't turned on yet. Use your email and a password for now." };
+  }
   if (code === "over_email_send_rate_limit" || has(/email rate limit/i)) {
     return { field: "", message: "Too many account emails were sent in the last hour. Please try again later." };
   }

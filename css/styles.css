@@ -362,3 +362,13 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 @media (min-width: 900px) {
   #fav-list, .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---- Account: Continue with Google + "or" divider ---- */
+.auth .google-btn { width: 100%; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 0 4px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; }
+.auth .google-btn:hover { background: #f7f8fa; border-color: #b7bec9; }
+.auth .google-btn:disabled { opacity: .7; cursor: wait; }
+.auth .google-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.auth .google-btn svg { width: 22px; height: 22px; flex: none; }
+.auth .auth-or { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--soft); font-size: .88rem; }
+.auth .auth-or::before, .auth .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.auth .auth-or[hidden] { display: none; }
