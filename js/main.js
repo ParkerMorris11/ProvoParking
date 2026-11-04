@@ -54,7 +54,7 @@ async function enterApp(note, version = state.authVersion) {
     choosePermit();
     renderFind();
     const who = state.user ? `Signed in as ${state.user.displayName}.` : "Browsing as a guest. Create an account to save favorites and start a parking timer.";
-    setStatus(`${note ? `${note} ` : ""}${state.areas.length} parking areas loaded. ${who}`);
+    setStatus(`${note ? `${note} ` : ""}${state.areas.filter((area) => !area.is_sample_data).length} verified parking areas loaded. ${who}`);
     showView();
   } catch (err) {
     if (version !== state.authVersion) return;

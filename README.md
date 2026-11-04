@@ -10,7 +10,7 @@ Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages s
 
 P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review → **Confirm & Start Timer** → [Parking timer](parking-timer.html). Serve the repository locally; no Supabase configuration is needed. The session is saved in this browser so you can return through **View parking timer** or refresh without resetting its timestamps. See [the P5 contract](docs/parking-timer-setup.md) and [P6 timer contract and sample states](docs/active-parking-timer.md). The existing Supabase My car timer remains available separately; these sessions do not sync with it or across devices.
 
-> Permit and parking rules are cited from BYU and Provo sources; see [docs/parking-rules-reference.md](docs/parking-rules-reference.md). Lot locations, capacities, availability, and tow details are still **sample data**.
+> Four BYU lots (59Y, 30G, 14A, 18U) use official map locations and sourced permit/hour rules checked November 4, 2026. Capacity, live availability and tow contacts are unknown. [Sources, data preservation and verification](docs/verified-byu-lots.md). Old sample records remain only for history.
 
 ## App Summary
 Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version has a sign-up/log-in screen and five app screens (see below). Each person has their own account; their permits, favorites and parking timers are stored in a real database so they survive a refresh and follow them to another device. Eligibility is based on the permit the user selects, not on a verified BYU account.
@@ -28,7 +28,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 
 Eligibility rule: an area is usable if a rule that applies on the chosen day and time is open to everyone or lists your permit, and the time is not inside that rule's no-parking window (for example BYU's 1-5 a.m.). A valid permit does not mean a space is open; availability is always labeled an estimate. Reminders only show while the page is open (no push notifications), and walking-directions links point at sample lot locations.
 
-Schedule behavior: rule start/end times include both endpoints, including schedules that cross midnight. Blocked hours include the start and exclude the end (so a 1–5 a.m. ban ends at 5:00). Days refer to the selected calendar day, including the after-midnight part of an overnight schedule; an overnight Friday-to-Saturday rule must list both days. Unreadable rule schedules cannot grant permission; if no valid rule covers the selection, the result is unknown. The check covers the selected arrival minute, not the driver's entire planned stay. Confirm results against verified lot rules before marking the Sprint 1 reliability card complete.
+Schedule behavior: rule start/end times include both endpoints, including schedules that cross midnight. Blocked hours include the start and exclude the end (so a 1–5 a.m. ban ends at 5:00). Days refer to the selected calendar day, including the after-midnight part of an overnight schedule; an overnight Friday-to-Saturday rule must list both days. Unreadable rule schedules cannot grant permission; if no valid rule covers the selection, the result is unknown. The check covers the selected arrival minute, not the driver's entire planned stay. The four verified BYU lots use normal fall/winter weekly schedules. Events, posted signs, finals, holidays and academic breaks can override them; this day/time form does not model calendar exceptions. See [verified lots](docs/verified-byu-lots.md).
 
 ## Screenshots
 ### Phone (390 px wide)
@@ -138,8 +138,8 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 |---|---|
 | P2: load live permit choices and display database rules | Complete — merged and deployed; awaiting PO acceptance |
 | P4: choose permit/time → see rules → save a favorite → refresh | Complete — verified on the published site against the current sample areas; awaiting PO acceptance |
-| P5: handle permit, day and restricted-hour changes | Logic complete — 17 eligibility tests pass; live Y daytime/overnight and residential-permit changes pass |
-| P5: confirm allowed/blocked results for verified lots | Not complete — live `parking_area` still contains four sample areas; requires L1 verified lot/rule data |
+| P5: handle permit, day and restricted-hour changes | Complete — original logic tests plus real migration-backed permit/hour boundary checks |
+| P5: confirm allowed/blocked results for verified lots | Implemented for 59Y, 30G, 14A and 18U; production checks and PO review are tracked on the card |
 
 [Verification record and limits](docs/sprint-1-parker-verification.md). P21 sign-in remains delegated/paused and is not part of this Sprint 1 completion check. No course goals, estimates, or Definition of Done were changed.
 

@@ -6,7 +6,7 @@ import { KIND_ORDER } from "../domain/eligibility.js";
 import { cardHtml, evaluateArea } from "../components/area-card.js";
 
 export function renderAreas() {
-  const sorted = [...state.areas].sort((a, b) => {
+  const sorted = state.areas.filter((area) => !area.is_sample_data).sort((a, b) => {
     const ka = KIND_ORDER[evaluateArea(a).kind];
     const kb = KIND_ORDER[evaluateArea(b).kind];
     return ka - kb || a.area_name.localeCompare(b.area_name);
