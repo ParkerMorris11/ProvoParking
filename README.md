@@ -89,6 +89,8 @@ The migration also removes the old shared *demo user 1* browser policies, so vis
 **Tests:** `tests/account.test.js` (form checks, error messages, permit search, *Keep me signed in*) and `tests/account-sign-in-db.test.js` (real PostgreSQL: trigger, permits, per-user row security for profiles, favorites and sessions, visitor access, and the team's `tests-reference-reads.sql`). The two database suites share one disposable database, so `npm test` runs test files one at a time.
 
 ## ERD
+<img width="2160" height="2002" alt="image" src="https://github.com/user-attachments/assets/3b5c0e37-a2c3-41c7-bfd7-f8b85dc2a3b4" />
+
 ![Provo Parking ERD](docs/erd.png)
 
 Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
