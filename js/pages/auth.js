@@ -17,7 +17,7 @@ const VIEWS = {
   forgot:  { form: "forgot-form",  eyebrow: "We'll email you a link",    title: "Reset your password" },
   newpass: { form: "newpass-form", eyebrow: "Almost there",              title: "Choose a new password" },
 };
-const APP_CHROME = ["app-header", "app-nav", "app-main"];
+const APP_CHROME = ["app-header", "app-nav", "app-main", "app-footer"];
 
 let hooks = { onSignedIn: async () => {}, onGuest: async () => {}, authStorage: null };
 

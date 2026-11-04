@@ -138,25 +138,26 @@
   </section>
 
   <header class="top" id="app-header" hidden>
-    <div class="top-row">
-      <h1>Provo Parking</h1>
-      <div class="account-bar">
-        <span id="account-name" class="account-name"></span>
-        <button type="button" id="account-action" class="account-action"></button>
+    <h1><a href="#areas" class="home-link"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/><path d="M12 23V9h5.2a4.4 4.4 0 0 1 0 8.8H12" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Provo Parking</a></h1>
+    <nav class="tabs" id="app-nav" aria-label="Screens" hidden>
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="tab-list" aria-label="Menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div class="tab-list" id="tab-list">
+        <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
+        <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
+        <button type="button" class="tab" id="tab-favorites" data-view="favorites">
+          Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
+        </button>
+        <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
+        <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
       </div>
+    </nav>
+    <div class="account-bar">
+      <span id="account-name" class="account-name"></span>
+      <button type="button" id="account-action" class="account-action"></button>
     </div>
-    <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
   </header>
-
-  <nav class="tabs" id="app-nav" aria-label="Screens" hidden>
-    <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
-    <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
-    <button type="button" class="tab" id="tab-favorites" data-view="favorites">
-      Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
-    </button>
-    <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
-    <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
-  </nav>
 
   <main id="app-main" hidden>
     <p id="status" class="status" role="status" aria-live="polite">Loading parking areas…</p>
@@ -306,6 +307,10 @@
       </div>
     </section>
   </main>
+
+  <footer class="site-footer" id="app-footer" hidden>
+    <p class="sample-note">Rules are cited; lot locations and availability are sample data, not verified.</p>
+  </footer>
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
