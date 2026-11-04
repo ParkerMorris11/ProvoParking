@@ -131,8 +131,11 @@ document.addEventListener("click", (e) => {
     if (!requireAccount("Create a free account to save favorite parking areas.")) return;
     return toggleFavorite(Number(heart.dataset.areaId), heart, { renderViews });
   }
+  if (e.target.closest(".home-link")) { e.preventDefault(); return go("#areas"); } // title → Areas
+  if (e.target.closest("#menu-toggle")) return setMenuOpen(!$("app-nav").classList.contains("menu-open"));
+  if (!e.target.closest("#tab-list")) setMenuOpen(false); // click outside the dropdown closes it
   const tab = e.target.closest(".tab");
-  if (tab) return go(`#${tab.dataset.view}`);
+  if (tab) { setMenuOpen(false); return go(`#${tab.dataset.view}`); }
   const park = e.target.closest("[data-park-area]");
   if (park) {
     go("#car");
@@ -151,11 +154,68 @@ initCar({ requireAccount });
 initAuth({ onSignedIn, onGuest, authStorage });
 window.addEventListener("hashchange", showView);
 
+// Narrow-window tab menu (the ☰ button). Closes on Escape, on a tab choice, on an outside click,
+// and when the window grows wide enough to show the tabs in a row again.
+function setMenuOpen(open) {
+  $("app-nav").classList.toggle("menu-open", open);
+  $("menu-toggle").setAttribute("aria-expanded", String(open));
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && $("app-nav").classList.contains("menu-open")) {
+    setMenuOpen(false);
+    $("menu-toggle").focus();
+  }
+});
+// Switch to the menu button only when the title, tabs, and account don't fit on one row.
+// Re-checked whenever the header or the account area (name changes on sign-in) resizes.
+function fitHeader() {
+  const header = $("app-header");
+  header.classList.remove("nav-compact");
+  const cs = getComputedStyle(header);
+  const room = header.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const items = [...header.children].filter((el) => el.getClientRects().length);
+  const need = items.reduce((w, el) => w + el.getBoundingClientRect().width, 0) + parseFloat(cs.columnGap) * (items.length - 1);
+  const compact = need > room;
+  header.classList.toggle("nav-compact", compact);
+  if (!compact) setMenuOpen(false);
+  centerNav();
+}
+
+// How far the tabs must move left from their right-aligned spot to sit at the header's center,
+// without sliding into the title. Uses offsetLeft/offsetWidth, which ignore the current transform.
+function centerNav() {
+  const header = $("app-header"), tabs = $("app-nav"), title = header.querySelector("h1");
+  const cs = getComputedStyle(header);
+  const padL = parseFloat(cs.paddingLeft), padR = parseFloat(cs.paddingRight);
+  const center = padL + (header.clientWidth - padL - padR - tabs.offsetWidth) / 2;
+  const gap = parseFloat(cs.columnGap);
+  const minLeft = title.offsetLeft + title.offsetWidth + gap;
+  // At the top the account area overlays the right end of the row; move at least far enough to clear it.
+  const account = header.querySelector(".account-bar");
+  const clearAccount = header.classList.contains("nav-compact") ? 0 : account.offsetWidth + gap;
+  const shift = Math.max(0, Math.min(tabs.offsetLeft - minLeft, Math.max(tabs.offsetLeft - center, clearAccount)));
+  header.style.setProperty("--nav-shift", shift + "px");
+}
+// "At the top" = not scrolled. Checked on every scroll, batched to one update per frame.
+let scrollQueued = false;
+function updateAtTop() {
+  scrollQueued = false;
+  $("app-header").classList.toggle("at-top", window.scrollY < 4);
+}
+window.addEventListener("scroll", () => {
+  if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(updateAtTop); }
+}, { passive: true });
+updateAtTop();
+const headerWatch = new ResizeObserver(fitHeader);
+headerWatch.observe($("app-header"));
+headerWatch.observe($("app-header").querySelector(".account-bar"));
+headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs' width
+
 (async function init() {
   const cfg = window.APP_CONFIG;
   if (!cfg || !cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) {
     $("loading").hidden = true;
-    for (const id of ["app-header", "app-main"]) $(id).hidden = false;
+    for (const id of ["app-header", "app-main", "app-footer"]) $(id).hidden = false;
     setStatus("Missing config.js. Copy config.example.js to config.js and add your Supabase URL and key.", true);
     return;
   }
