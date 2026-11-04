@@ -31,6 +31,6 @@ The migration is repeatable: only these four managed real lots' rules are refres
 
 ## Verification
 
-104 tests pass on the disposable local PostgreSQL database, with zero failures or skips. New tests evaluate rules read back from the actual migration, covering the independent permit matrix, every enforcement boundary, weekends and 00:59/01:00/04:59/05:00 for all four lots. The migration is applied twice in tests and old sample rows remain unchanged. A separate rendering test prevents sample records from appearing in primary results while preserving them in shared state.
+105 tests pass on the disposable local PostgreSQL database, with zero failures or skips. New tests evaluate rules read back from the actual migration, covering the independent permit matrix, every enforcement boundary, weekends and 00:59/01:00/04:59/05:00 for all four lots. The migration is applied twice in tests and old sample rows remain unchanged. A separate rendering test prevents sample records from appearing in primary results while preserving them in shared state.
 
 Production data read-back, interactive live checks and accessibility evidence are recorded on the L1/P5 Trello cards after deployment. PO acceptance remains separate from Done.

@@ -21,7 +21,7 @@ function ruleGroupHtml(group) {
   const codes = group.map((g) => state.permits.find((p) => p.permit_id === g.permit_id)?.permit_code).filter(Boolean);
   const days = /^all$/i.test(r.days_of_week.trim()) ? "Every day" : r.days_of_week;
   const hours = toMinutes(r.start_time) === 0 && toMinutes(r.end_time) >= 1439 ? "all day" : `${fmtTime(r.start_time)}–${fmtTime(r.end_time)}`;
-  const fullyBlocked = ruleBlocksTime(r, toMinutes(r.start_time)) && ruleBlocksTime(r, toMinutes(r.end_time));
+  const fullyBlocked = open && ruleBlocksTime(r, toMinutes(r.start_time)) && ruleBlocksTime(r, toMinutes(r.end_time));
   const bullets = [];
   bullets.push(fullyBlocked ? "No parking for any permit during this interval." : open ? "Open to everyone." : `Valid permits: ${codes.map(escapeHtml).join(", ")}.`);
   if (r.blocked_start && r.blocked_end) bullets.push(`No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}.`);
