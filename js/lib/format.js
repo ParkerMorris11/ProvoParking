@@ -42,6 +42,11 @@ export function timeAgo(iso) {
   return `${Math.round(mins / 1440)} days ago`;
 }
 
-export function directionsUrl(area) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${area.latitude},${area.longitude}&travelmode=walking`;
+export function directionsUrl(area, travelmode = "walking") {
+  const coordinate = value => (typeof value === "number" || typeof value === "string" && value.trim() !== "") ? Number(value) : NaN;
+  const latitude = coordinate(area.latitude), longitude = coordinate(area.longitude);
+  if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180) return null;
+  // Omit origin so Google Maps uses the device's current location (or asks for a start).
+  // Leave dir_action unset to show directions first, letting the user choose Start.
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${latitude},${longitude}`)}&travelmode=${encodeURIComponent(travelmode)}`;
 }
