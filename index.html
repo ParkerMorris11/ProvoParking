@@ -198,13 +198,19 @@
       </div>
       <div class="parking-workspace">
         <div class="map-panel">
-          <div class="map-toolbar"><h3>Explore campus</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button></div></div>
+          <div class="map-toolbar"><h3>Explore BYU and downtown</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button></div></div>
           <div class="map-stage">
-            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU parking map" aria-describedby="map-note"></div>
+            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and downtown Provo parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
-          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul></div>
+          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show downtown Provo lots (city records, rules not verified)</label></div>
           <p id="map-note" class="map-note">Only verified sections matching listed rules for your permit and parking time are shown. Registration and eligibility are not verified. Colors show lot categories, not open spaces. Check posted signs.</p>
+          <details class="city-lots">
+            <summary>Downtown Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
+            <p id="city-status" class="map-note" role="status">Loading Provo City parking records…</p>
+            <p class="map-note">Source: <a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo City</a> parking facilities map, public lots only, checked 2026-11-05. Outlines are simplified. Spaces and hours are what the city recorded; they are not live counts or verified rules.</p>
+            <ul id="city-lot-list" class="nearby-list"></ul>
+          </details>
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
           <section class="nearby-panel" aria-labelledby="nearby-heading">
