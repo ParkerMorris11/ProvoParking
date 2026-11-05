@@ -105,6 +105,30 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 | permit → parking_rule (optional; no permit = open to all) | one-to-many |
 | tow_company → parking_area | one-to-many |
 
+
+## System architecture (Sprint 1 review)
+
+The customer app is live on GitHub Pages and uses Supabase. The AWS admin portal and AI workflow below are **planned**, not deployed. The FigJam contains the team's visual copy.
+
+```mermaid
+flowchart LR
+  U[Driver] -->|permit, day, time| UI[HTML / CSS / JS app]
+  GH[GitHub repository] -->|site files via GitHub Actions| P[GitHub Pages]
+  P -->|serves app| UI
+  UI -->|queries and session requests| API[Supabase API and Auth]
+  API -->|rows and credentials| DB[(Supabase PostgreSQL)]
+  UI -->|map tiles| OSM[OpenStreetMap / Leaflet]
+  UI -->|lot coordinates| Maps[Google Maps directions]
+  A[Admin user - planned] -->|login and changes| WEB[Admin HTML / CSS - planned AWS]
+  WEB -->|lot and rule edits| S[Express / Node - planned AWS]
+  S -->|pending edits| AD[(Admin database - planned AWS)]
+  S -->|approved verified rules - planned| DB
+  Sources[BYU and Provo rule pages] -->|source text - planned| AI[Claude API - planned AI extraction]
+  AI -->|proposed rule changes - planned| S
+```
+
+The planned AI workflow requires human review before rule changes are published.
+
 ## Tech Stack
 | Layer | What we use |
 |---|---|
