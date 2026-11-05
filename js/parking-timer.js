@@ -1,3 +1,15 @@
+import { createVisitTracker } from "./data/visit-tracker.js";
+import { createGuestVisitRpc } from "./data/visit-guest-rpc.js";
+// Resume a pending telemetry write after navigation; never block the timer UI.
+try {
+  const cfg = window.APP_CONFIG;
+  if (cfg?.SUPABASE_URL && cfg?.SUPABASE_ANON_KEY && sessionStorage.getItem("provoParking.visit.v1")) {
+    const rpc = createGuestVisitRpc({url:cfg.SUPABASE_URL, key:cfg.SUPABASE_ANON_KEY});
+    const tracker = createVisitTracker({storage:sessionStorage, rpc});
+    void tracker.open({asGuest:true});
+    window.addEventListener("online", () => void tracker.flush());
+  }
+} catch { /* The timer does not depend on metrics. */ }
 import { initParkingTimer } from "./pages/parking-timer.js";
 import { sampleSession } from "./domain/active-parking.js";
 import { loadTimerSession, endLocalTimer, TIMER_STORAGE_KEY } from "./lib/timer-storage.js";

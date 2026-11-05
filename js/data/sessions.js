@@ -2,6 +2,8 @@
 import { state, currentUserId } from "../state.js";
 
 export async function startSession({ areaId, minutes, reminderMinutes, carNote }) {
+  const visitOwner = state.authId;
+  const visit = state.visitTracker?.captureAccount?.(visitOwner);
   const row = {
     user_id: currentUserId(),
     area_id: areaId,
@@ -12,6 +14,7 @@ export async function startSession({ areaId, minutes, reminderMinutes, carNote }
   };
   const { data, error } = await state.db.from("parking_session").insert(row).select().single();
   if (error) throw error;
+  if (visit) void state.visitTracker?.accountStarted(data, visitOwner, visit);
   return data;
 }
 
