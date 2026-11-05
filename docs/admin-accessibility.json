@@ -1,0 +1,54 @@
+{
+  "environment": "Local preview with synthetic accounts, isolated PostgreSQL data and a test Auth/API adapter; not production",
+  "method": "Lighthouse User Flow snapshots of actual admin page states",
+  "results": [
+    {
+      "viewport_width": 390,
+      "states": [
+        {
+          "state": "username_sign_in",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        },
+        {
+          "state": "dashboard",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        },
+        {
+          "state": "explanation_dialog",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        }
+      ],
+      "axe_dashboard_and_all_four_dialogs_violations": 0
+    },
+    {
+      "viewport_width": 1280,
+      "states": [
+        {
+          "state": "username_sign_in",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        },
+        {
+          "state": "dashboard",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        },
+        {
+          "state": "explanation_dialog",
+          "accessibility_score": 100,
+          "lighthouse_version": "13.6.0",
+          "mode": "snapshot"
+        }
+      ],
+      "axe_dashboard_and_all_four_dialogs_violations": 0
+    }
+  ]
+}

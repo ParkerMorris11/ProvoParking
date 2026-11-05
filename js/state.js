@@ -10,13 +10,14 @@ export const state = {
   guest: false,           // true after "Continue as guest"
   areas: [],
   permits: [],
+  destinations: [],
   rulesByArea: new Map(), // area_id -> parking_rule rows
   towById: new Map(),
   favoriteIds: new Set(),
   activeSession: null,
   currentView: null,
   // What the user picked on the Find screen.
-  find: { permitId: null, live: true, day: new Date().getDay(), time: nowHHMM() },
+  find: { permitId: null, destinationId: null, live: true, day: new Date().getDay(), time: nowHHMM() },
 };
 
 export function rulesFor(areaId) {

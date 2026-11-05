@@ -1,5 +1,7 @@
 # Provo Parking
 
+**Admin OKR dashboard:** [Username sign-in, database setup, metric definitions, verification and rollout](docs/admin-okr.md). The new `admin.html` page reports all four OKRs using admin-authorized database aggregates. Apply the tracking migration and provision each admin before deployment; no default credentials are included.
+
 **KR 2b visit metrics:** an additive migration and the account/local timer hooks measure time from opening to timer start. Account-backed results and client-reported guest results are separate; incomplete visits are excluded. See [visit metrics and rollout](docs/visit-metrics-handoff.md).
 
 **Accounts (Sprint 2):** the first screen is now **Create your account**: *Continue with Google*, or email + password on one screen, then an optional permit search with *Skip*. A device that has signed in before shows **Welcome back**. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.

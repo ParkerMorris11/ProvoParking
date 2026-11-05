@@ -131,6 +131,8 @@ function clearPersonalData() {
   state.guest = false;
   state.favoriteIds = new Set();
   state.activeSession = null;
+  state.find.destinationId = null;
+  state.destinations = [];
   stopTimer();
   renderViews();
 }
@@ -291,6 +293,8 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     showAuth("login", `${linkError.replace(/\+/g, " ")}. Log in, or request a new link.`, true);
   } else if (openedFromResetLink && session) {
     showAuth("newpass");
+  } else if (location.hash === "#login") {
+    showAuth("login"); // explicit return from the separate admin page, even on a guest device
   } else if (session) {
     await onSignedIn(session);
   } else if (recall(GUEST_KEY)) {
