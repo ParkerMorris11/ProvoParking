@@ -1,5 +1,7 @@
 # Provo Parking
 
+**Admin OKR dashboard:** [Username sign-in, database setup, metric definitions, verification and rollout](docs/admin-okr.md). The new `admin.html` page reports all four OKRs using admin-authorized database aggregates. Apply the tracking migration and provision each admin before deployment; no default credentials are included.
+
 **Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
 
 P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.

@@ -15,6 +15,7 @@ import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea, stopTimer } from "./pages/car.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
+import { recordAppVisit } from "./data/visits.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
@@ -81,6 +82,9 @@ async function onSignedIn(session, note = "") {
     state.guest = false;
     remember(GUEST_KEY, null);
     remember(RETURNING_KEY, "1");
+    // Failure does not lock people out of parking. Starting a timer retries the write.
+    await recordAppVisit().catch(err => console.warn("Visit recording unavailable", err));
+    if (version !== state.authVersion) return;
     await enterApp(note, version);
   } catch (err) {
     if (version !== state.authVersion) return;
@@ -107,6 +111,8 @@ function clearPersonalData() {
   state.guest = false;
   state.favoriteIds = new Set();
   state.activeSession = null;
+  state.find.destinationId = null;
+  state.destinations = [];
   stopTimer();
   renderViews();
 }
@@ -256,6 +262,8 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     showAuth("login", `${linkError.replace(/\+/g, " ")}. Log in, or request a new link.`, true);
   } else if (openedFromResetLink && session) {
     showAuth("newpass");
+  } else if (location.hash === "#login") {
+    showAuth("login"); // explicit return from the separate admin page, even on a guest device
   } else if (session) {
     await onSignedIn(session);
   } else if (recall(GUEST_KEY)) {

@@ -111,6 +111,8 @@
         <p class="auth-switch subtle"><button type="button" class="auth-link quiet" data-auth-go="guest">Continue as guest</button></p>
       </form>
 
+      <p class="auth-switch"><a class="auth-link" href="admin.html">Admin sign in</a></p>
+
       <!-- Forgot password -->
       <form id="forgot-form" class="auth-form" novalidate hidden>
         <div class="field">
@@ -169,6 +171,9 @@
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
+        <label for="find-destination">Where are you going?</label>
+        <select id="find-destination" required aria-describedby="destination-hint"></select>
+        <p id="destination-hint" class="hint">Choose your BYU building. We save it with your parking timer to measure how close you parked.</p>
 
         <div class="row">
           <div>
@@ -243,6 +248,8 @@
       <form id="car-form" class="panel" hidden>
         <label for="car-area">Where are you parking?</label>
         <select id="car-area"></select>
+        <label for="car-destination">Destination building</label>
+        <select id="car-destination" required></select>
 
         <div class="row">
           <div>
