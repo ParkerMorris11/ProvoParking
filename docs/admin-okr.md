@@ -1,5 +1,7 @@
 # Admin dashboard and automatic OKR tracking
 
+**Rollout blocked:** Main now includes a different visit-tracking implementation. The live `app_visit` table has `id`, `secret_hash`, `owner_id`, and `opened_at`, while this PR's migration expects `user_id` and `open_token`. Do not apply the migration or deploy this branch until the database, metrics, and both timer paths have been reconciled and tested. The checklist below predates that change.
+
 This PR targets **ParkerMorris11's Org → provo-parking**, project **rikekjksneoymybnehpo**:
 <https://supabase.com/dashboard/project/rikekjksneoymybnehpo>.
 Do not apply its migration to another project. The authoring agent could not access this project through its connected Supabase accounts; no production migration, account creation or deployment was performed. The PR is intentionally unmerged.

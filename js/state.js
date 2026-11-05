@@ -2,6 +2,7 @@
 import { nowHHMM } from "./lib/format.js";
 
 export const state = {
+  visitTracker: null,
   db: null,               // Supabase client, set in main.js
   user: null,             // signed-in profile { userId, displayName, email, permitIds }, or null
   authId: null,
@@ -16,7 +17,7 @@ export const state = {
   activeSession: null,
   currentView: null,
   // What the user picked on the Find screen.
-  find: { permitId: null, destinationId: null, day: new Date().getDay(), time: nowHHMM() },
+  find: { permitId: null, destinationId: null, live: true, day: new Date().getDay(), time: nowHHMM() },
 };
 
 export function rulesFor(areaId) {

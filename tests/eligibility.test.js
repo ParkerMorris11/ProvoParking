@@ -40,13 +40,13 @@ test("the ban ends at 5:00 a.m. (end is exclusive)", () => {
 test("an open rule (no permit) lets anyone park", () => {
   const r = evaluate([rule({})], PP, TUE, "12:00");
   assert.equal(r.kind, "ok");
-  assert.equal(r.text, "Open to everyone");
+  assert.equal(r.text, "No permit restriction listed; check signs");
 });
 
 test("a time limit is reported", () => {
   const r = evaluate([rule({ permit_id: PP, max_stay_minutes: 4320 })], PP, TUE, "12:00");
   assert.equal(r.kind, "limit");
-  assert.equal(r.text, "Your permit works here, 3 days limit");
+  assert.equal(r.text, "Permit matches listed rule; 3 days limit. Check signs");
 });
 
 test("an area with no rules is unknown, never assumed allowed", () => {
@@ -124,4 +124,15 @@ test("switching day, time and permit rechecks the current choice", () => {
   assert.equal(evaluate(weekday, Y, TUE, "03:00").kind, "blocked");
   assert.equal(evaluate(weekday, Y, 6, "08:00").kind, "unknown");
   assert.equal(evaluate(weekday, Y, TUE, "08:00").kind, "ok");
+});
+
+test('matching rules are conditional guidance, not a promise of eligibility', () => {
+  assert.match(evaluate(yLot, Y, TUE, '08:00').text, /check/i);
+  assert.doesNotMatch(evaluate(yLot, Y, TUE, '08:00').text, /works here/i);
+  assert.doesNotMatch(evaluate([rule({})], Y, TUE, '08:00').text, /everyone/i);
+});
+
+test('visitor weekend note does not establish a selected driver’s eligibility', () => {
+  const weekend = rule({days_of_week:'Sat,Sun', rule_note:'Ordinary stalls on normal weekends: visitors may park; overnight ban remains.'});
+  assert.equal(evaluate([weekend],Y,6,'12:00').kind,'unknown');
 });

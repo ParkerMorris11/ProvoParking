@@ -4,6 +4,7 @@ import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl } from "../lib/format.js";
 import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
+import { parkingSelection } from "../domain/parking-results.js";
 
 function groupRules(rules) {
   const groups = new Map();
@@ -23,9 +24,9 @@ function ruleGroupHtml(group) {
   const hours = toMinutes(r.start_time) === 0 && toMinutes(r.end_time) >= 1439 ? "all day" : `${fmtTime(r.start_time)}–${fmtTime(r.end_time)}`;
   const fullyBlocked = open && ruleBlocksTime(r, toMinutes(r.start_time)) && ruleBlocksTime(r, toMinutes(r.end_time));
   const bullets = [];
-  bullets.push(fullyBlocked ? "No parking for any permit during this interval." : open ? "Open to everyone." : `Valid permits: ${codes.map(escapeHtml).join(", ")}.`);
+  bullets.push(fullyBlocked ? "No parking for any permit during this interval." : open ? "No permit restriction listed for ordinary stalls; check signs." : `Listed permits: ${codes.map(escapeHtml).join(", ")}; registration and posted restrictions apply.`);
   if (r.blocked_start && r.blocked_end) bullets.push(`No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}.`);
-  if (!fullyBlocked) bullets.push(r.max_stay_minutes ? `Time limit: ${fmtDuration(r.max_stay_minutes)}.` : "No time limit listed.");
+  if (!fullyBlocked) bullets.push(r.max_stay_minutes ? `Time limit: ${fmtDuration(r.max_stay_minutes)}.` : "Time limit unknown unless posted.");
   if (group.length === 1 && r.rule_note) bullets.push(escapeHtml(r.rule_note));
   return `
     <li class="rule">
@@ -44,6 +45,8 @@ export function renderAreaDetail(areaId) {
   }
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
+  const directions = directionsUrl(area);
+  const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
   const groups = groupRules(rulesFor(area.area_id));
   box.innerHTML = `
@@ -55,11 +58,11 @@ export function renderAreaDetail(areaId) {
       ${heartHtml(area)}
     </div>
     <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
-      <span class="when">(${DAY_NAMES[state.find.day]} ${fmtTime(state.find.time)})</span></p>
+      <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
     <p class="avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
 
     <h3>Rules</h3>
-    ${!area.is_sample_data ? `<p class="hint">Verified from BYU sources on November 4, 2026. Ordinary stalls, regular fall/winter weekly schedule. Vehicle must be registered and active. Posted signs, event closures, holidays, finals and breaks may change these rules. Lot coordinates mark its approximate center, not an entrance. <a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus map</a>.</p>` : ""}
+    ${!area.is_sample_data ? `<p class="hint">Verified from BYU sources on November 4, 2026. Ordinary stalls, regular fall/winter weekly schedule. Vehicle must be registered and active. Posted signs, event closures, holidays, finals and breaks may change these rules. Coordinates mark an approximate location, not a verified entrance or stall. <a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus map</a>.</p>` : ""}
     ${groups.length ? `<ul class="rules">${groups.map(ruleGroupHtml).join("")}</ul>` : `<p class="empty">No rules on file for this area yet.</p>`}
 
     <h3>If you are towed</h3>
@@ -67,6 +70,6 @@ export function renderAreaDetail(areaId) {
 
     <div class="actions">
       <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
-      <a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to lot center"}</a>
+      ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
     </div>`;
 }

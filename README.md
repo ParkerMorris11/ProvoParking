@@ -2,6 +2,8 @@
 
 **Admin OKR dashboard:** [Username sign-in, database setup, metric definitions, verification and rollout](docs/admin-okr.md). The new `admin.html` page reports all four OKRs using admin-authorized database aggregates. Apply the tracking migration and provision each admin before deployment; no default credentials are included.
 
+**KR 2b visit metrics:** an additive migration and the account/local timer hooks measure time from opening to timer start. Account-backed results and client-reported guest results are separate; incomplete visits are excluded. See [visit metrics and rollout](docs/visit-metrics-handoff.md).
+
 **Accounts (Sprint 2):** the first screen is now **Create your account** (email + password, then name and a permit search), or **Welcome back** on a device that has signed in before. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
 
 P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
@@ -22,11 +24,13 @@ Students who drive to BYU often circle lots that are full or that their permit d
 |---|---|---|---|
 | 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
 | 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit) | `permit`, `user_permit` |
-| 2 | **Areas** | Parking areas sorted so the ones you can use come first; each shows ✓ / ! / ✕ eligibility in text, plus an availability estimate | `parking_area`, `parking_rule`, `favorite_area` |
+| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, map and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
-| 4 | **Favorites** | Areas you saved with the heart | `favorite_area` |
+| 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
 | + | **Help** (extra tab) | Key BYU and Provo rules, what to do about a citation, with source links; static, no database | none |
+
+**Favorite directions:** Get Directions opens Google Maps in a new tab (or its installed mobile app), with driving directions to that saved lot ready for the user to choose Start. Google Maps uses the device's current location when available; otherwise, it asks for a starting point. This uses the existing [Google Maps URLs integration](https://developers.google.com/maps/documentation/urls/get-started), so no Google API key or new setup is needed. Coordinates identify lot centers, not entrances; sample locations are labeled, and lots without valid coordinates show a directions-unavailable message.
 
 Eligibility rule: an area is usable if a rule that applies on the chosen day and time is open to everyone or lists your permit, and the time is not inside that rule's no-parking window (for example BYU's 1-5 a.m.). A valid permit does not mean a space is open; availability is always labeled an estimate. Reminders only show while the page is open (no push notifications), and walking-directions links point at sample lot locations.
 
@@ -106,6 +110,30 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 | parking_area → parking_rule | one-to-many |
 | permit → parking_rule (optional; no permit = open to all) | one-to-many |
 | tow_company → parking_area | one-to-many |
+
+
+## System architecture (Sprint 1 review)
+
+The customer app is live on GitHub Pages and uses Supabase. The AWS admin portal and AI workflow below are **planned**, not deployed. The FigJam contains the team's visual copy.
+
+```mermaid
+flowchart LR
+  U[Driver] -->|permit, day, time| UI[HTML / CSS / JS app]
+  GH[GitHub repository] -->|site files via GitHub Actions| P[GitHub Pages]
+  P -->|serves app| UI
+  UI -->|queries and session requests| API[Supabase API and Auth]
+  API -->|rows and credentials| DB[(Supabase PostgreSQL)]
+  UI -->|map tiles| OSM[OpenStreetMap / Leaflet]
+  UI -->|lot coordinates| Maps[Google Maps directions]
+  A[Admin user - planned] -->|login and changes| WEB[Admin HTML / CSS - planned AWS]
+  WEB -->|lot and rule edits| S[Express / Node - planned AWS]
+  S -->|pending edits| AD[(Admin database - planned AWS)]
+  S -->|approved verified rules - planned| DB
+  Sources[BYU and Provo rule pages] -->|source text - planned| AI[Claude API - planned AI extraction]
+  AI -->|proposed rule changes - planned| S
+```
+
+The planned AI workflow requires human review before rule changes are published.
 
 ## Tech Stack
 | Layer | What we use |

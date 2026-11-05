@@ -3,6 +3,7 @@ import { state } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, nowHHMM } from "../lib/format.js";
 import { savePermit } from "../lib/storage.js";
+import { parkingSelection } from "../domain/parking-results.js";
 
 export function renderFind() {
   renderDestinationOptions("find-destination", state.find.destinationId);
@@ -10,8 +11,11 @@ export function renderFind() {
   sel.innerHTML = `<option value="">Choose a permit…</option>` +
     state.permits.map((p) => `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
   sel.value = state.find.permitId ?? "";
-  $("arrive-day").value = String(state.find.day);
-  $("arrive-time").value = state.find.time;
+  const selection = parkingSelection(state.find);
+  $("arrive-day").value = String(selection.day);
+  $("arrive-time").value = selection.time;
+  $("arrive-now").checked = Boolean(state.find.live);
+  syncTimeControls();
   renderPermitInfo();
 }
 
@@ -19,6 +23,12 @@ export function renderDestinationOptions(id, selected) {
   $(id).innerHTML = '<option value="">Choose a BYU building…</option>' + state.destinations.map(d =>
     `<option value="${d.destination_id}">${escapeHtml(d.name)} (${escapeHtml(d.building_code)})</option>`).join("");
   $(id).value = selected ?? "";
+}
+
+function syncTimeControls() {
+  const live = $("arrive-now").checked;
+  $("arrive-day").disabled = live;
+  $("arrive-time").disabled = live;
 }
 
 function renderPermitInfo() {
@@ -31,6 +41,7 @@ function renderPermitInfo() {
 
 export function initFind({ go }) {
   $("permit-select").addEventListener("change", renderPermitInfo);
+  $("arrive-now").addEventListener("change", syncTimeControls);
   $("find-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const id = Number($("permit-select").value);
@@ -41,10 +52,12 @@ export function initFind({ go }) {
     }
     state.find.destinationId = destinationId;
     state.find.permitId = id;
+    state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);
     state.find.time = $("arrive-time").value || nowHHMM();
     savePermit(id);
-    setStatus(`Showing areas for ${DAY_NAMES[state.find.day]} at ${fmtTime(state.find.time)}.`);
+    const selection = parkingSelection(state.find);
+    setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
     go("#areas");
   });
 }

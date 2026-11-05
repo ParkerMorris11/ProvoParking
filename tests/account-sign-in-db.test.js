@@ -30,6 +30,7 @@ const userIdFor = (authId) => Number(run(`SELECT user_id FROM public.app_user WH
 test("Account sign-in migration: profiles, permits and per-user row security", { skip: !database && "Set P7_TEST_DATABASE_URL to the disposable local test database." }, async (t) => {
   assertDisposableTestTarget(database);
   run(`
+    DROP SCHEMA IF EXISTS visit_metrics_private CASCADE;
     DROP SCHEMA IF EXISTS auth CASCADE;
     DROP SCHEMA public CASCADE;
     CREATE SCHEMA public;
@@ -56,6 +57,7 @@ test("Account sign-in migration: profiles, permits and per-user row security", {
   const demoBefore = run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f");
   run(file(MIGRATION));
   run(file(MIGRATION)); // repeatable
+  run(file("supabase/migrations/20261105032816_visit_metrics.sql"));
 
   await t.test("migration is repeatable and keeps demo rows", () => {
     assert.equal(run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f"), demoBefore);
@@ -142,6 +144,17 @@ test("Account sign-in migration: profiles, permits and per-user row security", {
 
   await t.test("the team's existing browser-role check still passes", () => {
     run(file("supabase/tests-reference-reads.sql"));
+  });
+
+  await t.test("visit tracking links a real RLS-protected parking start without exposing visits", () => {
+    const visit="11111111-1111-4111-8111-111111111111", secret="22222222-2222-4222-8222-222222222222";
+    asUser(A, `select public.visit_open('${visit}','${secret}')`);
+    const session = asUser(A, `insert into public.parking_session(user_id,area_id,planned_minutes,leave_by) values(${userIdFor(A)},1,30,now()+interval '30 minutes') returning session_id`);
+    asUser(A, `select public.visit_bind('${visit}','${secret}')`);
+    asUser(A, `select public.visit_link_account('${visit}','${secret}',${session})`);
+    assert.equal(run(`select count(*) from visit_metrics_private.visit_link where parking_session_id=${session}`),"1");
+    assert.throws(()=>asUser(B,"select * from public.app_visit"),/permission denied/);
+    assert.throws(()=>asUser(B,`select public.visit_link_account('${visit}','${secret}',${session})`),/denied/);
   });
 
   await t.test("deleting an auth account removes its profile, permits and favorites", () => {

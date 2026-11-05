@@ -8,6 +8,8 @@ export async function startSession({ areaId, minutes, reminderMinutes, carNote, 
   const version = state.authVersion;
   await recordAppVisit();
   if (version !== state.authVersion) throw new Error("Your account changed. Please try again.");
+  const visitOwner = state.authId;
+  const visit = state.visitTracker?.captureAccount?.(visitOwner);
   const row = {
     user_id: userId,
     destination_id: destinationId,
@@ -19,6 +21,7 @@ export async function startSession({ areaId, minutes, reminderMinutes, carNote, 
   };
   const { data, error } = await state.db.from("parking_session").insert(row).select().single();
   if (error) throw error;
+  if (visit) void state.visitTracker?.accountStarted(data, visitOwner, visit);
   return data;
 }
 
