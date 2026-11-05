@@ -57,7 +57,7 @@ test("Account sign-in migration: profiles, permits and per-user row security", {
   const demoBefore = run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f");
   run(file(MIGRATION));
   run(file(MIGRATION)); // repeatable
-  run(file("supabase/migrations/20261105025320_visit_metrics.sql"));
+  run(file("supabase/migrations/20261105032816_visit_metrics.sql"));
 
   await t.test("migration is repeatable and keeps demo rows", () => {
     assert.equal(run("SELECT md5(string_agg(row_to_json(f)::text, ',' ORDER BY user_id, area_id)) FROM public.favorite_area f"), demoBefore);

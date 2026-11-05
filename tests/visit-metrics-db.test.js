@@ -20,7 +20,7 @@ test('visit migration preserves access boundaries and matches only successful st
     create table public.app_user(user_id integer primary key, auth_id uuid); insert into public.app_user values(1,'${a}'),(2,'${b}');
     create table public.parking_session(session_id integer primary key, user_id integer, started_at timestamptz); insert into public.parking_session values(1,1,statement_timestamp());
     grant usage on schema public,auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
-  sql(readFileSync(new URL('../supabase/migrations/20261105025320_visit_metrics.sql', import.meta.url),'utf8'));
+  sql(readFileSync(new URL('../supabase/migrations/20261105032816_visit_metrics.sql', import.meta.url),'utf8'));
   assert.throws(()=>sql('set role anon; select * from public.app_visit'),/permission denied/);
   assert.throws(()=>actor(a,'select * from public.app_visit'),/permission denied/);
   sql(`set role anon; select public.visit_open('${id}','${secret}')`);

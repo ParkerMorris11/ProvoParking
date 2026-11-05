@@ -12,7 +12,7 @@ The server stamps openings. Session storage preserves the original visit through
 
 ## Rollout and operational dependencies
 
-The migration `supabase/migrations/20261105025320_visit_metrics.sql` targets **provo-parking**, `rikekjksneoymybnehpo`; apply it before deploying the frontend and preserve existing rows. Run the local real-Postgres tests and inspect the production security advisor. Coordinate future timer and map changes against these hooks.
+The migration `supabase/migrations/20261105032816_visit_metrics.sql` targets **provo-parking**, `rikekjksneoymybnehpo`; apply it before deploying the frontend and preserve existing rows. Run the local real-Postgres tests and inspect the production security advisor. Coordinate future timer and map changes against these hooks.
 
 New visit opens are limited to 40 per forwarded address per ten-minute bucket. The database stores only a keyed, bucket-specific address digest in a private table, removing expired counters opportunistically. This is a coarse safeguard, not proof against distributed or spoofed requests; guest metrics remain untrusted. Each new opening removes up to 50 unfinished visits older than seven days. Cleanup is opportunistic: if no one opens the app, expired records remain until a later opening. Completed records remain to support the KR; account-linked records are removed when the account or linked session is deleted. Only the new visit records and counters are eligible for this cleanup; parking sessions and pre-existing data are never deleted by it.
 
