@@ -41,3 +41,28 @@ test('an already-aged fix expires at its original freshness deadline',async()=>{
   assert.equal(states.at(-1).status,'error');assert.equal(states.at(-1).position,null);
  } finally {t.stop();}
 });
+
+test('pause clears location and resume restarts only an explicitly enabled tracker',()=>{
+ const f=fixture();f.tracker.resume();assert.equal(f.watches,0);
+ f.tracker.start();f.fix();f.tracker.pause();assert.equal(f.states.at(-1).position,null);
+ f.tracker.resume();assert.equal(f.watches,2);f.tracker.stop();f.tracker.pause();f.tracker.resume();assert.equal(f.watches,2);
+});
+test('permission denial prevents automatic resume',()=>{
+ const f=fixture();f.tracker.start();f.fail(1);f.tracker.pause();f.tracker.resume();assert.equal(f.watches,1);
+});
+test('a live fix exposes its update timestamp',()=>{
+ const f=fixture();f.tracker.start();f.fix();assert.equal(f.states.at(-1).position.timestamp,100000);f.tracker.stop();
+});
+
+test('temporary unavailable position retries once and then offers recovery',()=>{
+ let fail, calls=0, retry; const states=[];
+ const geo={watchPosition(ok, bad){calls++;fail=bad;return calls;},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:x=>states.push(x),scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{retry=null;}});
+ t.start();fail({code:2});assert.equal(states.at(-1).status,'waiting');assert.equal(calls,1);
+ retry();assert.equal(calls,2);fail({code:2});assert.equal(states.at(-1).status,'error');t.stop();
+});
+test('stopping while a retry is pending prevents another location request',()=>{
+ let fail, retry; const geo={watchPosition(ok,bad){fail=bad;return 1;},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:()=>{},scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{retry=null;}});
+ t.start();fail({code:2});t.stop();assert.equal(retry,null);
+});

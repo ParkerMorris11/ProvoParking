@@ -1,6 +1,6 @@
 import { escapeHtml } from "../lib/format.js";
 
-import { nearbyLots } from "../domain/nearby.js";
+import { nearbyLots, arrivalSuggestion } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
@@ -17,16 +17,29 @@ function clearUserLocation() {
   userMarker = accuracyRing = null;
 }
 
+function updateArrivalSuggestion(element, candidate) {
+  if (!element) return;
+  const html = candidate ? `<strong>You may be near ${escapeHtml(candidate.area_name)}.</strong> Location is approximate. <a href="#area/${encodeURIComponent(candidate.area_id)}">Review this lot and confirm before starting a timer</a>.` : "";
+  if (element.innerHTML === html) return;
+  const hadFocus = element.contains(document.activeElement);
+  element.innerHTML = html;
+  element.hidden = !candidate;
+  if (hadFocus) document.getElementById("locate-me")?.focus();
+}
+
 function renderNearby() {
   const list = document.getElementById("nearby-list");
   if (!list) return;
   const controls = document.getElementById("nearby-controls");
   const empty = document.getElementById("nearby-empty");
+  const suggestion = document.getElementById("arrival-suggestion");
   controls.hidden = !latestPosition;
-  if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; nearby = []; return; }
+  if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; updateArrivalSuggestion(suggestion, null); nearby = []; return; }
   const activeButton = document.activeElement?.closest?.("[data-nearby-index]");
   const focusedLot = activeButton && list.contains(activeButton) ? nearby[Number(activeButton.dataset.nearbyIndex)] : null;
   nearby = nearbyLots(visibleFeatures, latestPosition, document.getElementById("nearby-permit").value);
+  const candidate = state.find.live ? arrivalSuggestion(nearby, latestPosition, state.areas) : null;
+  updateArrivalSuggestion(suggestion, candidate);
   empty.hidden = nearby.length > 0;
   empty.textContent = "No matching mapped sections in this category within 5 km. Try another category or check your permit and parking time.";
   list.innerHTML = nearby.map((lot, index) => {
@@ -86,7 +99,10 @@ function initLocation() {
     lotLayers.get(lot.feature)?.openPopup();
     document.getElementById("parking-map").focus({ preventScroll: false });
   });
-  document.addEventListener("visibilitychange", () => { if (document.hidden) pauseMapLocation(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseMapLocation();
+    else if (state.currentView === "areas" && document.getElementById("auth-screen")?.hidden) tracker.resume();
+  });
   window.addEventListener("pagehide", pauseMapLocation);
 }
 
@@ -117,7 +133,11 @@ export function showAreaOnMap(area) {
 }
 
 export function pauseMapLocation() {
-  tracker?.stop("Location paused. Use your location again when you return to the map.");
+  tracker?.pause();
+}
+
+export function stopMapLocation() {
+  tracker?.stop();
 }
 
 function setMapStatus(message) {
@@ -149,7 +169,7 @@ export async function initMap() {
     setMapStatus("Map unavailable. Use the parking list to view rules and details.");
     return;
   }
-  if (map) { refreshMap(); return; }
+  if (map) { refreshMap(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
   const L = window.L;
   try {
     map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true }).setView([40.2518, -111.6493], 15);

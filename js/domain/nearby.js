@@ -46,3 +46,14 @@ export function nearbyLots(features, position, permit = "", limit = 3) {
   }
   return [...unique.values()].sort((a,b) => a.distanceMeters - b.distanceMeters || a.name.localeCompare(b.name)).slice(0, limit);
 }
+
+// A nearby center is only a prompt to review, never proof of arrival or permission.
+export function arrivalSuggestion(lots, position, areas) {
+  if (!Number.isFinite(position?.accuracy) || position.accuracy < 0 || position.accuracy > 50) return null;
+  for (const lot of lots || []) {
+    if (!Number.isFinite(lot.distanceMeters) || lot.distanceMeters > 60) continue;
+    const area = (areas || []).find(a => !a.is_sample_data && a.source_feature_id === lot.feature?.properties?.OBJECTID);
+    if (area) return area;
+  }
+  return null;
+}

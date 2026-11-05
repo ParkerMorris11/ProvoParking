@@ -2,15 +2,17 @@
 
 Click **Use my location** on Areas and allow the browser permission prompt. The map shows a blue position dot and an accuracy radius, then ranks the three nearest distinct mapped lots within 5 km. Updates from the browser move the dot and refresh distances; the map centers on the first fix so later updates do not interrupt exploration. **Show lot on map** opens that boundary's recorded rules popup.
 
-The optional permit-category dropdown matches the snapshot's exact code. It does not infer that a pass allows other categories, check parking hours, or claim occupancy. Restricted (`R`), No BYU Parking and missing-category features are excluded. Results are based on straight-line distances to bounding-box lot centers, not entrances, road routes or walking times. Large GPS uncertainty is displayed explicitly. The map covers BYU: users elsewhere may get no nearby results.
+Nearby recommendations use the verified sections matching the selected permit and Provo time; the optional category dropdown narrows those results by exact code. They do not verify registration or claim occupancy. Restricted (`R`), No BYU Parking and missing-category features are excluded. Results are based on straight-line distances to bounding-box lot centers, not entrances, road routes or walking times. Large GPS uncertainty is displayed explicitly. Nearby recommendations cover verified BYU sections; the separate downtown layer is not included.
+
+When a fresh fix is within 60 m of an eligible section center and accuracy is 50 m or better, a prompt offers to review the lot. This is only an approximate suggestion: the driver must review and choose the lot and start the timer; GPS never starts a session.
 
 ## Privacy and lifecycle
 
 No location is requested on startup. The browser's [Geolocation API](https://www.w3.org/TR/geolocation/) is called only after clicking Use my location; HTTPS or localhost and browser permission are required. No new paid mapping service or API key is needed.
 
-Coordinates are held in browser memory and never sent to our Supabase database, saved to localStorage, or logged. Moving/centering the map still requests the visible OpenStreetMap tiles as usual. Stop tracking clears the watch, user marker, accuracy ring and nearby results. Leaving Areas, hiding the document or leaving the page also pauses tracking; returning requires a deliberate click. This is foreground web tracking, not a background or closed-app location service.
+Coordinates are held in browser memory and never sent to our Supabase database, saved to localStorage, or logged. Moving/centering the map still requests the visible OpenStreetMap tiles as usual. Stop tracking clears the watch, user marker, accuracy ring and nearby results. Leaving Areas or hiding the document pauses tracking and clears displayed coordinates; returning to the visible map resumes only if tracking was previously enabled. Signing out or opening authentication stops tracking and clears that opt-in. This is foreground web tracking, not a background or closed-app location service.
 
-Denied permission, unavailable/unsupported location, timeouts, invalid fixes and stale fixes display recovery guidance. A fix expires after 90 seconds without a fresh update, preventing old coordinates from continuing to appear live. Restarting does not create duplicate watches, and late callbacks after stop are ignored.
+A temporary unavailable-position error is retried once; permission denial, persistent errors, timeouts, invalid fixes and stale fixes display recovery guidance. The status includes the last fix time and approximate accuracy. A fix expires after 90 seconds without a fresh update, preventing old coordinates from continuing to appear live. Restarting does not create duplicate watches, and late callbacks after stop are ignored.
 
 ## Verification — November 1, 2026
 

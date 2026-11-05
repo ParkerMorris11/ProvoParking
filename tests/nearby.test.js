@@ -26,3 +26,15 @@ test('permit sections of the same physical lot occupy only one recommendation',(
  assert.deepEqual(nearbyLots([a,b,c],{latitude:40.25,longitude:-111.65}).map(x=>x.name),['22B','23Y']);
  assert.deepEqual(nearbyLots([a,b,c],{latitude:40.25,longitude:-111.65},'A').map(x=>x.name),['22A']);
 });
+
+test('arrival suggestion requires a reliable nearby fix and an exact verified section', async () => {
+ const { arrivalSuggestion } = await import('../js/domain/nearby.js');
+ const feature = { properties: { OBJECTID: 123 } };
+ const lot = { feature, name: 'Lot 19Y', distanceMeters: 30 };
+ const area = { area_id: 4, source_feature_id: 123, is_sample_data: false };
+ assert.equal(arrivalSuggestion([lot], {accuracy: 20}, [area])?.area_id, 4);
+ assert.equal(arrivalSuggestion([lot], {accuracy: 100}, [area]), null);
+ assert.equal(arrivalSuggestion([{...lot, distanceMeters: 100}], {accuracy: 20}, [area]), null);
+ assert.equal(arrivalSuggestion([lot], {accuracy: 20}, [{...area, is_sample_data: true}]), null);
+ assert.equal(arrivalSuggestion([lot], {accuracy: 20}, [{...area, source_feature_id: 124}]), null);
+});
