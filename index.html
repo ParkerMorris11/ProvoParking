@@ -219,6 +219,10 @@
           <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
           <p class="results-note">BYU lot sections checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Register and activate your vehicle. Check signs for events, finals, holidays and breaks. Availability is unknown.</p>
           <div class="list-tools">
+            <div class="list-destination">
+              <label for="area-destination">Where are you going?</label>
+              <select id="area-destination"></select>
+            </div>
             <div class="list-search">
               <label for="area-search">Search lots</label>
               <input type="search" id="area-search" autocomplete="off" placeholder="e.g. 20 or 24Y">
@@ -226,6 +230,7 @@
             <div class="list-sort">
               <label for="area-sort">Sort</label>
               <select id="area-sort">
+                <option value="walk">Shortest walk</option>
                 <option value="name">Lot number</option>
                 <option value="distance">Nearest to me</option>
               </select>

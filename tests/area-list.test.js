@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { arrangeAreas, byName, matchesQuery, formatDistance } from '../js/domain/area-list.js';
+import { arrangeAreas, byName, matchesQuery, formatDistance, walkMinutes, groupByLot, lotTitle } from '../js/domain/area-list.js';
 
 const area = (id, name, lat = 40.25, lng = -111.65) => ({ area_id: id, area_name: name, lot_code: name.split(' ').pop(), operator: 'BYU', latitude: lat, longitude: lng });
 const names = (r) => r.items.map((a) => a.area_name);
@@ -34,4 +34,30 @@ test('distances read in feet when close and miles otherwise', () => {
   assert.equal(formatDistance(30), '100 ft');
   assert.equal(formatDistance(1609.344 * 0.42), '0.4 mi');
   assert.equal(formatDistance(Infinity), '');
+});
+
+test('walk sort ranks sections by distance to the destination building', () => {
+  const building = { latitude: 40.2500, longitude: -111.6500 };
+  const close = area(1, 'BYU Lot 30G', 40.2505, -111.6500), farther = area(2, 'BYU Lot 2A', 40.2550, -111.6500), noPoint = area(3, 'BYU Lot 5A', null, null);
+  const r = arrangeAreas([farther, noPoint, close], { sort: 'walk', destination: building });
+  assert.equal(r.sortedBy, 'walk');
+  assert.deepEqual(names(r), ['BYU Lot 30G', 'BYU Lot 2A', 'BYU Lot 5A']);
+  assert.equal(r.items[0].walkMinutes, 1);           // ~56 m
+  assert.equal(r.items[1].walkMinutes, 9);           // ~556 m * 1.3 / 80
+  assert.equal(r.items[2].walkMinutes, null);
+  assert.equal(arrangeAreas([farther, close], { sort: 'walk', destination: null }).sortedBy, 'name');
+});
+
+test('walk minutes: at least 1, null when unknown', () => {
+  assert.equal(walkMinutes(0), 1);
+  assert.equal(walkMinutes(800), 13);
+  assert.equal(walkMinutes(Infinity), null);
+});
+
+test('groupByLot keeps the first section of each lot and counts the rest', () => {
+  const s = (id, code, op = 'BYU') => ({ area_id: id, area_name: `BYU Lot ${code} (section ${id})`, lot_code: code, operator: op });
+  const g = groupByLot([s(1, '19Y'), s(2, '20Y'), s(3, '19y'), s(4, '19Y'), { area_id: 5, area_name: 'Street parking', lot_code: null }]);
+  assert.deepEqual(g.map((a) => [a.area_id, a.sectionCount]), [[1, 3], [2, 1], [5, 1]]);
+  assert.equal(lotTitle(g[0]), 'Lot 19Y');
+  assert.equal(lotTitle(g[2]), 'Street parking');
 });
