@@ -14,7 +14,7 @@ export const METRICS = [
   { key: "distance_average_miles", kr: "KR 2a", title: "Parking-to-destination distance", target: 1, unit: "miles", lower: true, strict: true,
     help: "Mean straight-line distance in miles from each session’s parking_area coordinates to its saved destination building, using the haversine formula. Includes real lots and signed-up users; excludes sessions missing a destination, demo lots and admin accounts. Building and lot centers are approximate, not walking routes. Target: under 1 mile." },
   { key: "parking_average_minutes", kr: "KR 2b", title: "Time from app open to parking", target: 15, unit: "minutes", lower: true,
-    help: "For each real-lot parking session, find that user’s most recent app_visit at or before started_at, within the preceding hour, then average the gap in minutes. A visit is recorded once per account per page load after sign-in is available; time on the signed-out screen is not measured. Unmatched sessions, demo lots and admins are excluded. Target: 15 minutes or less." },
+    help: "For each real-lot timer a signed-up user started in the main app, the minutes from the app visit linked to that session to the session’s server-stamped start, averaged. A visit opens when the app is first loaded in a browser tab (sign-in screen included) and is reused in that tab for up to an hour; each session links to that account’s latest visit opened in the hour before it started. Sessions with no linked visit, guest timers, demo lots and admins are excluded. Target: 15 minutes or less." },
 ];
 
 export function metricPresentation(metric, value) {

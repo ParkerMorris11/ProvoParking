@@ -16,7 +16,6 @@ import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea, stopTimer } from "./pages/car.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
-import { recordAppVisit } from "./data/visits.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { renderAreas } from "./pages/areas.js";
 
@@ -95,9 +94,6 @@ async function onSignedIn(session, note = "") {
     state.guest = false;
     remember(GUEST_KEY, null);
     remember(RETURNING_KEY, "1");
-    // Failure does not lock people out of parking. Starting a timer retries the write.
-    await recordAppVisit().catch(err => console.warn("Visit recording unavailable", err));
-    if (version !== state.authVersion) return;
     await enterApp(note, version);
   } catch (err) {
     if (version !== state.authVersion) return;

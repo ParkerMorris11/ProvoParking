@@ -1,6 +1,21 @@
 # Admin dashboard and automatic OKR tracking
 
-**Rollout blocked:** Main now includes a different visit-tracking implementation. The live `app_visit` table has `id`, `secret_hash`, `owner_id`, and `opened_at`, while this PR's migration expects `user_id` and `open_token`. Do not apply the migration or deploy this branch until the database, metrics, and both timer paths have been reconciled and tested. The checklist below predates that change.
+**Visit tracking reconciled (2026-11-05).** This PR originally created its own `app_visit(user_id, open_token)` table and a second client hook. Production already runs the `visit_metrics` implementation (`app_visit(id, secret_hash, owner_id, opened_at)` plus `visit_metrics_private.visit_link`). The admin migration now reuses that data for KR 2b and no longer creates, alters or grants on `app_visit`; the duplicate `js/data/visits.js` hook was removed. The migration was renamed to `20261105040000_admin_okr_tracking.sql` so file order matches production order. Not yet applied to production.
+
+### Migration order (as applied to production, checked 2026-11-05)
+
+| # | Repo file | Production history |
+| --- | --- | --- |
+| 1 | `supabase/schema.sql` (+ rule source columns) | `create_provo_parking_schema`, `add_rule_source_columns` |
+| 2 | `20261029143325_enable_parking_reference_reads.sql` | applied |
+| 3 | `20261029224555_parking_session_persistence.sql` | applied |
+| 4 | `20261102040636_account_sign_in.sql` | applied |
+| 5 | `20261104155225_verified_byu_lots.sql` | applied |
+| 6 | `20261105025053_verified_byu_sections.sql` | applied |
+| 7 | `20261105032816_visit_metrics.sql` | applied |
+| 8 | **`20261105040000_admin_okr_tracking.sql`** | **not applied: this PR** |
+
+Production version numbers differ from the repo filenames because files were applied through the SQL tool, which stamps its own version. The admin migration refuses to run if step 7 is missing. `tests/helpers/migration-order.js` holds the same order for the database tests.
 
 This PR targets **ParkerMorris11's Org → provo-parking**, project **rikekjksneoymybnehpo**:
 <https://supabase.com/dashboard/project/rikekjksneoymybnehpo>.
@@ -10,7 +25,7 @@ Do not apply its migration to another project. The authoring agent could not acc
 
 1. Check out this PR branch. Confirm the database/project ref above and inspect current tables, policies and migration history before writing anything. The connected account must have access to Parker's organization. Never substitute another accessible project.
 2. Confirm the existing account-sign-in and verified-lot migrations are present: `app_user.auth_id`, `parking_area.is_sample_data` and the ordinary per-user RLS policies must exist. The original `supabase/schema.sql` contains demo data: **do not replay it on production**.
-3. Read and apply **only** `supabase/migrations/20261105000109_admin_okr_tracking.sql` through the project's SQL Editor or the Supabase MCP `apply_migration` tool, using the exact file contents. This file creates the destination/visit tables, seeds ten sourced buildings, adds the nullable destination foreign key and protects metrics access. It does not grant any admin accounts. It is transaction-wrapped and repeatable. If using SQL Editor, reconcile the file version with your team's migration-history workflow before subsequent CLI deployments. Do not mark it applied until it succeeds.
+3. Confirm `visit_metrics` (step 7 above) is in the migration history and `public.app_visit` has `id, secret_hash, owner_id, opened_at`. Then read and apply **only** `supabase/migrations/20261105040000_admin_okr_tracking.sql` through the project's SQL Editor or the Supabase MCP `apply_migration` tool, using the exact file contents. This file creates the destination table and admin allowlist, seeds ten sourced buildings, adds the nullable destination foreign key and protects metrics access. It does not grant any admin accounts. It is transaction-wrapped and repeatable. If using SQL Editor, reconcile the file version with your team's migration-history workflow before subsequent CLI deployments. Do not mark it applied until it succeeds.
 4. Provision an admin identity and grant membership as described below. Test both the allowed and denied cases before sharing access.
 5. Use the project's existing browser-safe URL and anon/publishable key in local `config.js` to preview this branch. Keep the file ignored. Its shape is in `config.example.js`. Do **not** put a service-role key or admin password in `config.js`, Git, HTML, issue comments or this PR.
 6. Click through the acceptance checklist below against the real project. Run Supabase security/performance advisors. Fix new findings before rollout. The new tables have RLS and explicit grants; the cross-user function implementation is in a non-exposed schema.
@@ -92,7 +107,7 @@ Use the signed-in **admin's** browser-safe client and token. Do not query all pe
 | O1 / KR 1a | `signups` | Count `app_user` rows with an Auth link, excluding allowlisted admins. Target ≥25. |
 | O1 / KR 1b | `favorites_average` | Current `favorite_area` row count for those users ÷ all those users, including users with zero favorites. Target ≥2. Removing a favorite reduces the numerator. |
 | O2 / KR 2a | `distance_average_miles` | Mean haversine great-circle distance from real `parking_area` lat/long to the session's saved `destination` lat/long, using earth radius 3958.7613 miles. Target **<1**, strictly. Not a walking route. |
-| O2 / KR 2b | `parking_average_minutes` | For each real-lot `parking_session`, find that same user's most recent `app_visit.opened_at <= started_at` and `>= started_at - interval '1 hour'`. Average `(started_at - opened_at)` in minutes. Target ≤15. |
+| O2 / KR 2b | `parking_average_minutes` | For each real-lot `parking_session` with a `visit_metrics_private.visit_link` row, average `(parking_session.started_at - app_visit.opened_at)` in minutes, where the linked visit's `owner_id` is the session owner. `visit_bind`/`visit_link_account` choose the owner's latest visit opened in the hour before the server-stamped start. Unlinked sessions and guest (client-reported) timers are excluded. Target ≤15. |
 
 Additional response fields: `measured_at` (database timestamp), `favorites_count`, `total_sessions` (real-lot sessions belonging to eligible users), `distance_sessions` and `parking_sessions`. Coverage counts make exclusions visible. No data yields `null` averages and “No data yet”; zero signups is an actual zero. Status comparisons use unrounded values, including the strict one-mile threshold.
 
@@ -103,8 +118,8 @@ The definition is all-time **currently retained** account/session data, not a li
 - Sign-up: existing Auth trigger inserts `app_user`; no extra client counter.
 - Favorite: existing favorite insert/delete updates the live average; no duplicate analytics event.
 - Destination: ten buildings are seeded from the GIS layer used by the official [BYU campus map](https://map.byu.edu/). The source feature URLs, retrieval date and bounding-box-center method are saved in `data/byu-destinations.json`. Choose on Find; My car inherits that choice and permits changing it before Start. `parking_session.destination_id` is saved when the main app timer starts.
-- Visit: one row per authenticated account per page load, including refresh/restored sign-in and a fresh sign-in. The server records receipt time; time spent before sign-in is available is **not measured**. Switching tabs/routes, token refreshes and background/foreground transitions do not create visits. A per-page UUID makes retries idempotent; no GPS coordinates are collected. A timer start waits for the visit write and retries a failed write. Client clocks cannot set visit/session measurement times.
-- Sessions: the existing main-app `parking_session` timer is measured; the separate P5 local timer / P7 `owned_parking_session` demo pages are outside these OKRs. Older clients and missing visit/destination history remain visible through coverage counts rather than being assigned guessed values.
+- Visit: the existing `visit_metrics` tracker (`js/data/visit-tracker.js`). `visit_open` runs when the app first loads in a tab, before sign-in, so sign-in screen time **is** measured; the same visit is reused in that tab for up to an hour. `visit_bind` attaches it to the account on sign-in, and `visit_link_account` links it to the timer after a successful `parking_session` insert. Only a SHA-256 hash of the per-visit secret is stored; browser roles cannot read `app_visit` or `visit_link`. Client clocks cannot set visit/session measurement times. A visit failure never blocks starting a timer; that session is simply unmatched.
+- Sessions: the existing main-app `parking_session` timer is measured; the separate P5 local timer / P7 `owned_parking_session` demo pages are outside these OKRs. Their guest visit links (`guest_session_id`) remain visible in `supabase/queries/kr-2b.sql` as client-reported, but are not in the dashboard. Older clients and missing visit/destination history remain visible through coverage counts rather than being assigned guessed values.
 - Dashboard: queries the database immediately after admin sign-in and every 30 seconds while visible, plus manual Refresh and returning to the tab. Network/configuration errors are displayed, not converted to zeros. Each question-mark control opens a keyboard-accessible explanation dialog; Escape closes it and returns focus.
 
 ## Operator verification
@@ -115,9 +130,11 @@ Run these read-only checks in the SQL Editor after applying the migration:
 SELECT building_code, name, latitude, longitude FROM public.destination ORDER BY name;
 SELECT table_schema, table_name FROM information_schema.tables
 WHERE (table_schema='public' AND table_name IN ('app_visit','destination'))
-   OR (table_schema='parking_private' AND table_name='admin_account');
+   OR (table_schema='parking_private' AND table_name='admin_account')
+   OR (table_schema='visit_metrics_private' AND table_name='visit_link');
 SELECT schemaname, tablename, rowsecurity FROM pg_tables
-WHERE tablename IN ('app_visit','destination','admin_account');
+WHERE tablename IN ('app_visit','visit_link','destination','admin_account');
+-- app_visit columns must still be: id, secret_hash, owner_id, opened_at.
 SELECT has_function_privilege('anon','public.get_admin_okr_metrics()','EXECUTE') AS anon_allowed,
        has_table_privilege('authenticated','parking_private.admin_account','INSERT') AS self_promotion_allowed;
 -- Both permission results must be false.
@@ -140,7 +157,7 @@ Never weaken RLS to make the dashboard work. Investigate a failed `42501` by che
 1. Open the regular sign-in page and follow Admin sign in. An ordinary account or invalid password must never reveal metrics.
 2. Sign in with the provisioned username/password. Check that four cards appear under their respective objectives and that all four question-mark explanations open, close with Escape, and restore focus.
 3. In a separate normal-user session, create an account and save two spots. Refresh the dashboard: signups increase by one; average favorites is recalculated over **all** signed-up users.
-4. Choose a destination on Find, start a timer on My car, and inspect the user's own saved session for `destination_id`. In trusted SQL, verify their new visit/session timestamps. Refresh the dashboard: coverage increases and both applicable averages change.
+4. Open the app in a fresh tab, sign in, choose a destination on Find, start a timer on My car, and inspect the user's own saved session for `destination_id`. In trusted SQL, verify a `visit_metrics_private.visit_link` row now points at that session and a visit owned by that user. Refresh the dashboard: coverage increases and both applicable averages change.
 5. Log out using the upper-right admin button: the ordinary Welcome back screen must appear. Use Back and Refresh: dashboard metrics must require authorization again.
 6. Revoke membership in SQL while the admin page is open, then Refresh: the dashboard must clear. Re-grant only if appropriate.
 7. Test phone and desktop widths, keyboard-only navigation and a screen reader. Run Lighthouse Accessibility on sign-in, dashboard and explanation states against the actual deployed configuration. Automated scores do not replace manual accessibility checks.
@@ -149,6 +166,6 @@ Never weaken RLS to make the dashboard work. Investigate a failed `42501` by che
 
 Local verification used a database-backed browser fixture with the actual app code and an isolated PostgreSQL engine. Lighthouse Accessibility **snapshot** audits scored **100/100** for admin username sign-in, the signed-in dashboard and an open explanation dialog at both 390px and 1280px. Axe found no violations for the dashboard and all four dialogs at both widths. These measurements cover the preview fixture, not a production audit; rerun them after connecting and deploying Parker's project. The fixture exercised Find → destination selection → app_visit → parking_session → admin aggregates, plus unauthorized access, revocation, keyboard focus and logout. Screenshots use synthetic accounts, not production data.
 
-`npm run check` includes UI/data-helper tests. `tests/admin-okr-db.test.js` runs the migration twice and checks aggregate math, latest-visit matching, empty state, owner-only writes, forged metadata, timestamp protection, denied access and role revocation against the team's disposable local PostgreSQL database (`P7_TEST_DATABASE_URL`). It refuses remote targets. `tests/fixtures/admin-okr-*.sql` are destructive **local test fixtures only**, never production setup instructions.
+`npm run check` includes UI/data-helper tests. With `P7_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:<port>/provo_parking_p7_test` set, the database tests apply the migrations in the production order above. `tests/visit-admin-combined-db.test.js` seeds pre-existing users, favorites, a session and linked/unlinked visits through the real RPCs, applies the admin migration twice, checks those rows and the `app_visit` columns/grants are unchanged, then drives `visit_open`/`visit_bind`/`visit_link_account` and checks KR 2b, KR 2a, coverage counts, exclusions (sample lot, admin, unmatched, guest) and access controls. `tests/admin-okr-db.test.js` runs the migration twice and checks aggregate math, latest-visit matching, empty state, owner-only writes, forged metadata, timestamp protection, denied access and role revocation against the team's disposable local PostgreSQL database (`P7_TEST_DATABASE_URL`). It refuses remote targets. `tests/fixtures/admin-okr-*.sql` are destructive **local test fixtures only**, never production setup instructions.
 
 For rollback, revert the frontend deployment first. The migration is additive, so keep destination/visit history; do not drop the tables or column. Revoke allowlist membership to disable dashboard access immediately. Existing deployed clients can continue to start timers without a destination; those rows remain unmeasured for KR 2a.

@@ -22,49 +22,36 @@ test('OKR thresholds use raw values and distinguish no data from zero', () => {
   assert.equal(metricPresentation(METRICS[3], 15.001).kind, 'pending');
   assert.equal(metricPresentation(METRICS[3], 15.001).value, '> 15');
 });
-test('a timer records one visit, saves its destination, and never supplies metric timestamps', async () => {
+test('a timer saves its destination, writes only parking_session, and never supplies metric timestamps', async () => {
   const saved = { ...state };
-  const writes = [];
-  state.user = { userId: 199 };
+  const writes = [], linked = [];
+  state.user = { userId: 199 }; state.authId = 'owner-a';
+  // The existing visit_metrics tracker is the only KR 2b hook.
+  state.visitTracker = { captureAccount: owner => ({ id: 'visit', ownerId: owner }), accountStarted: (row, owner, visit) => { linked.push({ row, owner, visit }); return Promise.resolve(); } };
   state.db = { from(table) { return { insert(row) {
     writes.push({ table, row });
-    if (table === 'app_visit') return Promise.resolve({ error: null });
-    return { select: () => ({ single: async () => ({ data: { ...row, session_id: 1 }, error: null }) }) };
+    return { select: () => ({ single: async () => ({ data: { ...row, session_id: writes.length }, error: null }) }) };
   } }; } };
   try {
     const input = { areaId: 5, minutes: 120, reminderMinutes: 10, destinationId: 2 };
     await startSession(input); await startSession(input);
-    assert.equal(writes.filter(w => w.table === 'app_visit').length, 1);
+    assert.deepEqual(writes.map(w => w.table), ['parking_session', 'parking_session']);
     for (const write of writes) {
       assert.equal(write.row.user_id, 199);
+      assert.equal(write.row.destination_id, 2);
       assert.equal('started_at' in write.row || 'opened_at' in write.row, false);
-      if (write.table === 'parking_session') assert.equal(write.row.destination_id, 2);
     }
+    assert.deepEqual(linked.map(l => [l.row.session_id, l.owner, l.visit.id]), [[1, 'owner-a', 'visit'], [2, 'owner-a', 'visit']]);
     const count = writes.length;
     await assert.rejects(startSession({ ...input, destinationId: null }), /Choose a destination/);
-    assert.equal(writes.length, count);
+    assert.equal(writes.length, count); assert.equal(linked.length, 2);
   } finally { Object.assign(state, saved); }
 });
-test('a visit failure retries and an account change cannot create a session for the replacement user', async () => {
-  const saved = { ...state };
-  let visits = 0, sessions = 0;
-  const tokens = [];
-  state.user = { userId: 200 };
-  state.db = { from(table) { return { insert(row) {
-    if (table === 'parking_session') { sessions++; throw Error('must not write'); }
-    visits++;
-    tokens.push(row.open_token);
-    if (visits === 1) return Promise.resolve({ error: new Error('offline') });
-    state.authVersion++;
-    return Promise.resolve({ error: null });
-  } }; } };
-  const input = { areaId: 5, minutes: 120, reminderMinutes: 10, destinationId: 2 };
-  try {
-    await assert.rejects(startSession(input), /offline/);
-    await assert.rejects(startSession(input), /account changed/);
-    assert.equal(visits, 2); assert.equal(sessions, 0);
-    assert.equal(tokens[0], tokens[1]);
-  } finally { Object.assign(state, saved); }
+test('the removed open_token visit hook is not called by the app', async () => {
+  for (const path of ['js/main.js', 'js/data/sessions.js']) {
+    const source = await readFile(new URL(`../${path}`, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /recordAppVisit|open_token|from\(["']app_visit/);
+  }
 });
 test('deployment includes the admin page and ten sourced destinations', async () => {
   const workflow = await readFile(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');

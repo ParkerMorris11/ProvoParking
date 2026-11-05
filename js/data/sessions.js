@@ -1,13 +1,10 @@
 // parking_session reads and writes (the My car timer).
 import { state, currentUserId } from "../state.js";
-import { recordAppVisit } from "./visits.js";
 
 export async function startSession({ areaId, minutes, reminderMinutes, carNote, destinationId }) {
   if (!Number.isSafeInteger(destinationId) || destinationId <= 0) throw new Error("Choose a destination building before starting your timer.");
   const userId = currentUserId();
-  const version = state.authVersion;
-  await recordAppVisit();
-  if (version !== state.authVersion) throw new Error("Your account changed. Please try again.");
+  // KR 2b visits come from state.visitTracker (visit_metrics), linked after a successful insert.
   const visitOwner = state.authId;
   const visit = state.visitTracker?.captureAccount?.(visitOwner);
   const row = {

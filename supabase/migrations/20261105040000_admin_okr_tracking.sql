@@ -1,6 +1,16 @@
 -- Provo Parking (rikekjksneoymybnehpo). Additive OKR tracking; no credentials are seeded.
--- Run after account_sign_in and verified_byu_lots. See docs/admin-okr.md.
+-- Run after account_sign_in, verified_byu_lots and visit_metrics. See docs/admin-okr.md.
+-- KR 2b reuses visit_metrics (public.app_visit + visit_metrics_private.visit_link).
+-- This file does not create, alter, grant on or backfill app_visit.
 BEGIN;
+
+DO $$ BEGIN
+  IF to_regclass('visit_metrics_private.visit_link') IS NULL
+     OR NOT EXISTS (SELECT 1 FROM information_schema.columns
+       WHERE table_schema='public' AND table_name='app_visit' AND column_name='secret_hash') THEN
+    RAISE EXCEPTION 'Apply 20261105032816_visit_metrics.sql before admin_okr_tracking';
+  END IF;
+END $$;
 
 CREATE SCHEMA IF NOT EXISTS parking_private;
 REVOKE ALL ON SCHEMA parking_private FROM PUBLIC, anon, authenticated;
@@ -32,22 +42,6 @@ ALTER TABLE public.parking_session ADD COLUMN IF NOT EXISTS destination_id integ
   REFERENCES public.destination(destination_id);
 CREATE INDEX IF NOT EXISTS parking_session_destination_idx ON public.parking_session(destination_id);
 CREATE INDEX IF NOT EXISTS parking_session_user_started_idx ON public.parking_session(user_id, started_at DESC);
-
-CREATE TABLE IF NOT EXISTS public.app_visit (
-  visit_id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id integer NOT NULL REFERENCES public.app_user(user_id) ON DELETE CASCADE,
-  opened_at timestamptz NOT NULL DEFAULT statement_timestamp(),
-  open_token uuid NOT NULL,
-  UNIQUE(user_id, open_token)
-);
-CREATE INDEX IF NOT EXISTS app_visit_user_opened_idx ON public.app_visit(user_id, opened_at DESC);
-ALTER TABLE public.app_visit ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON public.app_visit FROM PUBLIC, anon, authenticated;
-GRANT INSERT (user_id, open_token) ON public.app_visit TO authenticated;
--- No user can read or modify visit history, or supply a client-chosen timestamp.
-DROP POLICY IF EXISTS app_visit_insert_own ON public.app_visit;
-CREATE POLICY app_visit_insert_own ON public.app_visit FOR INSERT TO authenticated
-  WITH CHECK (user_id IN (SELECT u.user_id FROM public.app_user u WHERE u.auth_id = (SELECT auth.uid())));
 
 CREATE OR REPLACE FUNCTION parking_private.stamp_okr_session()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $$
@@ -91,12 +85,14 @@ BEGIN
       * power(sin(radians((d.longitude - s.longitude)::double precision) / 2), 2)
     )))) AS miles FROM sessions s JOIN public.destination d USING(destination_id)
   ), gaps AS (
+    -- KR 2b: only server-verified visit_metrics links. visit_link_account/visit_bind pick
+    -- the owner's latest visit opened within the hour before the server-stamped start.
+    -- Guest timers (client-reported start) and unlinked sessions are not counted.
     SELECT extract(epoch FROM (s.started_at - v.opened_at)) / 60.0 AS minutes
-    FROM sessions s CROSS JOIN LATERAL (
-      SELECT av.opened_at FROM public.app_visit av WHERE av.user_id = s.user_id
-        AND av.opened_at <= s.started_at AND av.opened_at >= s.started_at - interval '1 hour'
-      ORDER BY av.opened_at DESC LIMIT 1
-    ) v
+    FROM sessions s
+    JOIN visit_metrics_private.visit_link l ON l.parking_session_id = s.session_id
+    JOIN public.app_visit v ON v.id = l.visit_id
+    JOIN public.app_user u ON u.user_id = s.user_id AND v.owner_id = u.auth_id
   ), counts AS (
     SELECT (SELECT count(*) FROM users) AS users,
       (SELECT count(*) FROM public.favorite_area f JOIN users u USING(user_id)) AS favorites

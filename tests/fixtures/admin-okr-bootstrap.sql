@@ -1,5 +1,6 @@
 -- LOCAL DISPOSABLE TEST DATABASE ONLY. The JS runner validates the target first.
 DROP SCHEMA IF EXISTS parking_private CASCADE;
+DROP SCHEMA IF EXISTS visit_metrics_private CASCADE;
 DROP SCHEMA IF EXISTS auth CASCADE;
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;

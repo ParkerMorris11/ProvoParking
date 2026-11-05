@@ -2,6 +2,7 @@ import test from 'node:test';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { assertDisposableTestTarget, isolatedPostgresEnvironment } from './helpers/database-target.js';
+import { PRODUCTION_BASE, ADMIN_MIGRATION } from './helpers/migration-order.js';
 
 const database = process.env.P7_TEST_DATABASE_URL;
 const file = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -13,8 +14,9 @@ test('admin OKR migration: real aggregates, RLS, timestamp protection, revocatio
     if (result.status !== 0) throw new Error(result.stderr);
   };
   run(file('tests/fixtures/admin-okr-bootstrap.sql'));
-  for (const path of ['supabase/schema.sql', 'supabase/policies.sql', 'supabase/migrations/20261029143325_enable_parking_reference_reads.sql', 'supabase/migrations/20261102040636_account_sign_in.sql', 'supabase/migrations/20261104155225_verified_byu_lots.sql']) run(file(path));
-  const migration = file('supabase/migrations/20261105000109_admin_okr_tracking.sql');
+  // Production order (see docs/admin-okr.md): visit_metrics is already live before admin tracking.
+  for (const path of PRODUCTION_BASE) run(file(path));
+  const migration = file(ADMIN_MIGRATION);
   run(migration); run(migration);
   run(file('tests/fixtures/admin-okr-assertions.sql'));
 });
