@@ -58,7 +58,7 @@ export function renderCar() {
     active.innerHTML = "";
     form.hidden = false;
     const sel = $("car-area");
-    // "Park here" may run before this list exists, so its choice is held until now.
+    // Hold the selected lot until the form renders.
     const keep = pendingAreaId ?? sel.value;
     pendingAreaId = null;
     sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");

@@ -330,7 +330,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .auth .field-error { margin: 6px 0 0; font-size: .86rem; color: var(--heart); font-weight: 500; }
 .auth .field-error:empty { display: none; }
 .auth .pw-wrap { position: relative; }
-.auth .pw-wrap input { padding-right: 72px; }
+.auth .field .pw-wrap input { padding-right: 72px; } /* beats the .field input[type=...] padding so text never runs under Show */
 .auth .pw-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); min-height: 36px; padding: 0 10px; border: 0; background: transparent; color: var(--brand); font: inherit; font-size: .9rem; font-weight: 500; cursor: pointer; border-radius: 6px; }
 .auth .auth-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: -4px 0 28px; }
 .auth .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: .95rem; }
