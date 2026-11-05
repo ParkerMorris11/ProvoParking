@@ -69,11 +69,15 @@ export function evaluate(rules, permitId, dayIdx, hhmm) {
     return { kind: "blocked", icon: "✕", text: `No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}`, rule: r };
   }
   const best = usable.find((r) => !r.max_stay_minutes) || usable[0];
+  // The existing BYU weekend rows describe visitors, not every driver's rights.
+  if (best.permit_id == null && /normal weekends: visitors may park/i.test(best.rule_note || "")) {
+    return { kind: "unknown", icon: "?", text: "Weekend eligibility unknown; check BYU rules and signs", rule: best };
+  }
   const open = best.permit_id == null;
   if (best.max_stay_minutes) {
-    return { kind: "limit", icon: "!", text: `${open ? "Open to everyone" : "Your permit works here"}, ${fmtDuration(best.max_stay_minutes)} limit`, rule: best };
+    return { kind: "limit", icon: "!", text: `${open ? "No permit restriction listed" : "Permit matches listed rule"}; ${fmtDuration(best.max_stay_minutes)} limit. Check signs`, rule: best };
   }
-  return { kind: "ok", icon: "✓", text: open ? "Open to everyone" : "Your permit works here", rule: best };
+  return { kind: "ok", icon: "✓", text: open ? "No permit restriction listed; check signs" : "Permit matches listed rule; check signs", rule: best };
 }
 
 // Sort order for the Areas list: usable areas first.

@@ -36,15 +36,15 @@ test('verified BYU lot migration and real rule evaluation',{skip:!db&&'Set the d
  await t.test('weekday enforcement starts at 07:00 and ends at recorded 16:00 or 19:00',()=>{
   for(const [lot,end,last] of [['59Y','16:00','15:59'],['30G','16:00','15:59'],['14A','19:00','18:59']]){
    check(lot,'V',3,'06:59','ok');check(lot,'V',3,'07:00','no-permit');check(lot,'V',3,last,'no-permit');check(lot,'V',3,end,'ok');
-   check(lot,'V',6,'08:00','ok');check(lot,'V',0,'08:00','ok');
+   check(lot,'V',6,'08:00','unknown');check(lot,'V',0,'08:00','unknown');
   }
-  check('18U','V',3,'16:00','no-permit');check('18U','U',6,'08:00','ok');
-  check('18U','V',6,'08:00','ok');check('18U','V',0,'08:00','ok');
+  check('18U','V',3,'16:00','no-permit');check('18U','U',6,'08:00','unknown');
+  check('18U','V',6,'08:00','unknown');check('18U','V',0,'08:00','unknown');
  });
  await t.test('overnight ban blocks all choices exactly from 01:00 until 05:00',()=>{
   for(const lot of ['59Y','30G','14A','18U'])for(const day of [0,3,6]){
    const valid=lot==='14A'?'A':lot==='30G'?'G':'Y';
-   check(lot,valid,day,'00:59','ok');check(lot,valid,day,'01:00','blocked');check(lot,'PP',day,'03:00','blocked');check(lot,null,day,'04:59','blocked');check(lot,valid,day,'05:00','ok');
+   check(lot,valid,day,'00:59',day===3?'ok':'unknown');check(lot,valid,day,'01:00','blocked');check(lot,'PP',day,'03:00','blocked');check(lot,null,day,'04:59','blocked');check(lot,valid,day,'05:00',day===3?'ok':'unknown');
   }
  });
  await t.test('every real rule retains current official provenance and verification date',()=>{
