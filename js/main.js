@@ -4,6 +4,7 @@
 // Everything personal is read from / written to Supabase for the signed-in account.
 // Where things live: see docs/CONTRIBUTING.md.
 import { state } from "./state.js";
+import { createVisitTracker } from "./data/visit-tracker.js";
 import { $, setStatus } from "./lib/dom.js";
 import { loadSavedPermit } from "./lib/storage.js";
 import { createAuthStorage } from "./lib/auth-storage.js";
@@ -89,6 +90,7 @@ async function onSignedIn(session, note = "") {
       return;
     }
     state.user = profile;
+    void state.visitTracker?.bind(session.user.id).then(() => state.visitTracker?.flush());
     state.guest = false;
     remember(GUEST_KEY, null);
     remember(RETURNING_KEY, "1");
@@ -133,6 +135,7 @@ async function signOut() {
   try { await auth.logOut(); } catch (err) { console.error(err); }
   finally { $("auth-screen").inert = false; signingOut = false; }
   if (version !== state.authVersion) return;
+  state.visitTracker?.signedOut();
   clearPersonalData();
   showAuth("login", "You're logged out.");
 }
@@ -242,6 +245,12 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     },
   });
 
+  try {
+    state.visitTracker = createVisitTracker({ storage: window.sessionStorage, rpc: (name, args) => state.db.rpc(name, args) });
+    void state.visitTracker.open();
+    window.addEventListener("online", () => void state.visitTracker?.flush());
+  } catch { /* Tracking must never prevent the app from working. */ }
+
   auth.onAuthChange((event, changedSession) => {
     if (event === "SIGNED_IN" && changedSession?.user.id !== state.authId) {
       clearPersonalData();
@@ -255,6 +264,7 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     if (event === "PASSWORD_RECOVERY") showAuth("newpass");
     // Signed out somewhere else (another tab, or the session could not be renewed).
     if (event === "SIGNED_OUT" && !signingOut) {
+      state.visitTracker?.signedOut();
       clearPersonalData();
       showAuth("login", "Your session ended. Please log in again.");
     }
