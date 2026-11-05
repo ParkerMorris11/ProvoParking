@@ -20,7 +20,7 @@ function center(geometry) {
   return { latitude: (Math.min(...lats) + Math.max(...lats)) / 2, longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
 }
 
-function metersBetween(a, b) {
+export function metersBetween(a, b) {
   const rad = n => n * Math.PI / 180;
   const dLat = rad(b.latitude - a.latitude), dLng = rad(b.longitude - a.longitude);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.latitude)) * Math.cos(rad(b.latitude)) * Math.sin(dLng / 2) ** 2;

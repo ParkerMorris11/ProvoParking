@@ -224,7 +224,22 @@
           </section>
           <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
           <p class="results-note">BYU lot sections checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Register and activate your vehicle. Check signs for events, finals, holidays and breaks. Availability is unknown.</p>
+          <div class="list-tools">
+            <div class="list-search">
+              <label for="area-search">Search lots</label>
+              <input type="search" id="area-search" autocomplete="off" placeholder="e.g. 20 or 24Y">
+            </div>
+            <div class="list-sort">
+              <label for="area-sort">Sort</label>
+              <select id="area-sort">
+                <option value="name">Lot number</option>
+                <option value="distance">Nearest to me</option>
+              </select>
+            </div>
+          </div>
+          <p id="areas-count" class="areas-count" role="status" aria-live="polite"></p>
           <ul id="area-list" class="cards"></ul>
+          <button type="button" id="areas-more" class="secondary areas-more" hidden>Show all</button>
           <p id="areas-empty" class="empty" role="status" hidden></p>
         </aside>
       </div>
@@ -246,7 +261,11 @@
     <!-- Screen 5: My car — parking timer + where I parked -->
     <section id="view-car" aria-labelledby="h-car" hidden>
       <h2 id="h-car" tabindex="-1">My car</h2>
-      <p class="summary"><a href="parking-timer.html" class="link">View parking timer</a> · <a href="parking-setup.html" class="link">Set up a local parking session</a></p>
+      <div id="car-guest" class="panel car-guest" hidden>
+        <h3>Start a parking timer</h3>
+        <p class="hint">Create a free account to start a timer, get a reminder before your time runs out, and save where you parked. Your timer stays on any device you sign in on.</p>
+        <button type="button" class="primary" id="car-signup">Create a free account</button>
+      </div>
       <div id="car-active" hidden></div>
       <form id="car-form" class="panel" hidden>
         <label for="car-area">Where are you parking?</label>

@@ -1,4 +1,5 @@
 import { evaluate } from "./eligibility.js";
+import { byName } from "./area-list.js";
 
 const clock = new Intl.DateTimeFormat("en-US", {
   timeZone: "America/Denver", weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
@@ -15,7 +16,7 @@ export function parkingSelection(find, now = new Date()) {
 export function eligibleAreas(areas, rulesByArea, selection) {
   return areas.filter(area => !area.is_sample_data && ["ok", "limit"].includes(
     evaluate(rulesByArea.get(area.area_id) || [], selection.permitId, selection.day, selection.time).kind
-  )).sort((a, b) => a.area_name.localeCompare(b.area_name));
+  )).sort(byName);
 }
 
 export function eligibleMapFeatures(features, areas) {

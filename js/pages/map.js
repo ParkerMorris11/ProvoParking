@@ -69,6 +69,7 @@ function initLocation() {
       firstFix = true;
     }
     renderNearby();
+    if (typeof document.dispatchEvent === "function") document.dispatchEvent(new CustomEvent("map:location"));
   } });
   button.addEventListener("click", () => {
     if (button.getAttribute("aria-pressed") === "true") tracker.stop(); else tracker.start();
@@ -87,6 +88,32 @@ function initLocation() {
   });
   document.addEventListener("visibilitychange", () => { if (document.hidden) pauseMapLocation(); });
   window.addEventListener("pagehide", pauseMapLocation);
+}
+
+/** The live location from "Use my location", or null. Used to sort the Areas list by distance. */
+export function currentPosition() { return latestPosition; }
+
+// Popup for one mapped section: what the GIS layer says, plus links into the app for the
+// matching sections of the current list (Rules & details).
+function popupHtml(feature) {
+  const p = feature.properties || {};
+  const matches = state.areas.filter((area) => area.source_feature_id === p.OBJECTID && !area.is_sample_data);
+  const links = matches.map((area) => `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : ""} →</a>`).join("");
+  return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}</div>`;
+}
+
+/** "Show on map" from an Areas card: zoom to that section's boundary and open its popup. */
+export function showAreaOnMap(area) {
+  if (!map || !area) return false;
+  const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
+  const layer = feature && lotLayers.get(feature);
+  if (!layer) return false;
+  const el = document.getElementById("parking-map");
+  el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [24, 24] });
+  layer.openPopup();
+  el?.focus?.({ preventScroll: true });
+  return true;
 }
 
 export function pauseMapLocation() {
@@ -150,8 +177,7 @@ export async function initMap() {
         style: boundaryStyle,
         onEachFeature: (feature, layer) => {
           lotLayers.set(feature, layer);
-          const p = feature.properties || {};
-          layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
+          layer.bindPopup(() => popupHtml(feature), { maxWidth: 280 });
         }
       }).addTo(map);
       refreshMapEligibility();

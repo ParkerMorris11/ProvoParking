@@ -3,6 +3,7 @@ import { state, rulesFor } from "../state.js";
 import { escapeHtml, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import { parkingSelection } from "../domain/parking-results.js";
+import { formatDistance } from "../domain/area-list.js";
 
 export function availabilityText(area) {
   if (area.est_available_spaces == null) return { text: "Availability unknown", cls: "" };
@@ -25,7 +26,7 @@ export function heartHtml(area) {
               aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${saved ? "♥" : "♡"}</button>`;
 }
 
-export function cardHtml(area, { showDirections = false } = {}) {
+export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
   const directions = showDirections ? directionsUrl(area, "driving") : null;
@@ -33,10 +34,13 @@ export function cardHtml(area, { showDirections = false } = {}) {
     <li class="card">
       <div class="card-body">
         <h3>${escapeHtml(area.area_name)}</h3>
-        <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}</p>
+        <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}${Number.isFinite(area.distanceMeters) ? ` · <span class="distance">~${formatDistance(area.distanceMeters)} away</span>` : ""}</p>
         <p class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</p>
         <p class="avail ${avail.cls}">${avail.text}</p>
-        <a class="link" href="#area/${area.area_id}" aria-label="Rules and details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
+        <div class="card-links">
+          <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
+          ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show ${escapeHtml(area.area_name)} on map">Show on map</button>` : ""}
+        </div>
         ${showDirections ? `<div class="favorite-directions">
           ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>
           <p class="hint">${area.is_sample_data ? "Sample location. " : ""}Opens Google Maps · ${area.is_sample_data ? "Sample lot center" : "Approximate section, not an entrance"}</p>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
