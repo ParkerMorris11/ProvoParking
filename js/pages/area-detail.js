@@ -44,6 +44,7 @@ export function renderAreaDetail(areaId) {
   }
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
+  const directions = directionsUrl(area);
   const tow = state.towById.get(area.tow_company_id);
   const groups = groupRules(rulesFor(area.area_id));
   box.innerHTML = `
@@ -67,6 +68,6 @@ export function renderAreaDetail(areaId) {
 
     <div class="actions">
       <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
-      <a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>
+      ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
     </div>`;
 }

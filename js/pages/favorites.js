@@ -6,7 +6,7 @@ import { addFavorite, removeFavorite } from "../data/favorites.js";
 
 export function renderFavorites() {
   const favs = state.areas.filter((a) => state.favoriteIds.has(a.area_id));
-  $("fav-list").innerHTML = favs.map(cardHtml).join("");
+  $("fav-list").innerHTML = favs.map(area => cardHtml(area, { showDirections: true })).join("");
   $("fav-empty").hidden = favs.length > 0;
   $("fav-count").textContent = favs.length;
 }

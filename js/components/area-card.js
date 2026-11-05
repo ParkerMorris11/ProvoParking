@@ -1,6 +1,6 @@
 // One parking area card, used on the Areas and Favorites pages.
 import { state, rulesFor } from "../state.js";
-import { escapeHtml } from "../lib/format.js";
+import { escapeHtml, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 
 export function availabilityText(area) {
@@ -24,9 +24,10 @@ export function heartHtml(area) {
               aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${saved ? "♥" : "♡"}</button>`;
 }
 
-export function cardHtml(area) {
+export function cardHtml(area, { showDirections = false } = {}) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
+  const directions = showDirections ? directionsUrl(area, "driving") : null;
   return `
     <li class="card">
       <div class="card-body">
@@ -35,6 +36,10 @@ export function cardHtml(area) {
         <p class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</p>
         <p class="avail ${avail.cls}">${avail.text}</p>
         <a class="link" href="#area/${area.area_id}" aria-label="Rules and details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
+        ${showDirections ? `<div class="favorite-directions">
+          ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>
+          <p class="hint">${area.is_sample_data ? "Sample location. " : ""}Opens Google Maps · ${area.is_sample_data ? "Sample lot center" : "Approximate section, not an entrance"}</p>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
+        </div>` : ""}
       </div>
       ${heartHtml(area)}
     </li>`;
