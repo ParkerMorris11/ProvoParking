@@ -48,7 +48,8 @@ export function renderCar() {
     active.innerHTML = "";
     form.hidden = false;
     const sel = $("car-area");
-    const keep = sel.value;
+    const keep = pendingAreaId ?? sel.value;
+    pendingAreaId = null;
     sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
     if (keep) sel.value = keep;
     renderDestinationOptions("car-destination", state.find.destinationId);
@@ -100,10 +101,15 @@ export function updateCarWarning() {
 }
 
 // Called by the "Park here" button on Area details.
+// Remembered until My car renders, because the lot list may not be filled yet on the first visit.
+let pendingAreaId = null;
 export function preselectArea(areaId) {
   if (state.activeSession) return;
-  $("car-area").value = areaId;
-  updateCarWarning();
+  pendingAreaId = String(areaId);
+  if ($("car-area").options.length) {
+    $("car-area").value = pendingAreaId;
+    updateCarWarning();
+  }
 }
 
 let requireAccount = () => true;
