@@ -124,7 +124,7 @@ export async function initMap() {
   if (map) { refreshMap(); return; }
   const L = window.L;
   try {
-    map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: false }).setView([40.2518, -111.6493], 15);
+    map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true }).setView([40.2518, -111.6493], 15);
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
