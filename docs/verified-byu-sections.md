@@ -1,0 +1,11 @@
+# BYU ordinary parking sections — November 4, 2026
+
+The 189 features in the campus map layer were compared with the checked-in snapshot on November 4, 2026. Attribute and geometry fingerprints matched. BYU warns that its map is being updated; posted signs govern. The supplied regulations are the July 23, 2026 release, SHA-256 `bd30b8791168f1d94bf01277eec5255f7bc514b1707bdb28b88a6cbb116dfff6`.
+
+The manifest contains 102 GIS features with explicit ordinary A, G, Y or U descriptions and supported normal-week rules, including existing 59Y, 30G, 14A, 18U, and new 20Y and 49Y. Each section is identified by its GIS object ID and global ID. Distinct features are kept separate, even where lot labels match. Source locations are approximate polygon interior points for new sections; they are not verified entrances or stalls. Existing four area coordinates and IDs are preserved. Capacity, live availability and tow contacts remain unknown.
+
+The migration attaches feature identities to the four existing rows and inserts new rows and sourced rules without deleting or updating existing rules, favorites or sessions. It aborts on conflicting existing lot identities. It never fabricates counts, and is repeatable. Ordinary car rules describe the regular fall/winter week only: the app does not verify BYU registration, a particular date, specialty stalls, event restrictions or parking rights. Check posted signs and the [official campus map](https://map.byu.edu/?layer=parking).
+
+The remaining GIS features are not asserted to be generally eligible. Specialty, visitor, timed, housing and restricted sections require separate review and modeling. Lot 29 has a specific overnight-storage exception and lot 41 includes conflicting housing descriptions. Features without a clear category remain out of this import. The manifest is not a full accounting of every parking privilege or condition.
+
+Migration tests use a disposable local PostgreSQL database, apply the migration twice, compare existing areas and rules and personal rows, and exercise separate feature IDs and rule boundaries. Browser checks use reference data exported from that local database, not a live occupancy feed. The application update must be deployed before the migration is applied to production, so the existing interface does not overstate eligibility for the expanded dataset.

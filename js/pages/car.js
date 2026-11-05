@@ -35,7 +35,7 @@ export function renderCar() {
         </form>
 
         <div class="actions">
-          ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to lot center"}</a>` : ""}
+          ${area ? `<a class="secondary" href="${directionsUrl(area)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : ""}
           <button type="button" class="primary" id="end-session">I left — end timer</button>
         </div>
       </div>`;
