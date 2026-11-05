@@ -198,13 +198,19 @@
       </div>
       <div class="parking-workspace">
         <div class="map-panel">
-          <div class="map-toolbar"><h3>Explore campus</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button></div></div>
+          <div class="map-toolbar"><h3>Explore BYU and downtown</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button></div></div>
           <div class="map-stage">
-            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU parking map" aria-describedby="map-note"></div>
+            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and downtown Provo parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
-          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul></div>
+          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show downtown Provo lots (city records, rules not verified)</label></div>
           <p id="map-note" class="map-note">Only verified sections matching listed rules for your permit and parking time are shown. Registration and eligibility are not verified. Colors show lot categories, not open spaces. Check posted signs.</p>
+          <details class="city-lots">
+            <summary>Downtown Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
+            <p id="city-status" class="map-note" role="status">Loading Provo City parking records…</p>
+            <p class="map-note">Source: <a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo City</a> parking facilities map, public lots only, checked 2026-11-05. Outlines are simplified. Spaces and hours are what the city recorded; they are not live counts or verified rules.</p>
+            <ul id="city-lot-list" class="nearby-list"></ul>
+          </details>
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
           <section class="nearby-panel" aria-labelledby="nearby-heading">
@@ -279,24 +285,53 @@
       </form>
     </section>
 
-    <!-- Screen 6 tab: Help — key rules and what to do about a ticket -->
+    <!-- Screen 6 tab: Help — BYU permits, how to read results, Provo rules, citations -->
     <section id="view-help" aria-labelledby="h-help" hidden>
       <h2 id="h-help" tabindex="-1">Help</h2>
       <div class="panel help">
-        <h3>Key BYU rules (Y permit)</h3>
+        <h3 id="help-permits">Which BYU permit parks where</h3>
+        <p class="hint">Your permit is valid only in the lot letters listed. Every other lettered lot can get you a ticket during enforcement hours.</p>
+        <div class="table-wrap">
+          <table class="permit-table" aria-describedby="help-permits">
+            <thead><tr><th scope="col">Permit</th><th scope="col">Who it is for</th><th scope="col">Valid in</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Y</th><td>Undergraduates (not Helaman Halls, Heritage Halls or Riviera residents)</td><td>Y, U</td></tr>
+              <tr><th scope="row">G</th><td>Graduate students</td><td>G, Y, U</td></tr>
+              <tr><th scope="row">A</th><td>Faculty, staff and administrative employees</td><td>A, C, G, Y, U</td></tr>
+              <tr><th scope="row">B</th><td>Heritage Halls residents</td><td>B, U (overnight only in B and lot 45BCD)</td></tr>
+              <tr><th scope="row">C</th><td>Helaman Halls residents</td><td>C, U (overnight only in C and lot 45BCD)</td></tr>
+              <tr><th scope="row">D</th><td>Riviera residents</td><td>D, U (overnight only in D and lot 45BCD)</td></tr>
+              <tr><th scope="row">YM</th><td>Wymount Terrace and Foreign Language residents</td><td>YM, Y, U</td></tr>
+              <tr><th scope="row">YV</th><td>Wyview Park residents</td><td>YV, Y, U</td></tr>
+              <tr><th scope="row">U</th><td>Affiliated university personnel</td><td>U</td></tr>
+              <tr><th scope="row">V</th><td>Visitors</td><td>Visitor lots 2V and 26V, visitor time stalls</td></tr>
+            </tbody>
+          </table>
+        </div>
         <ul>
-          <li>During permit-enforcement hours, a Y permit is valid in <strong>Y and U lots only</strong>. A, C, G, B, D, YM, YV and visitor lots can get you a ticket.</li>
-          <li><strong>No parking 1:00–5:00 a.m.</strong> in any campus lot (this does not apply to on-campus housing).</li>
-          <li><strong>Visitor parking is off-limits</strong> to current students, even for a short stop.</li>
+          <li><strong>No parking 1:00–5:00 a.m.</strong> in campus lots, except on-campus housing and BYU-owned vehicles under BYU policy.</li>
+          <li><strong>Students and employees may not use visitor parking</strong>, even for a short stop.</li>
+          <li>Time-limited stalls follow the posted signs; the limit ends when enforcement ends for the rest of that lot.</li>
+          <li>Y and G permits cost $60 a semester (free in spring and summer). B, C and D cost $25 a month. A and U are free. YM and YV are in the housing contract.</li>
+          <li>BYU parking citations can be appealed within <strong>14 calendar days</strong> of the citation date.</li>
         </ul>
-        <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> · checked 2026-10-07</p>
+        <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> (released July 23, 2026) · checked 2026-11-05</p>
+
+        <h3>How to read the Areas page</h3>
+        <ul>
+          <li><strong>Matches listed rules</strong> means the permit and time you picked fit the rules BYU publishes for that lot section. It does not mean a space is open.</li>
+          <li><strong>Map colors</strong> show the lot category (student, employee, visitor and so on), not availability.</li>
+          <li><strong>Downtown Provo lots</strong> come from Provo City's parking map. Their hours and limits are what the city recorded, not checked by us, so read the posted signs.</li>
+          <li><strong>Posted signs win.</strong> Events, finals, holidays and construction can change the rules.</li>
+        </ul>
 
         <h3>Downtown Provo</h3>
         <ul>
           <li>Use garages for stays longer than two hours.</li>
           <li>Enforcement works around the clock.</li>
+          <li>A car on a city street must move at least 400 feet every 72 hours.</li>
         </ul>
-        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-10-07</p>
+        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-11-05</p>
 
         <h3>If you get a Provo citation</h3>
         <ul>
@@ -307,7 +342,7 @@
         <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
 
         <h3>About this app</h3>
-        <p class="hint">Results compare the permit you pick with official map rules; BYU registration and eligibility are not verified. Capacity, live availability and tow contacts are unknown. Older sample records are retained only for history. Rules can change, so confirm with the source links before relying on them.</p>
+        <p class="hint">Results compare the permit you pick with official map rules; BYU registration and eligibility are not verified. Capacity, live availability and tow contacts are unknown. Rules can change, so confirm with the source links before relying on them.</p>
       </div>
     </section>
   </main>

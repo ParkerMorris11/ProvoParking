@@ -4,6 +4,7 @@ import { nearbyLots } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
+import { initCityLayer } from "./city-layer.js";
 
 let map;
 let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
@@ -138,6 +139,7 @@ export async function initMap() {
       reset.addEventListener("click", () => map.setView([40.2518, -111.6493], 15));
     }
     refreshMap();
+    initCityLayer(map, L);
     try {
       const response = await fetch("data/byu-campus-parking.json");
       if (!response.ok) throw new Error(`Boundary request failed (${response.status})`);
