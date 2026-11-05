@@ -4,6 +4,7 @@ import { $, setStatus } from "../lib/dom.js";
 import { escapeHtml, fmtClock, fmtDuration, nowHHMM, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
+import { renderDestinationOptions } from "./find.js";
 
 let timerHandle = null;
 let lastReminderState = "";
@@ -31,6 +32,7 @@ export function renderCar() {
       <div class="panel session">
         <p class="meta">You parked at</p>
         <h3>${escapeHtml(area ? area.area_name : "Unknown area")}</h3>
+        <p class="meta">Destination: ${escapeHtml(state.destinations.find(d => d.destination_id === session.destination_id)?.name || "Not recorded (older session)")}</p>
         <p class="countdown" id="countdown" aria-hidden="true"></p>
         <p id="countdown-text" class="sr-text"></p>
         <p id="reminder" class="reminder" hidden></p>
@@ -57,6 +59,7 @@ export function renderCar() {
     const keep = sel.value;
     sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
     if (keep) sel.value = keep;
+    renderDestinationOptions("car-destination", state.find.destinationId);
     updateCarWarning();
   }
 }
@@ -125,6 +128,7 @@ async function onStart(e) {
       minutes: Number($("car-minutes").value),
       reminderMinutes: Number($("car-reminder").value),
       carNote: $("car-note").value.trim(),
+      destinationId: Number($("car-destination").value),
     });
     if (version !== state.authVersion) return;
     state.activeSession = created;

@@ -6,6 +6,7 @@ import { savePermit } from "../lib/storage.js";
 import { parkingSelection } from "../domain/parking-results.js";
 
 export function renderFind() {
+  renderDestinationOptions("find-destination", state.find.destinationId);
   const sel = $("permit-select");
   sel.innerHTML = `<option value="">Choose a permit…</option>` +
     state.permits.map((p) => `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
@@ -16,6 +17,12 @@ export function renderFind() {
   $("arrive-now").checked = Boolean(state.find.live);
   syncTimeControls();
   renderPermitInfo();
+}
+
+export function renderDestinationOptions(id, selected) {
+  $(id).innerHTML = '<option value="">Choose a BYU building…</option>' + state.destinations.map(d =>
+    `<option value="${d.destination_id}">${escapeHtml(d.name)} (${escapeHtml(d.building_code)})</option>`).join("");
+  $(id).value = selected ?? "";
 }
 
 function syncTimeControls() {
@@ -39,6 +46,11 @@ export function initFind({ go }) {
     e.preventDefault();
     const id = Number($("permit-select").value);
     if (!id) { setStatus("Choose your permit first so we can check which areas you can use.", true); $("permit-select").focus(); return; }
+    const destinationId = Number($("find-destination").value);
+    if (!state.destinations.some(d => d.destination_id === destinationId)) {
+      setStatus("Choose your destination building first.", true); $("find-destination").focus(); return;
+    }
+    state.find.destinationId = destinationId;
     state.find.permitId = id;
     state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);
