@@ -83,8 +83,8 @@ h2:focus, h3:focus { outline: none; }
 .panel label { font-weight: 650; margin-top: 6px; font-size: .88rem; color: #455a75; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .row > div { display: grid; gap: 8px; }
-select, input[type="text"], input[type="time"] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; font-size: 1rem; border: 1px solid var(--field); border-radius: 12px; background: #fff; color: var(--text); transition: border-color .15s; }
-select:hover, input[type="text"]:hover, input[type="time"]:hover { border-color: #a9b8cc; }
+select, input[type="text"], input[type="search"], input[type="time"] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; font-size: 1rem; border: 1px solid var(--field); border-radius: 12px; background: #fff; color: var(--text); transition: border-color .15s; }
+select:hover, input[type="text"]:hover, input[type="search"]:hover, input[type="time"]:hover { border-color: #a9b8cc; }
 select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:focus-visible, .link:focus-visible, .back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .hint { margin: 0; color: var(--soft); font-size: .84rem; line-height: 1.55; }
 .hint a { color: var(--brand-ink); }
@@ -211,6 +211,20 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .parking-results .elig, .parking-results .avail { font-size: .76rem; line-height: 1.45; }
 .parking-results .link { font-size: .75rem; margin-top: 8px; }
 .parking-results .heart { flex-shrink: 0; width: 40px; height: 40px; font-size: 1.25rem; }
+/* Areas list tools: search, sort, count, "Show all", and per-card links */
+.list-tools { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 10px; margin: 0 0 8px; }
+.list-tools > div { display: grid; gap: 6px; }
+.list-tools label { font-size: .8rem; font-weight: 650; color: #455a75; }
+.areas-count { margin: 0 0 12px; font-size: .8rem; color: var(--muted); }
+.areas-more { width: 100%; margin-top: 12px; }
+.card-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
+.link-button { display: inline-block; margin-top: 8px; padding: 6px 0; border: 0; background: none; color: var(--brand-ink); font: inherit; font-weight: 650; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.parking-results .link-button { font-size: .8rem; }
+.parking-results .link { font-size: .8rem; }
+.distance { color: var(--brand-ink); font-weight: 650; }
+.parking-map .lot-popup-link { display: block; margin-top: 10px; font-size: .85rem; font-weight: 650; color: var(--brand-ink); }
+@media (max-width: 380px) { .list-tools { grid-template-columns: 1fr; } }
 .parking-map .leaflet-popup-content-wrapper { border-radius: 16px; box-shadow: 0 7px 28px #18344c25; }
 .lot-popup { color: #243b58; font-family: system-ui, sans-serif; }
 .lot-popup-type { color: #5c7089; font-size: .65rem; }
