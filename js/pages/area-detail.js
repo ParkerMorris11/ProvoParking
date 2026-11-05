@@ -4,6 +4,7 @@ import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl } from "../lib/format.js";
 import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
+import { parkingSelection } from "../domain/parking-results.js";
 
 function groupRules(rules) {
   const groups = new Map();
@@ -45,6 +46,7 @@ export function renderAreaDetail(areaId) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
   const directions = directionsUrl(area);
+  const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
   const groups = groupRules(rulesFor(area.area_id));
   box.innerHTML = `
@@ -56,7 +58,7 @@ export function renderAreaDetail(areaId) {
       ${heartHtml(area)}
     </div>
     <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
-      <span class="when">(${DAY_NAMES[state.find.day]} ${fmtTime(state.find.time)})</span></p>
+      <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
     <p class="avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
 
     <h3>Rules</h3>

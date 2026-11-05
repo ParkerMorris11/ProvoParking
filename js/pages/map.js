@@ -2,9 +2,12 @@ import { escapeHtml } from "../lib/format.js";
 
 import { nearbyLots } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
+import { state } from "../state.js";
+import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
 
 let map;
 let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
+let boundaryLayer, visibleFeatures = [];
 const lotLayers = new Map();
 
 function clearUserLocation() {
@@ -22,12 +25,12 @@ function renderNearby() {
   if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; nearby = []; return; }
   const activeButton = document.activeElement?.closest?.("[data-nearby-index]");
   const focusedLot = activeButton && list.contains(activeButton) ? nearby[Number(activeButton.dataset.nearbyIndex)] : null;
-  nearby = nearbyLots(features, latestPosition, document.getElementById("nearby-permit").value);
+  nearby = nearbyLots(visibleFeatures, latestPosition, document.getElementById("nearby-permit").value);
   empty.hidden = nearby.length > 0;
-  empty.textContent = "No mapped lots in this category within 5 km. Try another category or explore the campus map.";
+  empty.textContent = "No matching mapped sections in this category within 5 km. Try another category or check your permit and parking time.";
   list.innerHTML = nearby.map((lot, index) => {
     const distance = lot.distanceMeters < 1000 ? `${Math.max(10, Math.round(lot.distanceMeters / 10) * 10)} m` : `${(lot.distanceMeters / 1000).toFixed(1)} km`;
-    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Permit ${escapeHtml(lot.permit)} · Check lot rules</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
+    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
   }).join("");
   if (focusedLot) {
     const index = nearby.findIndex(lot => lot.name === focusedLot.name && lot.permit === focusedLot.permit);
@@ -71,7 +74,7 @@ function initLocation() {
   });
   const select = document.getElementById("nearby-permit");
   const codes = [...new Set(features.map(f => f.properties?.permit_typ).filter(code => code && !["R", "No BYU Parking"].includes(code)))].sort();
-  select.innerHTML = '<option value="">All permit types</option>' + codes.map(code => `<option value="${escapeHtml(code)}">${escapeHtml(code)}</option>`).join("");
+  select.innerHTML = '<option value="">All matching categories</option>' + codes.map(code => `<option value="${escapeHtml(code)}">${escapeHtml(code)}</option>`).join("");
   select.addEventListener("change", renderNearby);
   document.getElementById("nearby-list").addEventListener("click", event => {
     const control = event.target.closest("[data-nearby-index]");
@@ -141,15 +144,15 @@ export async function initMap() {
       const geometry = await response.json();
       if (geometry.type !== "FeatureCollection" || !Array.isArray(geometry.features)) throw new Error("Invalid boundary snapshot");
       features = geometry.features;
-      L.geoJSON(geometry, {
+      boundaryLayer = L.geoJSON({ type: "FeatureCollection", features: [] }, {
         style: boundaryStyle,
         onEachFeature: (feature, layer) => {
           lotLayers.set(feature, layer);
           const p = feature.properties || {};
-          layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Permit ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
+          layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
         }
       }).addTo(map);
-      setMapStatus(`${geometry.features.length} mapped boundaries`);
+      refreshMapEligibility();
       initLocation();
     } catch (error) {
       console.warn("[map] boundary snapshot unavailable", error);
@@ -166,4 +169,17 @@ export async function initMap() {
 
 export function refreshMap() {
   if (map) setTimeout(() => map?.invalidateSize(), 0);
+}
+
+export function refreshMapEligibility(selection = parkingSelection(state.find), areas = eligibleAreas(state.areas, state.rulesByArea, selection)) {
+  if (!map || !boundaryLayer) return;
+  const next = eligibleMapFeatures(features, areas);
+  if (next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
+    boundaryLayer.clearLayers();
+    lotLayers.clear();
+    boundaryLayer.addData({ type: "FeatureCollection", features: next });
+    visibleFeatures = next;
+  }
+  setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`);
+  renderNearby();
 }

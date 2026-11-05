@@ -20,7 +20,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 |---|---|---|---|
 | 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
 | 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit) | `permit`, `user_permit` |
-| 2 | **Areas** | Parking areas sorted so the ones you can use come first; each shows ✓ / ! / ✕ eligibility in text, plus an availability estimate | `parking_area`, `parking_rule`, `favorite_area` |
+| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, map and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
