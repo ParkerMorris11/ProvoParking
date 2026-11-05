@@ -100,3 +100,9 @@ test("auth storage keeps working when browser storage is blocked", () => {
   assert.equal(store.getItem("sb"), null);
   assert.doesNotThrow(() => store.removeItem("sb"));
 });
+
+test("Google sign-in that isn't turned on gets a plain message", () => {
+  const { field, message } = describeAuthError({ status: 400, message: "Unsupported provider: provider is not enabled" });
+  assert.equal(field, "");
+  assert.match(message, /Google sign-in isn't turned on/);
+});

@@ -14,13 +14,14 @@ import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea, stopTimer } from "./pages/car.js";
-import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords } from "./pages/auth.js";
+import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { renderAreas } from "./pages/areas.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
+const permitAskedKey = (userId) => `provoParking.permitAsked.${userId}`; // the optional permit step was shown
 
 // Read before supabase-js tidies the address bar: did an email link open this page?
 const linkHash = new URLSearchParams(location.hash.replace(/^#/, ""));
@@ -75,7 +76,7 @@ async function enterApp(note, version = state.authVersion) {
   }
 }
 
-async function onSignedIn(session, note = "") {
+async function onSignedIn(session, note = "", { isNew = false } = {}) {
   clearPersonalData();
   const version = state.authVersion;
   state.authId = session.user.id;
@@ -88,6 +89,14 @@ async function onSignedIn(session, note = "") {
       if (version !== state.authVersion) return;
       showAuth("login", "Your account was created, but its profile isn't set up yet, so it can't be used. Please tell the team; the account database update may be missing.", true);
       return;
+    }
+    // New accounts (email or a first Google sign-in) get the optional "Which permit do you have?" step.
+    if (isNew || (!profile.permitIds.length && !recall(permitAskedKey(profile.userId)))) {
+      const chosen = await askForPermits(profile.userId);
+      if (version !== state.authVersion) return;
+      remember(permitAskedKey(profile.userId), "1");
+      profile.permitIds = chosen;
+      if (!note) note = "Welcome!";
     }
     state.user = profile;
     void state.visitTracker?.bind(session.user.id).then(() => state.visitTracker?.flush());
@@ -241,7 +250,7 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
       storage: authStorage,     // ...unless "Keep me signed in" was unchecked
       storageKey: "provoParking.auth",
       autoRefreshToken: true,   // renew the session quietly before it expires
-      detectSessionInUrl: true, // finish sign-in from email confirmation and password-reset links
+      detectSessionInUrl: true, // finish sign-in after Google, and from password-reset links
     },
   });
 
@@ -269,6 +278,9 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
       showAuth("login", "Your session ended. Please log in again.");
     }
   });
+
+  // Show "Continue with Google" only if Google sign-in is turned on in Supabase.
+  void auth.getAuthSettings({ url: cfg.SUPABASE_URL, key: cfg.SUPABASE_ANON_KEY }).then(setSignInOptions);
 
   let session = null;
   try { session = await auth.getCurrentSession(); } catch (err) { console.error(err); }
