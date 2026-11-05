@@ -219,6 +219,9 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 /* Areas list tools: search, sort, count, "Show all", and per-card links */
 .list-tools { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 10px; margin: 0 0 8px; }
 .list-tools > div { display: grid; gap: 6px; }
+.list-tools .list-destination { grid-column: 1 / -1; }
+.walk { margin: 6px 0 0; font-size: .95rem; font-weight: 700; color: var(--brand-ink); }
+.walk .walk-to { font-weight: 500; color: var(--muted); }
 .list-tools label { font-size: .8rem; font-weight: 650; color: #455a75; }
 .areas-count { margin: 0 0 12px; font-size: .8rem; color: var(--muted); }
 .areas-more { width: 100%; margin-top: 12px; }

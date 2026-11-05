@@ -3,7 +3,7 @@ import { state, rulesFor } from "../state.js";
 import { escapeHtml, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import { parkingSelection } from "../domain/parking-results.js";
-import { formatDistance } from "../domain/area-list.js";
+import { formatDistance, lotTitle } from "../domain/area-list.js";
 
 export function availabilityText(area) {
   if (area.est_available_spaces == null) return { text: "Availability unknown", cls: "" };
@@ -26,20 +26,25 @@ export function heartHtml(area) {
               aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${saved ? "♥" : "♡"}</button>`;
 }
 
-export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
+export function cardHtml(area, { showDirections = false, showOnMap = false, walkTo = "" } = {}) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
   const directions = showDirections ? directionsUrl(area, "driving") : null;
+  // Grouped cards (Areas list) carry sectionCount and show the lot, e.g. "Lot 19Y · 3 sections".
+  const grouped = Number.isInteger(area.sectionCount);
+  const title = grouped ? lotTitle(area) : area.area_name;
+  const sections = grouped && area.sectionCount > 1 ? ` · ${area.sectionCount} sections` : "";
   return `
     <li class="card">
       <div class="card-body">
-        <h3>${escapeHtml(area.area_name)}</h3>
-        <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}${Number.isFinite(area.distanceMeters) ? ` · <span class="distance">~${formatDistance(area.distanceMeters)} away</span>` : ""}</p>
+        <h3>${escapeHtml(title)}</h3>
+        ${Number.isInteger(area.walkMinutes) ? `<p class="walk">~${area.walkMinutes} min walk${walkTo ? ` <span class="walk-to">to ${escapeHtml(walkTo)}</span>` : ""}</p>` : ""}
+        <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}${sections}${Number.isFinite(area.distanceMeters) ? ` · <span class="distance">~${formatDistance(area.distanceMeters)} away</span>` : ""}</p>
         <p class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</p>
         <p class="avail ${avail.cls}">${avail.text}</p>
         <div class="card-links">
-          <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
-          ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show ${escapeHtml(area.area_name)} on map">Show on map</button>` : ""}
+          <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(title)}">Rules &amp; details →</a>
+          ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show ${escapeHtml(title)} on map">Show on map</button>` : ""}
         </div>
         ${showDirections ? `<div class="favorite-directions">
           ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>

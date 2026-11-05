@@ -15,7 +15,7 @@ export async function loadData() {
     db.from("parking_rule").select("rule_id, area_id, permit_id, days_of_week, start_time, end_time, max_stay_minutes, blocked_start, blocked_end, source_url, last_verified_on, rule_note"),
     db.from("tow_company").select("tow_company_id, company_name, phone, is_sample_data"),
     userId ? db.from("parking_session").select("*").eq("user_id", userId).eq("status", "active").order("started_at", { ascending: false }).limit(1) : none,
-    db.from("destination").select("destination_id, building_code, name").order("name"),
+    db.from("destination").select("destination_id, building_code, name, latitude, longitude").order("name"),
   ]);
   if (version !== state.authVersion) return false;
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes, destRes]) if (res.error) throw res.error;
