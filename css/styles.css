@@ -128,6 +128,11 @@ select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:fo
 .help ul { margin: 4px 0; padding-left: 20px; color: var(--ink-2); }
 .help li { margin: 4px 0; }
 .help a { color: var(--brand-ink); }
+.table-wrap { overflow-x: auto; }
+.permit-table { width: 100%; border-collapse: collapse; font-size: .85rem; color: var(--ink-2); }
+.permit-table th, .permit-table td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.permit-table thead th { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: #455a75; }
+.permit-table tbody th { font-weight: 700; color: var(--brand-ink); white-space: nowrap; }
 /* P5 standalone setup: shares the app's colors, controls, and centered column. */
 .parking-setup { padding-top: 32px; }
 .parking-setup h1 { margin: 12px 0 8px; font-size: clamp(1.9rem, 3vw, 2.4rem); letter-spacing: -.045em; line-height: 1.15; }
