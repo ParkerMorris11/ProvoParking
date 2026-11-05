@@ -2,6 +2,7 @@
 import { state, rulesFor } from "../state.js";
 import { escapeHtml } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
+import { parkingSelection } from "../domain/parking-results.js";
 
 export function availabilityText(area) {
   if (area.est_available_spaces == null) return { text: "Availability unknown", cls: "" };
@@ -13,7 +14,7 @@ export function availabilityText(area) {
 }
 
 export function evaluateArea(area) {
-  const { permitId, day, time } = state.find;
+  const { permitId, day, time } = parkingSelection(state.find);
   return evaluate(rulesFor(area.area_id), permitId, day, time);
 }
 

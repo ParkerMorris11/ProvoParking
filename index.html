@@ -169,11 +169,13 @@
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
+        <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
+        <p class="hint">Updates automatically as lot rules change. Uncheck to plan a different arrival day and time.</p>
 
         <div class="row">
           <div>
             <label for="arrive-day">Arrival day</label>
-            <select id="arrive-day">
+            <select id="arrive-day" disabled>
               <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
               <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option>
               <option value="6">Saturday</option>
@@ -181,7 +183,7 @@
           </div>
           <div>
             <label for="arrive-time">Arrival time</label>
-            <input type="time" id="arrive-time" required>
+            <input type="time" id="arrive-time" required disabled>
           </div>
         </div>
         <p class="hint">Eligibility comes from the permit you pick here, not from a verified BYU account.</p>
@@ -193,7 +195,7 @@
     <section id="view-areas" aria-labelledby="h-areas" hidden>
       <div class="areas-heading">
         <div><p class="eyebrow">PROVO, UTAH / CAMPUS PARKING</p><h2 id="h-areas" tabindex="-1">Parking around BYU<span>.</span></h2><p id="areas-summary" class="summary"></p></div>
-        <a class="permit-link" href="#find">Change permit <span aria-hidden="true">↗</span></a>
+        <a class="permit-link" href="#find">Change permit or time <span aria-hidden="true">↗</span></a>
       </div>
       <div class="parking-workspace">
         <div class="map-panel">
@@ -203,21 +205,22 @@
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul></div>
-          <p id="map-note" class="map-note">Colors show permit categories, not open spaces. Tap a lot for its recorded rules; check posted signs.</p>
+          <p id="map-note" class="map-note">Only verified lots eligible for your permit and parking time are shown. Colors show lot categories, not open spaces. Check posted signs.</p>
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
           <section class="nearby-panel" aria-labelledby="nearby-heading">
             <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
             <p id="location-status" class="location-status" role="status">Use your location to find nearby mapped lots.</p>
             <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
-            <div id="nearby-controls" hidden><label for="nearby-permit">Permit category</label><select id="nearby-permit"><option value="">All permit types</option></select><p class="nearby-note">Exact category match only; this does not check permit privileges or hours.</p></div>
+            <div id="nearby-controls" hidden><label for="nearby-permit">Filter eligible lots by category</label><select id="nearby-permit"><option value="">All eligible categories</option></select><p class="nearby-note">Only lots allowed by your selected permit and parking time are included.</p></div>
             <ul id="nearby-list" class="nearby-list"></ul>
             <p id="nearby-empty" class="nearby-note" hidden></p>
-            <p class="nearby-note">Distances are straight-line estimates to lot centers. Open spaces and permission to park are not verified.</p>
+            <p class="nearby-note">Distances are straight-line estimates to lot centers. Availability and temporary restrictions are not verified.</p>
           </section>
-          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading">Parking areas</h3></div><span class="sample-label">BYU source checked</span></div>
+          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Eligible parking areas</h3></div><span class="sample-label">BYU source checked</span></div>
           <p class="results-note">Four BYU lots checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Register and activate your vehicle. Check signs for events, finals, holidays and breaks. Availability is unknown.</p>
           <ul id="area-list" class="cards"></ul>
+          <p id="areas-empty" class="empty" role="status" hidden></p>
         </aside>
       </div>
     </section>
