@@ -2,6 +2,7 @@
 import { nowHHMM } from "./lib/format.js";
 
 export const state = {
+  visitTracker: null,
   db: null,               // Supabase client, set in main.js
   user: null,             // signed-in profile { userId, displayName, email, permitIds }, or null
   authId: null,
