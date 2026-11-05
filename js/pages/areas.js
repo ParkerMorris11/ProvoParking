@@ -41,7 +41,6 @@ function initTools() {
   search.addEventListener("input", () => { expanded = false; renderAreas(); });
   sort.addEventListener("change", () => {
     expanded = false;
-    if (sort.value === "distance" && !currentPosition()) $("locate-me")?.click(); // ask for location once
     renderAreas();
   });
   more.addEventListener("click", () => {

@@ -1,13 +1,15 @@
 // Page: My car — parking timer, car note, end session (parking_session).
 import { state, rulesFor } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
-import { escapeHtml, fmtClock, fmtDuration, nowHHMM, directionsUrl } from "../lib/format.js";
+import { escapeHtml, fmtClock, fmtDuration, directionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
+import { parkingSelection } from "../domain/parking-results.js";
 import { renderDestinationOptions } from "./find.js";
 
 let timerHandle = null;
 let lastReminderState = "";
+let pendingAreaId = null; // set by "Park here", applied when the My car form renders
 
 export function stopTimer() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
 
@@ -56,7 +58,9 @@ export function renderCar() {
     active.innerHTML = "";
     form.hidden = false;
     const sel = $("car-area");
-    const keep = sel.value;
+    // Hold the selected lot until the form renders.
+    const keep = pendingAreaId ?? sel.value;
+    pendingAreaId = null;
     sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
     if (keep) sel.value = keep;
     renderDestinationOptions("car-destination", state.find.destinationId);
@@ -98,7 +102,8 @@ export function updateCarWarning() {
   const area = state.areas.find((a) => a.area_id === Number($("car-area").value));
   const mins = Number($("car-minutes").value);
   if (!area) { warn.hidden = true; return; }
-  const ev = evaluate(rulesFor(area.area_id), state.find.permitId, new Date().getDay(), nowHHMM());
+  const { day, time } = parkingSelection({ live: true }); // Provo time, same as Areas
+  const ev = evaluate(rulesFor(area.area_id), state.find.permitId, day, time);
   let msg = "";
   if (ev.kind === "no-permit") msg = `Heads up: your selected permit does not cover this area right now, so you could be ticketed.`;
   else if (ev.kind === "blocked") msg = `Heads up: ${ev.text.toLowerCase()} here.`;
@@ -110,8 +115,9 @@ export function updateCarWarning() {
 // Called by the "Park here" button on Area details.
 export function preselectArea(areaId) {
   if (state.activeSession) return;
-  $("car-area").value = areaId;
-  updateCarWarning();
+  pendingAreaId = String(areaId);
+  const sel = $("car-area");
+  if ([...sel.options].some((o) => o.value === pendingAreaId)) { sel.value = pendingAreaId; updateCarWarning(); }
 }
 
 let requireAccount = () => true;
