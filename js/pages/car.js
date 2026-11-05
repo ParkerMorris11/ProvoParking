@@ -11,10 +11,18 @@ let lastReminderState = "";
 export function stopTimer() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
 
 export function renderCar() {
-  const active = $("car-active"), form = $("car-form");
+  const active = $("car-active"), form = $("car-form"), guest = $("car-guest");
   const session = state.activeSession;
   stopTimer();
   lastReminderState = "";
+  // Guests see why they need an account before filling the form, not after pressing Start.
+  if (guest) guest.hidden = Boolean(session || state.user);
+  if (!session && !state.user && guest) {
+    form.hidden = true;
+    active.hidden = true;
+    active.innerHTML = "";
+    return;
+  }
   if (session) {
     form.hidden = true;
     active.hidden = false;
@@ -182,5 +190,6 @@ export function initCar(options = {}) {
   document.addEventListener("click", (e) => {
     const end = e.target.closest("#end-session");
     if (end) onEnd(end);
+    if (e.target.closest("#car-signup")) requireAccount("Create a free account to start a parking timer and save where you parked.");
   });
 }
