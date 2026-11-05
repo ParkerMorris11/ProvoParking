@@ -16,8 +16,8 @@ Actual time is not filled in here: use recorded Trello time or the team’s time
 
 - Full suite with disposable local PostgreSQL: 160 passed, zero skipped before final copy/link-only changes. Subsequent non-database suite: 123 passed, seven database tests skipped.
 - Local public-data preview: 102 BYU sections loaded; Y permit showed 33 eligible sections and mapped boundaries at the tested time. A downtown lot opened its corresponding popup. Guest lot-to-My-car flow did not start a session; restored local-timer link opened the standalone page.
-- Lighthouse mobile accessibility: Help 100/100, Areas 100/100. Desktop Help 100/100. Screenshots were checked to confirm the real screens loaded. Audit preview set guest mode in a temporary copy, with the project's public configuration; it did not create an account or parking session.
-- Audit screenshots: [Help mobile](screens/sprint-2-review/help-mobile.jpg), [Areas mobile](screens/sprint-2-review/areas-mobile.jpg), and [Help desktop](screens/sprint-2-review/help-desktop.jpg). Desktop Areas audits captured the loading screen and are not valid evidence.
+- Lighthouse mobile accessibility: Help 100/100, Areas 100/100. Desktop Help and Areas 100/100. Screenshots were checked to confirm the real screens loaded. Audit preview set guest mode in a temporary copy, with the project's public configuration; it did not create an account or parking session.
+- Audit screenshots: [Help mobile](screens/sprint-2-review/help-mobile.jpg), [Areas mobile](screens/sprint-2-review/areas-mobile.jpg), [Help desktop](screens/sprint-2-review/help-desktop.jpg), and [Areas desktop](screens/sprint-2-review/areas-desktop.jpg). Earlier desktop Areas runs captured the loading screen and were discarded.
 - Phone-width layout was checked at 390 px without document overflow. A physical phone, real GPS permissions, signed-in timer flow and final deployed-site validation remain outstanding.
 
 The team architecture documentation is in [README architecture section](../README.md#system-architecture-sprint-1-review). The automation Level 1 DFD is separate work and should be linked when available.
