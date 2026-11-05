@@ -25,7 +25,8 @@ function ruleGroupHtml(group) {
   const fullyBlocked = open && ruleBlocksTime(r, toMinutes(r.start_time)) && ruleBlocksTime(r, toMinutes(r.end_time));
   const bullets = [];
   bullets.push(fullyBlocked ? "No parking for any permit during this interval." : open ? "No permit restriction listed for ordinary stalls; check signs." : `Listed permits: ${codes.map(escapeHtml).join(", ")}; registration and posted restrictions apply.`);
-  if (r.blocked_start && r.blocked_end) bullets.push(`No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}.`);
+  // A fully blocked interval already says "no parking"; repeating its hours would say it twice.
+  if (r.blocked_start && r.blocked_end && !fullyBlocked) bullets.push(`No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}.`);
   if (!fullyBlocked) bullets.push(r.max_stay_minutes ? `Time limit: ${fmtDuration(r.max_stay_minutes)}.` : "Time limit unknown unless posted.");
   if (group.length === 1 && r.rule_note) bullets.push(escapeHtml(r.rule_note));
   return `

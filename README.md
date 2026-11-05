@@ -1,12 +1,20 @@
 # Provo Parking
 
-**Admin OKR dashboard:** [Username sign-in, database setup, metric definitions, verification and rollout](docs/admin-okr.md). The new `admin.html` page reports all four OKRs using admin-authorized database aggregates. Apply the tracking migration and provision each admin before deployment; no default credentials are included.
+Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Downtown Provo lots and garages from the city's parking map are shown alongside campus lots.
 
-**KR 2b visit metrics:** an additive migration and the account/local timer hooks measure time from opening to timer start. Account-backed results and client-reported guest results are separate; incomplete visits are excluded. See [visit metrics and rollout](docs/visit-metrics-handoff.md).
+## Sprint 2 status (November 5, 2026)
 
-**Accounts (Sprint 2):** the first screen is now **Create your account**: *Continue with Google*, or email + password on one screen, then an optional permit search with *Skip*. A device that has signed in before shows **Welcome back**. People stay signed in on the same device; favorites, permits and My car timers are saved per account. See [Accounts and sign-in](#accounts-and-sign-in). Email delivery and production auth redirect configuration remain a separate handoff; this merge does not disable email confirmation.
+| Area | What is live on `main` | Details |
+|---|---|---|
+| Accounts | One-screen sign-up, *Continue with Google*, optional permit step. Email confirmation is off, so a new account can use the app right away. | [Accounts and sign-in](#accounts-and-sign-in) |
+| BYU lots | 102 verified BYU lot sections (ordinary A, G, Y and U rules) on the map and list, filtered by your permit and Provo time | [Verified sections](docs/verified-byu-sections.md) |
+| Downtown Provo | 28 public lots and garages from Provo City's parking map, shown as city records (rules not verified) with directions | [Map and data sources](#map-and-data-sources) |
+| Favorites | Saved lots with **Get Directions** | [Screens](#screens) |
+| Help | BYU permit table (who it is for, where it is valid), how to read results, Provo and citation rules, all with source links | [Screens](#screens) |
+| OKRs | Admin dashboard (`admin.html`) reports all four Key Results from database aggregates; KR 2b visit timing is recorded | [Admin OKR dashboard](docs/admin-okr.md), [visit metrics](docs/visit-metrics-handoff.md) |
+| Still to do | AI workflow automation and its Level 1 DFD (Sprint 3), Lighthouse re-check of the new map and Help content | Trello Product Backlog |
 
-P7 database persistence is available as an independent, authenticated service. See [parking session persistence](docs/parking-session-persistence.md) for the Provo Parking-only migration, create/retrieve/end contracts, future P5/P6 integration, and isolated PostgreSQL tests. The existing frontend and demo-user session flow are unchanged by P7.
+P7 database persistence for parking sessions: [parking session persistence](docs/parking-session-persistence.md).
 
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
 
@@ -14,7 +22,7 @@ Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages s
 
 P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review → **Confirm & Start Timer** → [Parking timer](parking-timer.html). Serve the repository locally; no Supabase configuration is needed. The session is saved in this browser so you can return through **View parking timer** or refresh without resetting its timestamps. See [the P5 contract](docs/parking-timer-setup.md) and [P6 timer contract and sample states](docs/active-parking-timer.md). The existing Supabase My car timer remains available separately; these sessions do not sync with it or across devices.
 
-> Four BYU lots (59Y, 30G, 14A, 18U) use official map locations and sourced permit/hour rules checked November 4, 2026. Capacity, live availability and tow contacts are unknown. [Sources, data preservation and verification](docs/verified-byu-lots.md). Old sample records remain only for history.
+> 102 BYU lot sections use official map locations and sourced permit/hour rules checked November 4, 2026 ([sections](docs/verified-byu-sections.md); the first four lots are in [verified lots](docs/verified-byu-lots.md)). Capacity, live availability and tow contacts are unknown. Old sample records remain only for history.
 
 ## App Summary
 Students who drive to BYU often circle lots that are full or that their permit doesn't cover, which makes them late and leads to parking tickets. Our persona, Emma Carter, is a BYU junior who commutes for 8 a.m. classes and has received three tickets this year. Provo Parking lets a driver choose their permit and planned arrival time, then shows which nearby parking areas they are allowed to use and how full each one is likely to be. Each area explains its rules in plain language, including time limits and when restrictions change. After parking, the user can start a parking timer, see where they left the car, and save favorite areas for future trips. This version has a sign-up/log-in screen and five app screens (see below). Each person has their own account; their permits, favorites and parking timers are stored in a real database so they survive a refresh and follow them to another device. Eligibility is based on the permit the user selects, not on a verified BYU account.
@@ -28,7 +36,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
-| + | **Help** (extra tab) | Key BYU and Provo rules, what to do about a citation, with source links; static, no database | none |
+| + | **Help** (extra tab) | BYU permit table (who each permit is for and which lots it is valid in, checked against the July 23, 2026 regulations), how to read results, Provo rules, what to do about a citation, with source links; static | none |
 
 **Favorite directions:** Get Directions opens Google Maps in a new tab (or its installed mobile app), with driving directions to that saved lot ready for the user to choose Start. Google Maps uses the device's current location when available; otherwise, it asks for a starting point. This uses the existing [Google Maps URLs integration](https://developers.google.com/maps/documentation/urls/get-started), so no Google API key or new setup is needed. Coordinates identify lot centers, not entrances; sample locations are labeled, and lots without valid coordinates show a directions-unavailable message.
 
@@ -113,6 +121,8 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 | tow_company → parking_area | one-to-many |
 
 
+Sprint 2 review evidence: [Parker’s card verification and remaining checks](docs/sprint-2-parker-review.md).
+
 ## System architecture (Sprint 1 review)
 
 The customer app is live on GitHub Pages and uses Supabase. The AWS admin portal and AI workflow below are **planned**, not deployed. The FigJam contains the team's visual copy.
@@ -125,6 +135,8 @@ flowchart LR
   UI -->|queries and session requests| API[Supabase API and Auth]
   API -->|rows and credentials| DB[(Supabase PostgreSQL)]
   UI -->|map tiles| OSM[OpenStreetMap / Leaflet]
+  CityGIS[Provo City parking GIS - snapshot] -->|public lot outlines and notes| UI
+  Admin[Admin dashboard admin.html] -->|KR aggregates| API
   UI -->|lot coordinates| Maps[Google Maps directions]
   A[Admin user - planned] -->|login and changes| WEB[Admin HTML / CSS - planned AWS]
   WEB -->|lot and rule edits| S[Express / Node - planned AWS]
@@ -165,7 +177,7 @@ supabase/         schema, policies, dated change files
 ```
 How to add a page, branch naming, pull requests and database changes: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
-## Parker — Sprint 1 status (November 2, 2026)
+## Parker — Sprint 1 status (November 2, 2026; accepted November 4)
 
 | Card / behavioral requirement | Status |
 |---|---|
@@ -187,7 +199,7 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 | Public reference reads work while reference writes and personal data stay protected | Complete — browser-role SQL assertions pass |
 | Phone/laptop layouts and Lighthouse Accessibility ≥90 | Complete for captured layouts and automated checks — Find, Areas and details scored 100/100 at both sizes; real-phone interaction review remains pending |
 | Review and merge to main | Complete — [PR #5](https://github.com/ParkerMorris11/ProvoParking/pull/5) merged and deployed |
-| PO acceptance | Not complete — Spencer reviews the Done card |
+| PO acceptance | Complete — accepted in Sprint 1 Review (November 4, 2026) |
 
 Detailed checks, evidence and limits: [P2 verification](docs/p2-live-data-check.md). Lot locations, availability and tow contacts remain sample data.
 
@@ -242,6 +254,18 @@ Testing note: the screen logic was checked in a headless browser against an in-m
 ### Map integration (PR #11)
 
 The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. The team approved integration with merge commits to retain contributor history; see [integration verification](docs/integration-2026-11-01.md).
+
+### Map and data sources
+
+| Layer | Source | Checked | What it means |
+|---|---|---|---|
+| BYU lot sections (colored by category) | [BYU campus parking map](https://map.byu.edu/?layer=parking) and [BYU Parking Regulations](https://security.byu.edu/parking-regulations) | Nov 4, 2026 | Only sections whose listed rules match your permit and time are drawn |
+| Downtown Provo lots and garages (dashed purple) | Provo City GIS layer [`Provo_Parking_Facilities`](https://services2.arcgis.com/u1JcjHKiYxDeQU3C/arcgis/rest/services/Provo_Parking_Facilities/FeatureServer/0), public facilities only; [Provo Parking](https://www.provo.gov/273/Parking) | Nov 5, 2026 (city records edited 2018–2023) | Name, type, recorded spaces, hours and notes as the city recorded them. Not verified rules and never used for permit matching; every popup says to check signs |
+| Base map | OpenStreetMap via Leaflet | | Background only |
+
+The city snapshot is `data/provo-city-parking.json` (outlines simplified to about 10 m, areas checked against the city's recorded areas). Turn it on or off with **Show downtown Provo lots**, jump there with **Downtown**, or open the list under the map for a keyboard- and screen-reader-friendly version with **Show on map**. Code: `js/pages/city-layer.js`, `js/domain/city-parking.js`, tests in `tests/city-parking.test.js`. Provo City's layer covers downtown and a few civic lots; residential permit zones and street time limits are not in it.
+
+![Downtown Provo lots on the map](docs/screens/map/provo-city-desktop.png)
 
 ### Nearby lots with your location
 

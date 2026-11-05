@@ -3,7 +3,7 @@
 //   account right away, so a taken email or rejected password is shown on this same screen.
 //   Then an optional "Which permit do you have?" step with Skip (also shown after a first Google sign-in).
 //   Log in: Google, or email + password, Keep me signed in, Forgot password. Also: reset and new-password forms.
-import { pauseMapLocation } from "./map.js";
+import { stopMapLocation } from "./map.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { escapeHtml } from "../lib/format.js";
@@ -25,7 +25,7 @@ let hooks = { onSignedIn: async () => {}, onGuest: async () => {}, authStorage: 
 
 // ---------- showing and hiding ----------
 export function showAuth(view, message = "", isError = false) {
-  pauseMapLocation();
+  stopMapLocation();
   for (const id of APP_CHROME) $(id).hidden = true;
   $("auth-screen").hidden = false;
   $("auth-screen").dataset.view = view;

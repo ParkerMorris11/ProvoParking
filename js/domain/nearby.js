@@ -20,7 +20,7 @@ function center(geometry) {
   return { latitude: (Math.min(...lats) + Math.max(...lats)) / 2, longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
 }
 
-function metersBetween(a, b) {
+export function metersBetween(a, b) {
   const rad = n => n * Math.PI / 180;
   const dLat = rad(b.latitude - a.latitude), dLng = rad(b.longitude - a.longitude);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.latitude)) * Math.cos(rad(b.latitude)) * Math.sin(dLng / 2) ** 2;
@@ -45,4 +45,15 @@ export function nearbyLots(features, position, permit = "", limit = 3) {
     if (!unique.has(key) || distanceMeters < unique.get(key).distanceMeters) unique.set(key, item);
   }
   return [...unique.values()].sort((a,b) => a.distanceMeters - b.distanceMeters || a.name.localeCompare(b.name)).slice(0, limit);
+}
+
+// A nearby center is only a prompt to review, never proof of arrival or permission.
+export function arrivalSuggestion(lots, position, areas) {
+  if (!Number.isFinite(position?.accuracy) || position.accuracy < 0 || position.accuracy > 50) return null;
+  for (const lot of lots || []) {
+    if (!Number.isFinite(lot.distanceMeters) || lot.distanceMeters > 60) continue;
+    const area = (areas || []).find(a => !a.is_sample_data && a.source_feature_id === lot.feature?.properties?.OBJECTID);
+    if (area) return area;
+  }
+  return null;
 }

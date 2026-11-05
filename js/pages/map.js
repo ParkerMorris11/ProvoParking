@@ -1,9 +1,10 @@
 import { escapeHtml } from "../lib/format.js";
 
-import { nearbyLots } from "../domain/nearby.js";
+import { nearbyLots, arrivalSuggestion } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
+import { initCityLayer } from "./city-layer.js";
 
 let map;
 let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
@@ -16,16 +17,29 @@ function clearUserLocation() {
   userMarker = accuracyRing = null;
 }
 
+function updateArrivalSuggestion(element, candidate) {
+  if (!element) return;
+  const html = candidate ? `<strong>You may be near ${escapeHtml(candidate.area_name)}.</strong> Location is approximate. <a href="#area/${encodeURIComponent(candidate.area_id)}">Review this lot and confirm before starting a timer</a>.` : "";
+  if (element.innerHTML === html) return;
+  const hadFocus = element.contains(document.activeElement);
+  element.innerHTML = html;
+  element.hidden = !candidate;
+  if (hadFocus) document.getElementById("locate-me")?.focus();
+}
+
 function renderNearby() {
   const list = document.getElementById("nearby-list");
   if (!list) return;
   const controls = document.getElementById("nearby-controls");
   const empty = document.getElementById("nearby-empty");
+  const suggestion = document.getElementById("arrival-suggestion");
   controls.hidden = !latestPosition;
-  if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; nearby = []; return; }
+  if (!latestPosition) { list.innerHTML = ""; empty.hidden = true; updateArrivalSuggestion(suggestion, null); nearby = []; return; }
   const activeButton = document.activeElement?.closest?.("[data-nearby-index]");
   const focusedLot = activeButton && list.contains(activeButton) ? nearby[Number(activeButton.dataset.nearbyIndex)] : null;
   nearby = nearbyLots(visibleFeatures, latestPosition, document.getElementById("nearby-permit").value);
+  const candidate = state.find.live ? arrivalSuggestion(nearby, latestPosition, state.areas) : null;
+  updateArrivalSuggestion(suggestion, candidate);
   empty.hidden = nearby.length > 0;
   empty.textContent = "No matching mapped sections in this category within 5 km. Try another category or check your permit and parking time.";
   list.innerHTML = nearby.map((lot, index) => {
@@ -68,6 +82,7 @@ function initLocation() {
       firstFix = true;
     }
     renderNearby();
+    if (typeof document.dispatchEvent === "function") document.dispatchEvent(new CustomEvent("map:location"));
   } });
   button.addEventListener("click", () => {
     if (button.getAttribute("aria-pressed") === "true") tracker.stop(); else tracker.start();
@@ -84,12 +99,45 @@ function initLocation() {
     lotLayers.get(lot.feature)?.openPopup();
     document.getElementById("parking-map").focus({ preventScroll: false });
   });
-  document.addEventListener("visibilitychange", () => { if (document.hidden) pauseMapLocation(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) pauseMapLocation();
+    else if (state.currentView === "areas" && document.getElementById("auth-screen")?.hidden) tracker.resume();
+  });
   window.addEventListener("pagehide", pauseMapLocation);
 }
 
+/** The live location from "Use my location", or null. Used to sort the Areas list by distance. */
+export function currentPosition() { return latestPosition; }
+
+// Popup for one mapped section: what the GIS layer says, plus links into the app for the
+// matching sections of the current list (Rules & details).
+function popupHtml(feature) {
+  const p = feature.properties || {};
+  const matches = state.areas.filter((area) => area.source_feature_id === p.OBJECTID && !area.is_sample_data);
+  const links = matches.map((area) => `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : ""} →</a>`).join("");
+  return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}</div>`;
+}
+
+/** "Show on map" from an Areas card: zoom to that section's boundary and open its popup. */
+export function showAreaOnMap(area) {
+  if (!map || !area) return false;
+  const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
+  const layer = feature && lotLayers.get(feature);
+  if (!layer) return false;
+  const el = document.getElementById("parking-map");
+  el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [24, 24] });
+  layer.openPopup();
+  el?.focus?.({ preventScroll: true });
+  return true;
+}
+
 export function pauseMapLocation() {
-  tracker?.stop("Location paused. Use your location again when you return to the map.");
+  tracker?.pause();
+}
+
+export function stopMapLocation() {
+  tracker?.stop();
 }
 
 function setMapStatus(message) {
@@ -121,7 +169,7 @@ export async function initMap() {
     setMapStatus("Map unavailable. Use the parking list to view rules and details.");
     return;
   }
-  if (map) { refreshMap(); return; }
+  if (map) { refreshMap(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
   const L = window.L;
   try {
     map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true }).setView([40.2518, -111.6493], 15);
@@ -138,6 +186,7 @@ export async function initMap() {
       reset.addEventListener("click", () => map.setView([40.2518, -111.6493], 15));
     }
     refreshMap();
+    initCityLayer(map, L);
     try {
       const response = await fetch("data/byu-campus-parking.json");
       if (!response.ok) throw new Error(`Boundary request failed (${response.status})`);
@@ -148,8 +197,7 @@ export async function initMap() {
         style: boundaryStyle,
         onEachFeature: (feature, layer) => {
           lotLayers.set(feature, layer);
-          const p = feature.properties || {};
-          layer.bindPopup(`<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(p.Lot_Type || "BYU parking area")}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p></div>`, { maxWidth: 280 });
+          layer.bindPopup(() => popupHtml(feature), { maxWidth: 280 });
         }
       }).addTo(map);
       refreshMapEligibility();
