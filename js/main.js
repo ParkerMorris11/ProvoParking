@@ -16,6 +16,8 @@ import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, preselectArea, stopTimer } from "./pages/car.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
+import { createParkingClock } from "./lib/parking-clock.js";
+import { renderAreas } from "./pages/areas.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
@@ -31,6 +33,14 @@ const remember = (key, value) => { try { value == null ? localStorage.removeItem
 const recall = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
 
 let signingOut = false;
+const parkingClock = createParkingClock({
+  enabled: () => Boolean(state.db && state.find.live && state.currentView === "areas" && !document.hidden && $("auth-screen").hidden),
+  refresh: renderAreas,
+});
+document.addEventListener("visibilitychange", () => parkingClock.update());
+window.addEventListener("focus", () => parkingClock.update());
+window.addEventListener("pageshow", () => parkingClock.update());
+window.addEventListener("pagehide", () => parkingClock.stop());
 
 // ---------- entering the app ----------
 function renderAccountBar() {
@@ -57,6 +67,7 @@ async function enterApp(note, version = state.authVersion) {
     const who = state.user ? `Signed in as ${state.user.displayName}.` : "Browsing as a guest. Create an account to save favorites and start a parking timer.";
     setStatus(`${note ? `${note} ` : ""}${state.areas.filter((area) => !area.is_sample_data).length} verified parking areas loaded. ${who}`);
     showView();
+    parkingClock.update();
   } catch (err) {
     if (version !== state.authVersion) return;
     console.error(err);
@@ -100,6 +111,8 @@ async function onGuest() {
 }
 
 function clearPersonalData() {
+  parkingClock.stop();
+  state.find.live = true;
   state.authVersion++;
   state.authId = null;
   clearPasswords();
@@ -155,7 +168,7 @@ document.addEventListener("click", (e) => {
 initFind({ go });
 initCar({ requireAccount });
 initAuth({ onSignedIn, onGuest, authStorage });
-window.addEventListener("hashchange", showView);
+window.addEventListener("hashchange", () => { showView(); parkingClock.update(); });
 
 // Narrow-window tab menu (the ☰ button). Closes on Escape, on a tab choice, on an outside click,
 // and when the window grows wide enough to show the tabs in a row again.

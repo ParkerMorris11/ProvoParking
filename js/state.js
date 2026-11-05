@@ -16,7 +16,7 @@ export const state = {
   activeSession: null,
   currentView: null,
   // What the user picked on the Find screen.
-  find: { permitId: null, day: new Date().getDay(), time: nowHHMM() },
+  find: { permitId: null, live: true, day: new Date().getDay(), time: nowHHMM() },
 };
 
 export function rulesFor(areaId) {

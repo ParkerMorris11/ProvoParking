@@ -4,6 +4,7 @@ import {spawnSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import {assertDisposableTestTarget,isolatedPostgresEnvironment} from './helpers/database-target.js';
 import {evaluate} from '../js/domain/eligibility.js';
+import {eligibleAreas,eligibleMapFeatures} from '../js/domain/parking-results.js';
 const db=process.env.P7_TEST_DATABASE_URL;
 const sqlFile=new URL('../supabase/migrations/20261104155225_verified_byu_lots.sql',import.meta.url);
 function query(sql){const r=spawnSync(process.env.P7_PSQL||'psql',['-X','-q','-t','-A','-v','ON_ERROR_STOP=1','-d',db,'-c',sql],{encoding:'utf8',env:isolatedPostgresEnvironment(process.env)});if(r.error)throw r.error;if(r.status)throw Error(r.stderr);return r.stdout.trim();}
@@ -24,6 +25,22 @@ test('verified BYU lot migration and real rule evaluation',{skip:!db&&'Set the d
  });
  const permits=JSON.parse(query('select json_object_agg(permit_code,permit_id) from permit'));
  const rules=JSON.parse(query('select json_agg(r) from parking_rule r'));
+ await t.test('Areas and map filters use the real stored permit matrix and hour boundaries',()=>{
+  const ids={'59Y':5,'30G':2,'14A':25,'18U':167};
+  const identified=lots.map(a=>({...a,source_feature_id:ids[a.lot_code]}));
+  const byArea=new Map(lots.map(a=>[a.area_id,rules.filter(r=>r.area_id===a.area_id)]));
+  const features=JSON.parse(readFileSync(new URL('../data/byu-campus-parking.json',import.meta.url),'utf8')).features;
+  for(const [permit,day,time,expected] of [
+   ['G',3,'08:00',['18U','30G','59Y']], ['U',3,'08:00',['18U']],
+   ['U',3,'16:00',['18U','30G','59Y']], ['U',3,'18:59',['18U','30G','59Y']],
+   ['U',3,'19:00',['14A','18U','30G','59Y']], ['U',3,'01:00',[]],
+   ['V',6,'08:00',[]],
+  ]){
+   const visible=eligibleAreas(identified,byArea,{permitId:permits[permit],day,time});
+   assert.deepEqual(visible.map(a=>a.lot_code).sort(),expected);
+   assert.deepEqual(eligibleMapFeatures(features,visible).map(f=>f.properties.Lot_Type).sort(),expected);
+  }
+ });
  const check=(code,permit,day,time,kind)=>{
   const area=lots.find(a=>a.lot_code===code);assert.ok(area,'missing '+code);
   assert.equal(evaluate(rules.filter(r=>r.area_id===area.area_id),permit==null?null:permits[permit],day,time).kind,kind,[code,permit,day,time].join(' '));
