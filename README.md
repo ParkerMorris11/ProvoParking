@@ -121,6 +121,8 @@ Source: [`docs/erd.mmd`](docs/erd.mmd) (Mermaid). Eight entities:
 | tow_company → parking_area | one-to-many |
 
 
+Sprint 2 review evidence: [Parker’s card verification and remaining checks](docs/sprint-2-parker-review.md).
+
 ## System architecture (Sprint 1 review)
 
 The customer app is live on GitHub Pages and uses Supabase. The AWS admin portal and AI workflow below are **planned**, not deployed. The FigJam contains the team's visual copy.
