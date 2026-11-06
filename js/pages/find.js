@@ -19,16 +19,26 @@ export function renderFind() {
   renderPermitInfo();
 }
 
-export function renderDestinationOptions(id, selected) {
-  $(id).innerHTML = '<option value="">Choose a BYU building…</option>' + state.destinations.map(d =>
+export function renderDestinationOptions(id, selected, { required = false } = {}) {
+  const empty = required ? "Choose a BYU building…" : "Skip for now";
+  $(id).innerHTML = `<option value="">${empty}</option>` + state.destinations.map(d =>
     `<option value="${d.destination_id}">${escapeHtml(d.name)} (${escapeHtml(d.building_code)})</option>`).join("");
   $(id).value = selected ?? "";
 }
 
 function syncTimeControls() {
   const live = $("arrive-now").checked;
+  const planned = $("planned-arrival");
+  if (planned) planned.hidden = live;
   $("arrive-day").disabled = live;
   $("arrive-time").disabled = live;
+  $("arrive-now-btn")?.setAttribute("aria-pressed", String(live));
+  $("arrive-plan-btn")?.setAttribute("aria-pressed", String(!live));
+}
+
+function setLiveArrival(live) {
+  $("arrive-now").checked = live;
+  syncTimeControls();
 }
 
 function renderPermitInfo() {
@@ -42,15 +52,14 @@ function renderPermitInfo() {
 export function initFind({ go }) {
   $("permit-select").addEventListener("change", renderPermitInfo);
   $("arrive-now").addEventListener("change", syncTimeControls);
+  $("arrive-now-btn")?.addEventListener("click", () => setLiveArrival(true));
+  $("arrive-plan-btn")?.addEventListener("click", () => setLiveArrival(false));
   $("find-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const id = Number($("permit-select").value);
     if (!id) { setStatus("Choose your permit first so we can check which areas you can use.", true); $("permit-select").focus(); return; }
     const destinationId = Number($("find-destination").value);
-    if (!state.destinations.some(d => d.destination_id === destinationId)) {
-      setStatus("Choose your destination building first.", true); $("find-destination").focus(); return;
-    }
-    state.find.destinationId = destinationId;
+    state.find.destinationId = state.destinations.some(d => d.destination_id === destinationId) ? destinationId : null;
     state.find.permitId = id;
     state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);

@@ -66,8 +66,8 @@ test('clock refreshes on the next minute, cancels sleeping/disabled updates and 
 });
 test('Areas renders only eligible cards and gives useful empty states without deleting saved data',()=>{
  const oldDocument=globalThis.document, oldState={...state};
- const fields={'area-list':{},'areas-summary':{},'areas-empty':{}};
- globalThis.document={getElementById:id=>fields[id]};
+ const fields={'area-list':{},'areas-summary':{},'areas-empty':{},'areas-context':{}};
+ globalThis.document={getElementById:id=>fields[id],addEventListener(){}};
  Object.assign(state,{areas:lots,rulesByArea:rules,find:selection,permits:[{permit_id:2,permit_name:'G permit'}],favoriteIds:new Set([3])});
  try{
   renderAreas();assert.match(fields['area-list'].innerHTML,/30G/);assert.doesNotMatch(fields['area-list'].innerHTML,/<h3>(14A|unknown|sample)<\/h3>/);
@@ -77,5 +77,17 @@ test('Areas renders only eligible cards and gives useful empty states without de
   assert.match(fields['areas-empty'].textContent,/No verified parking areas match/);
   state.find={...selection,permitId:null};renderAreas();assert.match(fields['areas-empty'].textContent,/Choose your permit/);
   assert.equal(state.favoriteIds.has(3),true);assert.equal(state.areas.length,lots.length);
+ }finally{Object.assign(state,oldState);if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;}
+});
+test('Areas context bar repeats the selected permit and Provo time',()=>{
+ const oldDocument=globalThis.document, oldState={...state};
+ const listen=()=>({addEventListener(){},value:'',hidden:true,innerHTML:'',children:[],textContent:''});
+ const fields={'area-list':listen(),'areas-more':listen(),'areas-count':listen(),'areas-empty':listen(),'areas-summary':listen(),'areas-context':listen(),'area-search':{...listen(),value:''},'area-sort':{...listen(),value:'name'},'results-heading':listen()};
+ globalThis.document={getElementById:id=>fields[id],addEventListener(){},querySelectorAll:()=>[]};
+ Object.assign(state,{find:{permitId:2,live:true,day:5,time:'19:22'},permits:[{permit_id:2,permit_code:'Y',permit_name:'Y'}],areas:lots,rulesByArea:rules,favoriteIds:new Set()});
+ try{
+  renderAreas();
+  assert.match(fields['areas-context'].textContent,/Y/);
+  assert.match(fields['areas-context'].textContent,/Right now|Provo/);
  }finally{Object.assign(state,oldState);if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;}
 });

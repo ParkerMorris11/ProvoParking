@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { initMap } from '../js/pages/map.js';
+import { initMap, popupHtml } from '../js/pages/map.js';
+import { state } from '../js/state.js';
 
 test('map never plots sample database circles', async () => {
   const plotted = [];
@@ -82,4 +83,20 @@ test('boundary colors distinguish visitor permits from YV and mark missing or pr
     assert.notEqual(color('No BYU Parking'), color('Y'));
     assert.notEqual(color(null), color('Y'));
   } finally { globalThis.fetch = oldFetch; delete globalThis.window; delete globalThis.document; }
+});
+
+test('BYU popups offer Park here only when signed in', () => {
+  const previous = { ...state };
+  const feature = { properties: { OBJECTID: 12, Map_Catego: 'Student', Lot_Type: '20Y', permit_typ: 'Y', Descriptio: 'Y parking' } };
+  Object.assign(state, { user: null, areas: [{ area_id: 12, area_name: 'BYU Lot 20Y', source_feature_id: 12, is_sample_data: false }] });
+  try {
+    const guest = popupHtml(feature);
+    assert.match(guest, /Rules &amp; details/);
+    assert.doesNotMatch(guest, /data-park-area/);
+    assert.match(guest, /Sign in to start a timer/);
+    state.user = { userId: 1 };
+    const signedIn = popupHtml(feature);
+    assert.match(signedIn, /data-park-area="12"/);
+    assert.match(signedIn, /Park here — start timer/);
+  } finally { Object.assign(state, previous); }
 });

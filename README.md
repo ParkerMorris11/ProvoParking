@@ -31,12 +31,12 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | # | Screen | What it does | Data it uses |
 |---|---|---|---|
 | 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
-| 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit) | `permit`, `user_permit` |
-| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, map and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
+| 1 | **Find** | Ask *Where can you park?*, pick a permit, Right now or Plan a time. Destination is optional until you start a timer. | `permit`, `user_permit` |
+| 2 | **Areas** | Compact permit/time chip, matching lot cards first, Map \| Lots on phones. Map popups can start a timer only on verified BYU lots. Downtown city records never start a timer. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
-| + | **Help** (extra tab) | BYU permit table (who each permit is for and which lots it is valid in, checked against the July 23, 2026 regulations), how to read results, Provo rules, what to do about a citation, with source links; static | none |
+| + | **Help** (extra tab) | Scannable Y/G/A/B/C cards plus the sourced permit table, how to read results, Provo rules, citations; static | none |
 
 **Favorite directions:** Get Directions opens Google Maps in a new tab (or its installed mobile app), with driving directions to that saved lot ready for the user to choose Start. Google Maps uses the device's current location when available; otherwise, it asks for a starting point. This uses the existing [Google Maps URLs integration](https://developers.google.com/maps/documentation/urls/get-started), so no Google API key or new setup is needed. Coordinates identify lot centers, not entrances; sample locations are labeled, and lots without valid coordinates show a directions-unavailable message.
 

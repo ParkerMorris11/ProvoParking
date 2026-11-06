@@ -60,6 +60,7 @@ test('favorites render a separate directions button per saved lot and update aft
     assert.equal(fields['fav-count'].textContent, 2);
     assert.equal(fields['fav-empty'].hidden, true);
     assert.doesNotMatch(cardHtml(lots[0]), /Get Directions/);
+    assert.match(cardHtml({ ...lots[0], source_feature_id: 59 }, { showOnMap: true }), /aria-label="Show on map: BYU Lot 59Y"/);
 
     const invalid = cardHtml({ ...lots[0], latitude: null }, { showDirections: true });
     assert.match(invalid, /Directions unavailable/);
