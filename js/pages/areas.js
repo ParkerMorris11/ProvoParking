@@ -5,7 +5,7 @@ import { DAY_NAMES, fmtTime } from "../lib/format.js";
 import { cardHtml } from "../components/area-card.js";
 import { eligibleAreas, parkingSelection } from "../domain/parking-results.js";
 import { arrangeAreas } from "../domain/area-list.js";
-import { refreshMapEligibility, currentPosition, showAreaOnMap } from "./map.js";
+import { refreshMapEligibility, refreshMap, currentPosition, showAreaOnMap } from "./map.js";
 
 export const PAGE_SIZE = 12;
 let renderedList, renderedHtml, expanded = false, toolsReady = false;
@@ -16,6 +16,16 @@ function listOptions() {
     sort: $("area-sort")?.value || "name",
     position: currentPosition(),
   };
+}
+
+function setAreasPane(pane) {
+  const view = $("view-areas");
+  if (!view) return;
+  view.dataset.areasPane = pane;
+  for (const button of document.querySelectorAll("#areas-pane-toggle [data-pane]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.pane === pane));
+  }
+  if (pane === "map") { refreshMapEligibility(); refreshMap(); }
 }
 
 function initTools() {
@@ -38,7 +48,13 @@ function initTools() {
     const button = event.target.closest("[data-map-area]");
     if (!button) return;
     const area = state.areas.find((a) => a.area_id === Number(button.dataset.mapArea));
-    if (area) showAreaOnMap(area);
+    if (!area) return;
+    if (globalThis.matchMedia?.("(max-width: 640px)").matches) setAreasPane("map");
+    showAreaOnMap(area);
+  });
+  $("areas-pane-toggle")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-pane]");
+    if (button) setAreasPane(button.dataset.pane);
   });
   document.addEventListener("map:location", () => { if (state.currentView === "areas" && sort.value === "distance") renderAreas(); });
 }
@@ -93,6 +109,11 @@ export function renderAreas() {
   }
   const { permitId, day, time } = selection;
   const permit = state.permits.find((p) => p.permit_id === permitId);
-  $("areas-summary").textContent = `${permit ? permit.permit_name : "No permit selected"} · ${selection.live ? "Right now" : "Planned arrival"}: ${DAY_NAMES[day]} at ${fmtTime(time)} (Provo time) · ${eligible.length} matching ${eligible.length === 1 ? "section" : "sections"}`;
+  const when = selection.live ? "Right now" : "Planned";
+  const whenLong = selection.live ? "Right now" : "Planned arrival";
+  const permitLabel = permit ? permit.permit_code || permit.permit_name : "No permit";
+  const context = $("areas-context");
+  if (context) context.textContent = `${permitLabel} · ${when} · ${DAY_NAMES[day]} ${fmtTime(time)} Provo`;
+  $("areas-summary").textContent = `${permit ? permit.permit_name : "No permit selected"} · ${whenLong}: ${DAY_NAMES[day]} at ${fmtTime(time)} (Provo time) · ${eligible.length} matching ${eligible.length === 1 ? "section" : "sections"}`;
   refreshMapEligibility(selection, eligible);
 }

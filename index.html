@@ -8,7 +8,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600&display=swap">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -160,18 +162,22 @@
 
     <!-- Screen 1: Find — pick permit + arrival time -->
     <section id="view-find" aria-labelledby="h-find" hidden>
-      <h2 id="h-find" tabindex="-1">Find parking</h2>
       <form id="find-form" class="panel">
-        <label for="permit-select">Your permit</label>
+        <p class="eyebrow">CAMPUS PARKING</p>
+        <h2 id="h-find" tabindex="-1">Where can you park?</h2>
+        <p class="hint">We match your permit to listed BYU rules. This is not a guarantee a stall is open.</p>
+        <label for="permit-select">Permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
-        <label for="find-destination">Where are you going?</label>
-        <select id="find-destination" required aria-describedby="destination-hint"></select>
-        <p id="destination-hint" class="hint">Choose your BYU building. We save it with your parking timer to measure how close you parked.</p>
-        <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
-        <p class="hint">Updates automatically as lot rules change. Uncheck to plan a different arrival day and time.</p>
-
-        <div class="row">
+        <fieldset class="when-fieldset">
+          <legend>When</legend>
+          <input type="checkbox" id="arrive-now" class="visually-hidden" checked>
+          <div class="when-toggle" role="group" aria-label="Arrival time">
+            <button type="button" id="arrive-now-btn" aria-pressed="true">Right now</button>
+            <button type="button" id="arrive-plan-btn" aria-pressed="false">Plan a time</button>
+          </div>
+        </fieldset>
+        <div id="planned-arrival" class="row" hidden>
           <div>
             <label for="arrive-day">Arrival day</label>
             <select id="arrive-day" disabled>
@@ -185,17 +191,27 @@
             <input type="time" id="arrive-time" required disabled>
           </div>
         </div>
+        <label for="find-destination">Destination (optional)</label>
+        <select id="find-destination" aria-describedby="destination-hint"></select>
+        <p id="destination-hint" class="hint">Optional. We can save a building with your timer later. Skip this to see matching lots now.</p>
         <p class="hint">Results compare your selection with listed rules. Your BYU registration and actual eligibility are not verified.</p>
-        <button type="submit" class="primary">Show parking areas</button>
+        <button type="submit" class="primary">Show matching lots</button>
+        <p class="hint">Guests can browse lots. An account is required to start a timer or save favorites.</p>
       </form>
     </section>
 
     <!-- Screen 2: Areas — list with eligibility -->
-    <section id="view-areas" aria-labelledby="h-areas" hidden>
-      <div class="areas-heading">
-        <div><p class="eyebrow">PROVO, UTAH / CAMPUS PARKING</p><h2 id="h-areas" tabindex="-1">Parking around BYU<span>.</span></h2><p id="areas-summary" class="summary"></p></div>
-        <a class="permit-link" href="#find">Change permit or time <span aria-hidden="true">↗</span></a>
+    <section id="view-areas" aria-labelledby="h-areas" hidden data-areas-pane="list">
+      <div class="areas-context" id="areas-context-row">
+        <p id="areas-context" class="context-chips"></p>
+        <div class="pane-toggle" id="areas-pane-toggle" role="group" aria-label="Areas view">
+          <button type="button" data-pane="map">Map</button>
+          <button type="button" data-pane="list" aria-pressed="true">Lots</button>
+        </div>
+        <a class="permit-link" href="#find">Change permit or time</a>
       </div>
+      <h2 id="h-areas" class="visually-hidden" tabindex="-1">Parking areas</h2>
+      <p id="areas-summary" class="visually-hidden"></p>
       <div class="parking-workspace">
         <div class="map-panel">
           <div class="map-toolbar"><h3>Explore BYU and downtown</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button></div></div>
@@ -213,18 +229,8 @@
           </details>
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
-          <section class="nearby-panel" aria-labelledby="nearby-heading">
-            <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
-            <p id="arrival-suggestion" class="hint" hidden></p>
-            <p id="location-status" class="location-status" role="status">Use your location to find nearby mapped lots.</p>
-            <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
-            <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Only sections matching listed rules for your selected permit and time are included. Check signs.</p></div>
-            <ul id="nearby-list" class="nearby-list"></ul>
-            <p id="nearby-empty" class="nearby-note" hidden></p>
-            <p class="nearby-note">Distances are straight-line estimates to lot centers. Availability and temporary restrictions are not verified.</p>
-          </section>
-          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
-          <p class="results-note">BYU lot sections checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Register and activate your vehicle. Check signs for events, finals, holidays and breaks. Availability is unknown.</p>
+          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Matching lots</h3></div><span class="sample-label">BYU source checked</span></div>
+          <p class="results-note">BYU lot sections checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Check signs. Availability is unknown.</p>
           <div class="list-tools">
             <div class="list-search">
               <label for="area-search">Search lots</label>
@@ -242,6 +248,17 @@
           <ul id="area-list" class="cards"></ul>
           <button type="button" id="areas-more" class="secondary areas-more" hidden>Show all</button>
           <p id="areas-empty" class="empty" role="status" hidden></p>
+          <p class="downtown-caution">Downtown lots are city records, not verified. They never start a timer.</p>
+          <section class="nearby-panel" aria-labelledby="nearby-heading">
+            <h3 id="nearby-heading">Nearby lots</h3>
+            <p id="arrival-suggestion" class="hint" hidden></p>
+            <p id="location-status" class="location-status" role="status">Turn on location for nearby lots. Location is not saved.</p>
+            <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
+            <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Only sections matching listed rules for your selected permit and time are included. Check signs.</p></div>
+            <ul id="nearby-list" class="nearby-list"></ul>
+            <p id="nearby-empty" class="nearby-note" hidden></p>
+            <p class="nearby-note" hidden>Distances are straight-line estimates to lot centers. Availability and temporary restrictions are not verified.</p>
+          </section>
         </aside>
       </div>
     </section>
@@ -312,8 +329,15 @@
       <div class="panel help">
         <h3 id="help-permits">Which BYU permit parks where</h3>
         <p class="hint">Your permit is valid only in the lot letters listed. Every other lettered lot can get you a ticket during enforcement hours.</p>
+        <div class="permit-cards" aria-hidden="true">
+          <article class="permit-card"><h4>Y</h4><p>Undergraduates</p><p class="valid-in">Valid in Y, U</p></article>
+          <article class="permit-card"><h4>G</h4><p>Graduate students</p><p class="valid-in">Valid in G, Y, U</p></article>
+          <article class="permit-card"><h4>A</h4><p>Faculty and staff</p><p class="valid-in">Valid in A, C, G, Y, U</p></article>
+          <article class="permit-card"><h4>B</h4><p>Heritage Halls</p><p class="valid-in">Valid in B, U</p></article>
+          <article class="permit-card"><h4>C</h4><p>Helaman Halls</p><p class="valid-in">Valid in C, U</p></article>
+        </div>
         <div class="table-wrap">
-          <table class="permit-table" aria-describedby="help-permits">
+          <table class="permit-table visually-hidden" aria-describedby="help-permits">
             <thead><tr><th scope="col">Permit</th><th scope="col">Who it is for</th><th scope="col">Valid in</th></tr></thead>
             <tbody>
               <tr><th scope="row">Y</th><td>Undergraduates (not Helaman Halls, Heritage Halls or Riviera residents)</td><td>Y, U</td></tr>

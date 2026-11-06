@@ -38,6 +38,13 @@ test('malformed features are dropped', () => {
   ] }), []);
 });
 
+test('city popups never include Park here', () => {
+  const html = cityPopupHtml(facilitySummary(snapshot.features[0], snapshot.source));
+  assert.doesNotMatch(html, /data-park-area/);
+  assert.doesNotMatch(html, /Park here/i);
+  assert.match(html, /not verified/i);
+});
+
 test('popup escapes city text and links directions and the source', () => {
   const feature = { ...snapshot.features[0], properties: { ...snapshot.features[0].properties, name: '<b>Lot</b>', notes: 'a "quote"' } };
   const html = cityPopupHtml(facilitySummary(feature, snapshot.source));

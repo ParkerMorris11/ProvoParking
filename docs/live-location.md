@@ -25,3 +25,13 @@ A temporary unavailable-position error is retried once; permission denial, persi
 - Lighthouse attempts for this revision captured the database loading screen, so their numerical scores are not valid accessibility evidence for the new controls. Earlier map/UI audits remain documented separately. Real-device GPS, OS/browser permission UX and screen-reader testing remain for human review.
 
 No database changes, timer integration, Trello updates or production deployment. Included in map PR #11; the team approved integration on November 1 with original commits preserved. See `integration-2026-11-01.md`; live Pages verification follows deployment.
+
+## Remaining — Parker’s phone (not finished in code)
+
+Agents cannot complete real-device GPS. After this UI ships, check on a signed-in phone:
+
+1. Areas → **Use my location** → allow the OS/browser prompt over HTTPS.
+2. Confirm the blue dot, accuracy, and nearby BYU lots (not downtown) update as you walk.
+3. When you are within ~60 m of a matching BYU lot with accuracy ≤50 m, confirm the arrival prompt does **not** auto-start a timer.
+4. From that nearby card or BYU popup, tap **Park here — start timer**, pick a destination if you skipped it on Find, and start the countdown.
+5. Confirm a city/downtown popup still has no Park here control.

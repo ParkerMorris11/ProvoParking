@@ -28,7 +28,7 @@ function renderList(map) {
     return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(s.name)}</h4><span>${escapeHtml(s.kind)}</span></div>` +
       `<p class="nearby-category">${escapeHtml(s.spaces)} · ${escapeHtml(s.hours)}</p>` +
       (s.notes ? `<p class="nearby-description">${escapeHtml(s.notes)}</p>` : "") +
-      `<button type="button" data-city-index="${index}">Show on map <span aria-hidden="true">↗</span></button></li>`;
+      `<button type="button" data-city-index="${index}" aria-label="Show on map: ${escapeHtml(s.name)}">Show on map <span aria-hidden="true">↗</span></button></li>`;
   }).join("");
   list.onclick = event => {
     const control = event.target.closest("[data-city-index]");

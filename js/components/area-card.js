@@ -39,7 +39,7 @@ export function cardHtml(area, { showDirections = false, showOnMap = false } = {
         <p class="avail ${avail.cls}">${avail.text}</p>
         <div class="card-links">
           <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
-          ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show ${escapeHtml(area.area_name)} on map">Show on map</button>` : ""}
+          ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show on map: ${escapeHtml(area.area_name)}">Show on map</button>` : ""}
         </div>
         ${showDirections ? `<div class="favorite-directions">
           ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>

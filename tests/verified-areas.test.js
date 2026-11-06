@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {state} from '../js/state.js';
 import {renderAreas} from '../js/pages/areas.js';
 test('primary Areas results show verified lots while retaining sample records for history',()=>{
- const fields={'area-list':{},'areas-summary':{}};
- globalThis.document={getElementById:id=>fields[id]};
+ const fields={'area-list':{},'areas-summary':{},'areas-context':{}};
+ globalThis.document={getElementById:id=>fields[id],addEventListener(){},querySelectorAll:()=>[]};
  state.areas=[{area_id:1,area_name:'Sample old lot',is_sample_data:true},{area_id:5,area_name:'BYU Lot 59Y',is_sample_data:false}];
  state.permits=[];state.favoriteIds=new Set();
  state.find={permitId:1,live:false,day:3,time:'08:00'};

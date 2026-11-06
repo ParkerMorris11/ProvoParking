@@ -17,9 +17,20 @@ function clearUserLocation() {
   userMarker = accuracyRing = null;
 }
 
+function parkHereMarkup(area) {
+  if (!area || area.is_sample_data) return "";
+  if (state.user) return `<button type="button" class="link-button" data-park-area="${area.area_id}">Park here — start timer</button>`;
+  return `<p class="hint">Sign in to start a timer. Guests can still read rules.</p>`;
+}
+
+function matchedArea(feature) {
+  const id = feature?.properties?.OBJECTID;
+  return state.areas.find((area) => area.source_feature_id === id && !area.is_sample_data) || null;
+}
+
 function updateArrivalSuggestion(element, candidate) {
   if (!element) return;
-  const html = candidate ? `<strong>You may be near ${escapeHtml(candidate.area_name)}.</strong> Location is approximate. <a href="#area/${encodeURIComponent(candidate.area_id)}">Review this lot and confirm before starting a timer</a>.` : "";
+  const html = candidate ? `<strong>You may be near ${escapeHtml(candidate.area_name)}.</strong> Location is approximate. Review this lot before starting a timer. <a href="#area/${encodeURIComponent(candidate.area_id)}">Rules &amp; details</a>${parkHereMarkup(candidate)}` : "";
   if (element.innerHTML === html) return;
   const hadFocus = element.contains(document.activeElement);
   element.innerHTML = html;
@@ -44,7 +55,9 @@ function renderNearby() {
   empty.textContent = "No matching mapped sections in this category within 5 km. Try another category or check your permit and parking time.";
   list.innerHTML = nearby.map((lot, index) => {
     const distance = lot.distanceMeters < 1000 ? `${Math.max(10, Math.round(lot.distanceMeters / 10) * 10)} m` : `${(lot.distanceMeters / 1000).toFixed(1)} km`;
-    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
+    const area = matchedArea(lot.feature);
+    const park = area ? parkHereMarkup(area) : "";
+    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button>${park}</li>`;
   }).join("");
   if (focusedLot) {
     const index = nearby.findIndex(lot => lot.name === focusedLot.name && lot.permit === focusedLot.permit);
@@ -92,6 +105,7 @@ function initLocation() {
   select.innerHTML = '<option value="">All matching categories</option>' + codes.map(code => `<option value="${escapeHtml(code)}">${escapeHtml(code)}</option>`).join("");
   select.addEventListener("change", renderNearby);
   document.getElementById("nearby-list").addEventListener("click", event => {
+    if (event.target.closest("[data-park-area]")) return;
     const control = event.target.closest("[data-nearby-index]");
     const lot = control && nearby[Number(control.dataset.nearbyIndex)];
     if (!lot) return;
@@ -111,11 +125,12 @@ export function currentPosition() { return latestPosition; }
 
 // Popup for one mapped section: what the GIS layer says, plus links into the app for the
 // matching sections of the current list (Rules & details).
-function popupHtml(feature) {
+export function popupHtml(feature) {
   const p = feature.properties || {};
   const matches = state.areas.filter((area) => area.source_feature_id === p.OBJECTID && !area.is_sample_data);
   const links = matches.map((area) => `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : ""} →</a>`).join("");
-  return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}</div>`;
+  const park = matches.length ? parkHereMarkup(matches[0]) : "";
+  return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}${park}</div>`;
 }
 
 /** "Show on map" from an Areas card: zoom to that section's boundary and open its popup. */

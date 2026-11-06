@@ -63,7 +63,7 @@ export function renderCar() {
     pendingAreaId = null;
     sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
     if (keep) sel.value = keep;
-    renderDestinationOptions("car-destination", state.find.destinationId);
+    renderDestinationOptions("car-destination", state.find.destinationId, { required: true });
     updateCarWarning();
   }
 }
