@@ -2,7 +2,7 @@
 
 Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Downtown Provo lots and garages from the city's parking map are shown alongside campus lots.
 
-## Sprint 2 status (November 5, 2026)
+## Sprint 2 status (November 6, 2026)
 
 | Area | What is live on `main` | Details |
 |---|---|---|
@@ -12,7 +12,8 @@ Provo Parking helps BYU drivers see where their permit lets them park right now,
 | Favorites | Saved lots with **Get Directions** | [Screens](#screens) |
 | Help | BYU permit table (who it is for, where it is valid), how to read results, Provo and citation rules, all with source links | [Screens](#screens) |
 | OKRs | Admin dashboard (`admin.html`) reports all four Key Results from database aggregates; KR 2b visit timing is recorded | [Admin OKR dashboard](docs/admin-okr.md), [visit metrics](docs/visit-metrics-handoff.md) |
-| Still to do | AI workflow automation and its Level 1 DFD (Sprint 3), Lighthouse re-check of the new map and Help content | Trello Product Backlog |
+| Lighthouse (live, Nov 6, 2026) | Help 100 accessibility / 100 best-practices / 100 SEO at 390px and 1280px. Areas 100 accessibility at both sizes after guest continue. | Rechecked on https://parkermorris11.github.io/ProvoParking/ as a guest; see [Sprint 2 review](docs/sprint-2-parker-review.md) |
+| Still to do | AI workflow automation and its Level 1 DFD (Sprint 3). Open PR [#28](https://github.com/ParkerMorris11/ProvoParking/pull/28) walking-time sort is **not** on `main` and has no Trello card. | Trello Product Backlog; #28 does not block Sprint 2 Parker cards |
 
 P7 database persistence for parking sessions: [parking session persistence](docs/parking-session-persistence.md).
 
@@ -181,10 +182,10 @@ How to add a page, branch naming, pull requests and database changes: [docs/CONT
 
 | Card / behavioral requirement | Status |
 |---|---|
-| P2: load live permit choices and display database rules | Complete — merged and deployed; awaiting PO acceptance |
-| P4: choose permit/time → see rules → save a favorite → refresh | Complete — verified on the published site against the current sample areas; awaiting PO acceptance |
-| P5: handle permit, day and restricted-hour changes | Complete — original logic tests plus real migration-backed permit/hour boundary checks |
-| P5: confirm allowed/blocked results for verified lots | Implemented for 59Y, 30G, 14A and 18U; production checks and PO review are tracked on the card |
+| P2: load live permit choices and display database rules | Complete — merged, deployed, and accepted by the Product Owner on November 4, 2026 |
+| P4: choose permit/time → see rules → save a favorite → refresh | Complete — verified on the published site; accepted by the Product Owner on November 4, 2026 |
+| P5: handle permit, day and restricted-hour changes | Complete — original logic tests plus real migration-backed permit/hour boundary checks; accepted November 4, 2026 |
+| P5: confirm allowed/blocked results for verified lots | Implemented for 59Y, 30G, 14A and 18U; accepted with the rest of Sprint 1 on November 4, 2026 |
 
 [Verification record and limits](docs/sprint-1-parker-verification.md). P21 sign-in remains delegated/paused and is not part of this Sprint 1 completion check. No course goals, estimates, or Definition of Done were changed.
 
@@ -209,8 +210,8 @@ Existing team database: if parking areas load but Find has no permit choices, se
 1. Sign in at [supabase.com](https://supabase.com) and create a new project (free tier).
 2. Open **SQL Editor**, paste all of [`supabase/schema.sql`](supabase/schema.sql), and click **Run**. This creates 8 tables with sample rows.
 3. In a new query, paste [`supabase/policies.sql`](supabase/policies.sql) and click **Run**.
-   - Then run every file in [`supabase/migrations/`](supabase/migrations/) in name order. The last one, [`20261102040636_account_sign_in.sql`](supabase/migrations/20261102040636_account_sign_in.sql), turns on accounts.
-   - Email confirmation remains enabled. Finish the email sender and production Site URL / redirect configuration with the teammate responsible for sign-in before testing public sign-ups. The UI supports confirmation links; do not disable confirmation as an automatic merge step.
+   - Then run every file in [`supabase/migrations/`](supabase/migrations/) in name order. That set includes accounts, verified lots and sections, parking-session persistence, visit metrics, and admin OKR tracking.
+   - The live team project has **Confirm email** off, so a new email account can use the app right away (see [Accounts and sign-in](#accounts-and-sign-in)). Keep Site URL / redirect URLs in step 3 below. Do not re-enable confirmation as an automatic merge step.
    - If you already ran an older `policies.sql` before the Find, Area details, and My car screens existed, run [`supabase/2026-10-14-screens-policies.sql`](supabase/2026-10-14-screens-policies.sql) instead. Without it those screens show a permissions error.
 4. Check: **Table Editor** should list 8 tables, each with rows.
 5. Go to **Project Settings > API** and copy the **Project URL** and the **anon / publishable key**.
@@ -269,7 +270,7 @@ The city snapshot is `data/provo-city-parking.json` (outlines simplified to abou
 
 ### Nearby lots with your location
 
-On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).
+On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. Starting a timer still requires a signed-in account and **Park here** on a BYU lot (not a downtown city record). Physical-phone GPS acceptance is a remaining human check: [location behavior and testing](docs/live-location.md#physical-phone-checklist).
 
 ### Supabase settings for smooth sign-in (project owner)
 1. **Authentication > Sign In / Providers:** turn **Confirm email** off, so an email sign-up can use the app immediately (the free email service also sends only 2 emails per hour).

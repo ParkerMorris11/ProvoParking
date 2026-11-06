@@ -47,3 +47,36 @@ test('popup escapes city text and links directions and the source', () => {
   assert.match(html, /google\.com\/maps\/dir/);
   assert.match(html, /provo\.gov\/273\/Parking/);
 });
+
+test('city list Show on map labels keep the visible text in the accessible name', async () => {
+  const { initCityLayer } = await import('../js/pages/city-layer.js?city-list-labels');
+  const fields = {
+    'city-lot-list': { innerHTML: '', onclick: null },
+    'city-lot-count': { textContent: '' },
+    'city-status': { textContent: '' },
+    'city-toggle': { checked: true, disabled: true, addEventListener() {} },
+    'map-downtown': { disabled: true, addEventListener() {} },
+    'parking-map': { scrollIntoView() {}, focus() {} },
+  };
+  const previous = { document: globalThis.document, window: globalThis.window, fetch: globalThis.fetch };
+  const map = { setView() {}, removeLayer() {} };
+  const featureLayer = { bindPopup() {}, openPopup() {} };
+  globalThis.document = { getElementById: id => fields[id] };
+  globalThis.window = { matchMedia: () => ({ matches: true }) };
+  globalThis.fetch = async () => ({ ok: true, json: async () => snapshot });
+  try {
+    await initCityLayer(map, {
+      geoJSON: (_collection, options) => {
+        snapshot.features.forEach((feature) => options.onEachFeature(feature, featureLayer));
+        return { addTo() { return this; } };
+      },
+    });
+    assert.match(fields['city-lot-list'].innerHTML, /aria-label="Show on map: /);
+    assert.match(fields['city-lot-list'].innerHTML, />Show on map <span aria-hidden="true">↗<\/span></);
+    assert.equal(fields['city-lot-count'].textContent, String(snapshot.features.length));
+  } finally {
+    if (previous.document === undefined) delete globalThis.document; else globalThis.document = previous.document;
+    if (previous.window === undefined) delete globalThis.window; else globalThis.window = previous.window;
+    if (previous.fetch === undefined) delete globalThis.fetch; else globalThis.fetch = previous.fetch;
+  }
+});

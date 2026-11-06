@@ -33,7 +33,9 @@ const setup = initParkingSetup(document.querySelector("#parking-setup"), {
 // Unmount event handlers: setup.destroy().
 ```
 
-No map code is implemented. Supply a nonempty string `id` (convert numeric database IDs with `String(id)`), nonempty `name`, and finite numeric coordinates with latitude −90…90 and longitude −180…180. `isSample` is optional and defaults to false. Omitted/null locations use the clearly labeled sample; malformed supplied locations block submission and display an explanation. Locations are copied and normalized. Call `setLocation` only when no submission is pending; it returns to the form and preserves duration, reminder, and notes.
+The standalone P5/P6 pages still have no map. In the main app, **Park here — start timer** on a BYU area-details screen preselects that lot on My car. Map GPS never starts a session; the driver reviews the lot first. Downtown city records are not My car locations.
+
+For `setLocation`, supply a nonempty string `id` (convert numeric database IDs with `String(id)`), nonempty `name`, and finite numeric coordinates with latitude −90…90 and longitude −180…180. `isSample` is optional and defaults to false. Omitted/null locations use the clearly labeled sample; malformed supplied locations block submission and display an explanation. Locations are copied and normalized. Call `setLocation` only when no submission is pending; it returns to the form and preserves duration, reminder, and notes.
 
 `onStart` receives this plain object (not a Supabase row):
 

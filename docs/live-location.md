@@ -24,4 +24,17 @@ A temporary unavailable-position error is retried once; permission denial, persi
 - The active simulated layout was visually inspected at 390px with no horizontal document overflow. The real app's idle location controls were also checked against the current Supabase data.
 - Lighthouse attempts for this revision captured the database loading screen, so their numerical scores are not valid accessibility evidence for the new controls. Earlier map/UI audits remain documented separately. Real-device GPS, OS/browser permission UX and screen-reader testing remain for human review.
 
-No database changes, timer integration, Trello updates or production deployment. Included in map PR #11; the team approved integration on November 1 with original commits preserved. See `integration-2026-11-01.md`; live Pages verification follows deployment.
+Included in map PR #11; the team approved integration on November 1 with original commits preserved. See `integration-2026-11-01.md`. Downtown click-through and Lighthouse were re-checked on the live Pages site November 6, 2026.
+
+## Physical phone checklist
+
+This environment cannot complete signed-in GPS on a real device. Parker should run this once on a phone at https://parkermorris11.github.io/ProvoParking/ :
+
+1. Sign in (email or Google), not guest.
+2. Open **Areas**, tap **Use my location**, and allow the OS/browser permission.
+3. Confirm the blue dot, accuracy ring, and nearby BYU lots update; tap **Show lot on map** and confirm the popup.
+4. If a “You may be near …” prompt appears, open it, then **Park here — start timer**.
+5. Confirm the My car countdown starts and survives a refresh while still signed in.
+6. Turn the phone to another lot, confirm nearby order changes, then **Stop tracking**.
+
+Do not treat a desktop geolocation override as this checklist. Downtown Provo city lots are records only; they do not start a My car timer.

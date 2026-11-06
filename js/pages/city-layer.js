@@ -28,19 +28,30 @@ function renderList(map) {
     return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(s.name)}</h4><span>${escapeHtml(s.kind)}</span></div>` +
       `<p class="nearby-category">${escapeHtml(s.spaces)} · ${escapeHtml(s.hours)}</p>` +
       (s.notes ? `<p class="nearby-description">${escapeHtml(s.notes)}</p>` : "") +
-      `<button type="button" data-city-index="${index}">Show on map <span aria-hidden="true">↗</span></button></li>`;
+      `<button type="button" data-city-index="${index}" aria-label="Show on map: ${escapeHtml(s.name)}">Show on map <span aria-hidden="true">↗</span></button></li>`;
   }).join("");
   list.onclick = event => {
     const control = event.target.closest("[data-city-index]");
     const index = control ? Number(control.dataset.cityIndex) : -1;
-    const s = facilities[index] && facilitySummary(facilities[index], source);
-    if (!s?.center) return;
-    const toggle = byId("city-toggle");
-    if (toggle && !toggle.checked) { toggle.checked = true; layer.addTo(map); }
-    map.setView([s.center.latitude, s.center.longitude], 17);
-    layersByIndex[index]?.openPopup();
-    byId("parking-map")?.focus({ preventScroll: false });
+    showCityOnMap(map, index);
   };
+}
+
+function reducedMotion() {
+  return globalThis.window?.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
+
+export function showCityOnMap(map, index) {
+  const s = facilities[index] && facilitySummary(facilities[index], source);
+  if (!map || !s?.center) return false;
+  const toggle = byId("city-toggle");
+  if (toggle && !toggle.checked) { toggle.checked = true; layer.addTo(map); }
+  const el = byId("parking-map");
+  el?.scrollIntoView?.({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
+  map.setView([s.center.latitude, s.center.longitude], 17);
+  layersByIndex[index]?.openPopup();
+  el?.focus?.({ preventScroll: true });
+  return true;
 }
 
 export async function initCityLayer(map, L = window.L, fetchImpl = fetch) {
@@ -65,7 +76,13 @@ export async function initCityLayer(map, L = window.L, fetchImpl = fetch) {
       toggle.addEventListener("change", () => { if (toggle.checked) layer.addTo(map); else map.removeLayer(layer); });
     }
     const jump = byId("map-downtown");
-    if (jump) { jump.disabled = false; jump.addEventListener("click", () => map.setView([40.2338, -111.6595], 16)); }
+    if (jump) {
+      jump.disabled = false;
+      jump.addEventListener("click", () => {
+        byId("parking-map")?.scrollIntoView?.({ behavior: reducedMotion() ? "auto" : "smooth", block: "center" });
+        map.setView([40.2338, -111.6595], 16);
+      });
+    }
     renderList(map);
     if (status) status.textContent = `${facilities.length} public lots and garages from Provo City's parking map. Hours and limits are city records, not verified rules.`;
   } catch (error) {
