@@ -198,17 +198,17 @@
       </div>
       <div class="parking-workspace">
         <div class="map-panel">
-          <div class="map-toolbar"><h3>Explore BYU and downtown</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button></div></div>
+          <div class="map-toolbar"><h3>Explore BYU and Provo</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button><button id="map-provo" type="button" class="map-reset" disabled>Provo</button></div></div>
           <div class="map-stage">
-            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and downtown Provo parking map" aria-describedby="map-note"></div>
+            <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and Provo parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
-          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show downtown Provo lots (city records, rules not verified)</label></div>
-          <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Downtown city records are shown separately and their rules are not verified. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
+          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
+          <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Provo city and OpenStreetMap records are shown separately and their rules are not verified. They never start a My car timer. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
           <details class="city-lots">
-            <summary>Downtown Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
-            <p id="city-status" class="map-note" role="status">Loading Provo City parking records…</p>
-            <p class="map-note">Source: <a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo City</a> parking facilities map, public lots only, checked 2026-11-05. Outlines are simplified. Spaces and hours are what the city recorded; they are not live counts or verified rules.</p>
+            <summary>Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
+            <p id="city-status" class="map-note" role="status">Loading Provo parking records…</p>
+            <p class="map-note">Sources: <a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo City</a> public parking facilities GIS, checked 2026-11-06, plus <a href="https://www.openstreetmap.org" target="_blank" rel="noopener">OpenStreetMap</a> amenity=parking inside Provo city limits (OSM relation 198903), same date. BYU campus lots stay on the permit layer. Outlines are simplified. Spaces and hours are what the source recorded; they are not live counts, permit rules, or verified hours.</p>
             <ul id="city-lot-list" class="nearby-list"></ul>
           </details>
         </div>
@@ -342,7 +342,7 @@
         <ul>
           <li><strong>Matches listed rules</strong> means the permit and time you picked fit the rules BYU publishes for that lot section. It does not mean a space is open.</li>
           <li><strong>Map colors</strong> show the lot category (student, employee, visitor and so on), not availability.</li>
-          <li><strong>Downtown Provo lots</strong> come from Provo City's parking map. Their hours and limits are what the city recorded, not checked by us, so read the posted signs.</li>
+          <li><strong>Provo lots</strong> come from Provo City's parking map (public downtown/civic facilities) and OpenStreetMap lots across the city. Their hours and limits are what those sources recorded, not checked by us, so read the posted signs. They are not BYU permit lots and cannot start a timer.</li>
           <li><strong>Posted signs win.</strong> Events, finals, holidays and construction can change the rules.</li>
         </ul>
 
@@ -352,7 +352,7 @@
           <li>Enforcement works around the clock.</li>
           <li>A car on a city street must move at least 400 feet every 72 hours.</li>
         </ul>
-        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · checked 2026-11-05</p>
+        <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · city GIS and OSM map snapshot checked 2026-11-06</p>
 
         <h3>If you get a Provo citation</h3>
         <ul>
