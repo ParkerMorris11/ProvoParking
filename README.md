@@ -1,6 +1,6 @@
 # Provo Parking
 
-Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Downtown Provo lots and garages from the city's parking map are shown alongside campus lots.
+Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Mapped parking facilities across Provo city limits is shown alongside campus lots as unverified city/OSM records.
 
 ## Sprint 2 status (November 5, 2026)
 
@@ -8,7 +8,7 @@ Provo Parking helps BYU drivers see where their permit lets them park right now,
 |---|---|---|
 | Accounts | One-screen sign-up, *Continue with Google*, optional permit step. Email confirmation is off, so a new account can use the app right away. | [Accounts and sign-in](#accounts-and-sign-in) |
 | BYU lots | 102 verified BYU lot sections (ordinary A, G, Y and U rules) on the map and list, filtered by your permit and Provo time | [Verified sections](docs/verified-byu-sections.md) |
-| Downtown Provo | 28 public lots and garages from Provo City's parking map, shown as city records (rules not verified) with directions | [Map and data sources](#map-and-data-sources) |
+| Provo city lots | 28 Provo City GIS public facilities plus OpenStreetMap lots/garages/on-street tags across Provo city limits, shown as unverified records with directions (never used for permits or the My car timer) | [Map and data sources](#map-and-data-sources) |
 | Favorites | Saved lots with **Get Directions** | [Screens](#screens) |
 | Help | BYU permit table (who it is for, where it is valid), how to read results, Provo and citation rules, all with source links | [Screens](#screens) |
 | OKRs | Admin dashboard (`admin.html`) reports all four Key Results from database aggregates; KR 2b visit timing is recorded | [Admin OKR dashboard](docs/admin-okr.md), [visit metrics](docs/visit-metrics-handoff.md) |
@@ -260,10 +260,10 @@ The Areas map displays a BYU boundary snapshot without sample location circles, 
 | Layer | Source | Checked | What it means |
 |---|---|---|---|
 | BYU lot sections (colored by category) | [BYU campus parking map](https://map.byu.edu/?layer=parking) and [BYU Parking Regulations](https://security.byu.edu/parking-regulations) | Nov 4, 2026 | Only sections whose listed rules match your permit and time are drawn |
-| Downtown Provo lots and garages (dashed purple) | Provo City GIS layer [`Provo_Parking_Facilities`](https://services2.arcgis.com/u1JcjHKiYxDeQU3C/arcgis/rest/services/Provo_Parking_Facilities/FeatureServer/0), public facilities only; [Provo Parking](https://www.provo.gov/273/Parking) | Nov 5, 2026 (city records edited 2018–2023) | Name, type, recorded spaces, hours and notes as the city recorded them. Not verified rules and never used for permit matching; every popup says to check signs |
+| Provo lots and garages (dashed purple) | Provo City GIS layer [`Provo_Parking_Facilities`](https://services2.arcgis.com/u1JcjHKiYxDeQU3C/arcgis/rest/services/Provo_Parking_Facilities/FeatureServer/0), public facilities only; [Provo Parking](https://www.provo.gov/273/Parking); plus [OpenStreetMap](https://www.openstreetmap.org) `amenity=parking` inside OSM relation 198903 (Provo) | Nov 6, 2026 (city GIS records edited 2018–2023; OSM snapshot the same day) | Name, type, recorded spaces, hours and notes as the source recorded them. Not verified rules and never used for permit matching or the My car timer; every popup says to check signs |
 | Base map | OpenStreetMap via Leaflet | | Background only |
 
-The city snapshot is `data/provo-city-parking.json` (outlines simplified to about 10 m, areas checked against the city's recorded areas). Turn it on or off with **Show downtown Provo lots**, jump there with **Downtown**, or open the list under the map for a keyboard- and screen-reader-friendly version with **Show on map**. Code: `js/pages/city-layer.js`, `js/domain/city-parking.js`, tests in `tests/city-parking.test.js`. Provo City's layer covers downtown and a few civic lots; residential permit zones and street time limits are not in it.
+The city snapshot is `data/provo-city-parking.json` (outlines simplified to about 10 m). Rebuild with `python3 scripts/build-city-parking.py` after refreshing `/tmp/provo-osm-parking-geom.json`. Turn the layer on or off with **Show Provo lots**, jump downtown with **Downtown**, fit the citywide layer with **Provo**, or open the list under the map for a keyboard- and screen-reader-friendly version with **Show on map**. Code: `js/pages/city-layer.js`, `js/domain/city-parking.js`, tests in `tests/city-parking.test.js`. City GIS still covers named downtown and civic public facilities. OSM adds lots across the city limits after dropping BYU/MTC campus features and explicitly restricted records. OpenStreetMap access that the snapshot cannot establish is labeled unknown. Residential permit zones and most signed on-street time limits are still missing.
 
 ![Downtown Provo lots on the map](docs/screens/map/provo-city-desktop.png)
 
