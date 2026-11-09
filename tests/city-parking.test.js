@@ -115,3 +115,11 @@ test('popup escapes city text and links directions and the source', () => {
   assert.match(html, /google\.com\/maps\/dir/);
   assert.match(html, /provo\.gov\/273\/Parking/);
 });
+
+test('published snapshot omits permit-only school lots and labels unknown access in popups', () => {
+  assert.ok(!snapshot.features.some(f => [670291495, 670294597].includes(f.properties.osm_id)));
+  const unknown = snapshot.features.find(f => f.properties.osm_id === 670294598);
+  assert.ok(unknown);
+  assert.match(cityPopupHtml(facilitySummary(unknown, snapshot.source)), /Public access unknown/);
+  assert.doesNotMatch(cityPopupHtml(facilitySummary(cityGis[0], snapshot.source)), /Public access unknown/);
+});

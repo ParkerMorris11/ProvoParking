@@ -19,7 +19,7 @@ CHECKED_ON = "2026-11-06"
 
 BYU_RE = re.compile(r"brigham young|\bbyu\b|\bmtc\b", re.I)
 LOTCODE_RE = re.compile(r"^\d+[A-Z]{1,3}\b")
-PRIVATE = {"private", "no", "customers", "destination"}
+RESTRICTED_ACCESS = {"private", "no", "customers", "destination", "permit", "residents", "employees", "delivery", "agricultural", "forestry"}
 # Generous BYU campus box so OSM campus lots are not duplicated on the city layer.
 CAMPUS = (40.243, 40.270, -111.668, -111.638)
 
@@ -170,8 +170,9 @@ def osm_feature(element: dict):
     tags = element.get("tags") or {}
     if is_byu(tags):
         return None
-    access = (tags.get("access") or "yes").lower()
-    if access in PRIVATE:
+    access = (tags.get("access") or "").strip().lower()
+    vehicle_access = [(tags.get(key) or "").strip().lower() for key in ("vehicle", "motor_vehicle", "motorcar")]
+    if any(value in RESTRICTED_ACCESS for value in [access, *vehicle_access]):
         return None
     if element["type"] == "node":
         geometry = {"type": "Point", "coordinates": [round5(element["lon"]), round5(element["lat"])]}
@@ -189,7 +190,7 @@ def osm_feature(element: dict):
         return None
     notes = tags.get("description") or tags.get("note")
     access_note = None
-    if access not in {"yes", ""}:
+    if access and access != "yes":
         access_note = f"OSM access={access}"
     extra = "; ".join(filter(None, [access_note, notes]))
     spaces = capacity(tags)
@@ -206,6 +207,7 @@ def osm_feature(element: dict):
             "recorded_hours": tags.get("opening_hours") or None,
             "notes": extra or None,
             "record_source": "osm",
+            "access_status": "reported_public" if access == "yes" and all(value in {"", "yes"} for value in vehicle_access) and not any(tags.get(f"{key}:conditional") for key in ("access", "vehicle", "motor_vehicle", "motorcar")) else "unknown",
         },
     }
 
@@ -248,7 +250,7 @@ def main() -> None:
             "checked_on": CHECKED_ON,
             "note": (
                 "Provo City GIS: public lots/garages only (city records edited 2018–2023); outlines simplified to about 10 m. "
-                "OSM: amenity=parking in OSM relation 198903 (Provo), excluding BYU/MTC campus lots and access=private/customers. "
+                "OSM: amenity=parking in OSM relation 198903 (Provo), excluding BYU/MTC campus lots and explicitly restricted access. "
                 "Hours, space counts and whether you may park are not verified by this app. On-street coverage is only OSM street_side/lane tags."
             ),
             "city_gis_public_count": len(city_features),

@@ -6,9 +6,9 @@
   "info_url": "https://www.provo.gov/273/Parking",
   "osm_url": "https://www.openstreetmap.org",
   "checked_on": "2026-11-06",
-  "note": "Provo City GIS: public lots/garages only (city records edited 2018\u20132023); outlines simplified to about 10 m. OSM: amenity=parking in OSM relation 198903 (Provo), excluding BYU/MTC campus lots and access=private/customers. Hours, space counts and whether you may park are not verified by this app. On-street coverage is only OSM street_side/lane tags.",
+  "note": "Provo City GIS: public lots/garages only (city records edited 2018\u20132023); outlines simplified to about 10 m. OSM: amenity=parking in OSM relation 198903 (Provo), excluding BYU/MTC campus lots and explicitly restricted access. Hours, space counts and whether you may park are not verified by this app. On-street coverage is only OSM street_side/lane tags.",
   "city_gis_public_count": 28,
-  "osm_added_count": 401,
+  "osm_added_count": 393,
   "osm_skipped_near_city_gis": 27
  },
  "features": [
@@ -1479,130 +1479,6 @@
     "spaces": null,
     "recorded_hours": null,
     "notes": null,
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
-       -111.65102,
-       40.24154
-      ],
-      [
-       -111.65102,
-       40.24133
-      ],
-      [
-       -111.6509,
-       40.24133
-      ],
-      [
-       -111.65122,
-       40.24127
-      ],
-      [
-       -111.65121,
-       40.24154
-      ],
-      [
-       -111.65102,
-       40.24154
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 675327202,
-    "name": "Liberty Aquare parking",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
-       -111.6501,
-       40.24139
-      ],
-      [
-       -111.65037,
-       40.24139
-      ],
-      [
-       -111.6501,
-       40.24131
-      ],
-      [
-       -111.6501,
-       40.24139
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 675327201,
-    "name": "Liberty Square parking",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -111.6504,
-     40.24139
-    ]
-   },
-   "properties": {
-    "osm_type": "node",
-    "osm_id": 6324419338,
-    "name": "Liberty Square parking",
-    "kind": "garage",
-    "structure_type": "underground",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Point",
-    "coordinates": [
-     -111.65075,
-     40.24052
-    ]
-   },
-   "properties": {
-    "osm_type": "node",
-    "osm_id": 6324419318,
-    "name": "Liberty Square Underground Parking Enterance parking",
-    "kind": "garage",
-    "structure_type": "underground",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
     "record_source": "osm"
    }
   },
@@ -13289,59 +13165,6 @@
     "coordinates": [
      [
       [
-       -111.71429,
-       40.25053
-      ],
-      [
-       -111.71423,
-       40.2507
-      ],
-      [
-       -111.71408,
-       40.25079
-      ],
-      [
-       -111.71413,
-       40.25069
-      ],
-      [
-       -111.71414,
-       40.25054
-      ],
-      [
-       -111.71413,
-       40.24922
-      ],
-      [
-       -111.71429,
-       40.24922
-      ],
-      [
-       -111.71429,
-       40.25053
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 779129770,
-    "name": "Mapped parking lot",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
        -111.66944,
        40.24341
       ],
@@ -23842,104 +23665,6 @@
     "coordinates": [
      [
       [
-       -111.71629,
-       40.24759
-      ],
-      [
-       -111.71496,
-       40.24759
-      ],
-      [
-       -111.71458,
-       40.2479
-      ],
-      [
-       -111.71458,
-       40.24884
-      ],
-      [
-       -111.71488,
-       40.24886
-      ],
-      [
-       -111.71533,
-       40.24866
-      ],
-      [
-       -111.71553,
-       40.24856
-      ],
-      [
-       -111.71629,
-       40.24869
-      ],
-      [
-       -111.71629,
-       40.24759
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 670291495,
-    "name": "Provo School District parking",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
-       -111.71592,
-       40.2511
-      ],
-      [
-       -111.71577,
-       40.25098
-      ],
-      [
-       -111.71445,
-       40.25094
-      ],
-      [
-       -111.71441,
-       40.2511
-      ],
-      [
-       -111.71592,
-       40.2511
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 670294597,
-    "name": "Provo School District parking",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
        -111.71834,
        40.25104
       ],
@@ -24145,47 +23870,6 @@
     "spaces": null,
     "recorded_hours": null,
     "notes": null,
-    "record_source": "osm"
-   }
-  },
-  {
-   "type": "Feature",
-   "geometry": {
-    "type": "Polygon",
-    "coordinates": [
-     [
-      [
-       -111.66252,
-       40.22885
-      ],
-      [
-       -111.66251,
-       40.22868
-      ],
-      [
-       -111.66275,
-       40.22867
-      ],
-      [
-       -111.66275,
-       40.22885
-      ],
-      [
-       -111.66252,
-       40.22885
-      ]
-     ]
-    ]
-   },
-   "properties": {
-    "osm_type": "way",
-    "osm_id": 676116918,
-    "name": "Tod Apartment Parking parking",
-    "kind": "lot",
-    "structure_type": "surface",
-    "spaces": null,
-    "recorded_hours": null,
-    "notes": "OSM access=permit",
     "record_source": "osm"
    }
   }

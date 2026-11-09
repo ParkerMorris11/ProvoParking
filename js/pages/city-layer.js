@@ -16,6 +16,7 @@ export function cityPopupHtml(summary) {
   return `<div class="lot-popup"><span class="lot-popup-type">Provo · ${escapeHtml(summary.kind)}</span>` +
     `<h3>${escapeHtml(summary.name)}</h3><span class="lot-popup-permit">${escapeHtml(summary.spaces)}</span>` +
     `<p>${escapeHtml(summary.hours)}</p>` + (summary.notes ? `<p>${escapeHtml(summary.notes)}</p>` : "") +
+    (summary.access ? `<p>${escapeHtml(summary.access)}</p>` : "") +
     `<p class="lot-popup-caution">${escapeHtml(summary.caution)}</p>` +
     `<p class="lot-popup-source">${sourceLink}${escapeHtml(summary.provenance)}</p>` +
     (directions ? `<p><a href="${escapeHtml(directions)}" target="_blank" rel="noopener">Get directions</a></p>` : "") + `</div>`;
@@ -31,6 +32,7 @@ function renderList(map) {
     const label = `Show on map: ${s.name}`;
     return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(s.name)}</h4><span>${escapeHtml(s.kind)}</span></div>` +
       `<p class="nearby-category">${escapeHtml(s.spaces)} · ${escapeHtml(s.hours)}</p>` +
+      (s.access ? `<p class="nearby-description">${escapeHtml(s.access)}</p>` : "") +
       (s.notes ? `<p class="nearby-description">${escapeHtml(s.notes)}</p>` : "") +
       `<button type="button" data-city-index="${index}" aria-label="${escapeHtml(label)}">Show on map <span aria-hidden="true">↗</span></button></li>`;
   }).join("");
@@ -82,7 +84,7 @@ export async function initCityLayer(map, L = window.L, fetchImpl = fetch) {
     renderList(map);
     const gis = facilities.filter(f => f.properties?.record_source !== "osm").length;
     const osm = facilities.length - gis;
-    if (status) status.textContent = `${facilities.length} mapped lots and garages across Provo (${gis} city GIS public facilities, ${osm} OpenStreetMap). Hours and limits are source records, not verified rules.`;
+    if (status) status.textContent = `${facilities.length} mapped lots and garages across Provo (${gis} city GIS public facilities, ${osm} OpenStreetMap). Coverage is partial. Check posted signs for access, hours, and limits.`;
   } catch (error) {
     console.warn("[map] Provo city lots unavailable", error);
     if (status) status.textContent = "Provo city lots are unavailable right now. BYU lots still work.";

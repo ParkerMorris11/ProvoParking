@@ -79,6 +79,9 @@ export function facilitySummary(feature, source = {}) {
     spaces: spacesText(p),
     hours: p.recorded_hours ? `Recorded hours: ${p.recorded_hours}` : "Hours unknown",
     notes: p.notes || null,
+    access: osm
+      ? (p.access_status === "reported_public" ? "Public access reported by OpenStreetMap" : "Public access unknown")
+      : null,
     caution: "Rules not verified by this app. Check posted signs.",
     provenance: provenance(p, source),
     sourceUrl: osm
