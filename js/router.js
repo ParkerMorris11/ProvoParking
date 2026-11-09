@@ -5,12 +5,13 @@ import { state } from "./state.js";
 import { $ } from "./lib/dom.js";
 import { renderAreas } from "./pages/areas.js";
 import { renderAreaDetail } from "./pages/area-detail.js";
+import { renderAllLots } from "./pages/all-lots.js";
 import { renderFavorites } from "./pages/favorites.js";
 import { renderCar, stopTimer } from "./pages/car.js";
 
 import { initMap, pauseMapLocation } from "./pages/map.js";
 
-export const VIEWS = ["find", "areas", "area", "favorites", "car", "help"];
+export const VIEWS = ["find", "areas", "area", "lots", "favorites", "car", "help"];
 
 // Re-draws every page that shows area cards (after data changes, e.g. a favorite).
 export function renderViews() {
@@ -30,6 +31,7 @@ export function showView() {
   });
   renderViews();
   if (state.currentView === "areas") void initMap(); else pauseMapLocation();
+  if (state.currentView === "lots") renderAllLots();
   if (state.currentView === "car") renderCar(routeId); else stopTimer();
   document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   window.scrollTo(0, 0);

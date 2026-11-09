@@ -51,6 +51,7 @@ export function initFind({ go }) {
       setStatus("Choose your destination building first.", true); $("find-destination").focus(); return;
     }
     state.find.destinationId = destinationId;
+    $("area-sort").value = "destination";
     state.find.permitId = id;
     state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);
