@@ -399,18 +399,6 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .auth .auth-or::before, .auth .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .auth .auth-or[hidden] { display: none; }
 
-/* Provo City layer (city records, dashed purple outlines) */
-.city-toggle { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: .72rem; font-weight: 600; color: var(--label); }
-.city-toggle input { width: 18px; height: 18px; }
-.city-dot { background: var(--city); outline: 1px dashed var(--city); outline-offset: 1px; }
-.city-lots { padding: 0 20px 18px; }
-.city-lots summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--text); min-height: 44px; display: flex; align-items: center; }
-.city-lots summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
-.city-lots .map-note { padding: 0 0 10px; }
-.lot-popup-caution { font-weight: 650; color: var(--warn-ink); }
-.lot-popup-source { font-size: .7rem; color: var(--muted); }
-@media (max-width: 640px) { .city-lots { padding: 0 14px 16px; } }
-
 /* ---- Dark mode ----
    Follows the phone/laptop setting by default. The header toggle saves a choice that wins over it:
    <html data-theme="dark"> or <html data-theme="light"> (set in js/theme.js). */
@@ -454,3 +442,15 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 :root[data-theme-active="dark"] .theme-toggle .icon-moon { display: none; }
 .auth > .theme-toggle { position: absolute; top: 16px; right: 16px; }
 .auth { position: relative; }
+
+/* Provo City layer (city records, dashed purple outlines) */
+.city-toggle { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: .72rem; font-weight: 600; color: var(--label); }
+.city-toggle input { width: 18px; height: 18px; }
+.city-dot { background: var(--city); outline: 1px dashed var(--city); outline-offset: 1px; }
+.city-lots { padding: 0 20px 18px; }
+.city-lots summary { cursor: pointer; font-size: .8rem; font-weight: 650; color: var(--text); min-height: 44px; display: flex; align-items: center; }
+.city-lots summary:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+.city-lots .map-note { padding: 0 0 10px; }
+.lot-popup-caution { font-weight: 650; color: var(--warn-ink); }
+.lot-popup-source { font-size: .7rem; color: var(--muted); }
+@media (max-width: 640px) { .city-lots { padding: 0 14px 16px; } }
