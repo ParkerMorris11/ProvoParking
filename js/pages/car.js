@@ -9,11 +9,10 @@ import { renderDestinationOptions } from "./find.js";
 
 let timerHandle = null;
 let lastReminderState = "";
-let pendingAreaId = null; // set by "Park here", applied when the My car form renders
 
 export function stopTimer() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
 
-export function renderCar() {
+export function renderCar(selectedAreaId = "") {
   const active = $("car-active"), form = $("car-form"), guest = $("car-guest");
   const session = state.activeSession;
   stopTimer();
@@ -58,11 +57,11 @@ export function renderCar() {
     active.innerHTML = "";
     form.hidden = false;
     const sel = $("car-area");
-    // Hold the selected lot until the form renders.
-    const keep = pendingAreaId ?? sel.value;
-    pendingAreaId = null;
-    sel.innerHTML = state.areas.filter((a) => !a.is_sample_data).map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
-    if (keep) sel.value = keep;
+    const choices = state.areas.filter((a) => !a.is_sample_data);
+    sel.innerHTML = '<option value="">Choose a parking lot…</option>' +
+      choices.map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
+    const selected = String(selectedAreaId);
+    sel.value = choices.some((area) => String(area.area_id) === selected) ? selected : "";
     renderDestinationOptions("car-destination", state.find.destinationId);
     updateCarWarning();
   }
@@ -110,14 +109,6 @@ export function updateCarWarning() {
   else if (ev.rule && ev.rule.max_stay_minutes && mins > ev.rule.max_stay_minutes) msg = `Heads up: this area has a ${fmtDuration(ev.rule.max_stay_minutes)} limit, shorter than ${fmtDuration(mins)}.`;
   warn.textContent = msg;
   warn.hidden = !msg;
-}
-
-// Called by the "Park here" button on Area details.
-export function preselectArea(areaId) {
-  if (state.activeSession) return;
-  pendingAreaId = String(areaId);
-  const sel = $("car-area");
-  if ([...sel.options].some((o) => o.value === pendingAreaId)) { sel.value = pendingAreaId; updateCarWarning(); }
 }
 
 let requireAccount = () => true;

@@ -116,7 +116,11 @@ export function currentPosition() { return latestPosition; }
 function popupHtml(feature) {
   const p = feature.properties || {};
   const matches = state.areas.filter((area) => area.source_feature_id === p.OBJECTID && !area.is_sample_data);
-  const links = matches.map((area) => `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : ""} →</a>`).join("");
+  const links = matches.map((area) => {
+    const label = matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : "";
+    return `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${label} →</a>
+      <a class="lot-popup-link" href="#car/${area.area_id}">Park here${label} →</a>`;
+  }).join("");
   return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}</div>`;
 }
 

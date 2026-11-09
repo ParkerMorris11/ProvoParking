@@ -70,7 +70,7 @@ export function renderAreaDetail(areaId) {
     <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p>
 
     <div class="actions">
-      <button type="button" class="primary" data-park-area="${area.area_id}">Park here — start timer</button>
+      ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here — set up timer</a>` : ""}
       ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
     </div>`;
 }

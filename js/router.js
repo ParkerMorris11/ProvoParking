@@ -21,7 +21,7 @@ export function renderViews() {
 
 export function showView() {
   if (!state.db || !state.areas.length && !state.permits.length) return; // data not loaded yet
-  const [name] = (location.hash.replace(/^#/, "") || (state.find.permitId ? "areas" : "find")).split("/");
+  const [name, routeId] = (location.hash.replace(/^#/, "") || (state.find.permitId ? "areas" : "find")).split("/");
   state.currentView = VIEWS.includes(name) ? name : "find";
   for (const v of VIEWS) $(`view-${v}`).hidden = v !== state.currentView;
   const tabFor = state.currentView === "area" ? "areas" : state.currentView;
@@ -30,7 +30,7 @@ export function showView() {
   });
   renderViews();
   if (state.currentView === "areas") void initMap(); else pauseMapLocation();
-  if (state.currentView === "car") renderCar(); else stopTimer();
+  if (state.currentView === "car") renderCar(routeId); else stopTimer();
   document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   window.scrollTo(0, 0);
 }
