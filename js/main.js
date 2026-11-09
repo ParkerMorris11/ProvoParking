@@ -13,7 +13,7 @@ import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
-import { initCar, preselectArea, stopTimer } from "./pages/car.js";
+import { initCar, stopTimer } from "./pages/car.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
@@ -151,7 +151,7 @@ async function signOut() {
   showAuth("login", "You're logged out.");
 }
 
-// ---------- clicks shared across pages: hearts, tabs, "Park here", account ----------
+// ---------- clicks shared across pages: hearts, tabs and account ----------
 document.addEventListener("click", (e) => {
   const heart = e.target.closest(".heart");
   if (heart) {
@@ -163,12 +163,6 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest("#tab-list")) setMenuOpen(false); // click outside the dropdown closes it
   const tab = e.target.closest(".tab");
   if (tab) { setMenuOpen(false); return go(`#${tab.dataset.view}`); }
-  const park = e.target.closest("[data-park-area]");
-  if (park) {
-    go("#car");
-    preselectArea(park.dataset.parkArea);
-    return;
-  }
   if (e.target.closest("#account-action")) {
     if (state.user) return void signOut();
     remember(GUEST_KEY, null);
