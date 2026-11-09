@@ -65,6 +65,8 @@ function initLocation() {
     button.textContent = active ? "Stop tracking" : "Use my location";
     button.setAttribute("aria-pressed", String(active));
     document.getElementById("location-status").textContent = update.message;
+    const toolbarStatus = document.getElementById("location-toolbar-status");
+    if (toolbarStatus) toolbarStatus.textContent = update.message;
     document.getElementById("location-status").classList.toggle("is-live", update.status === "live");
     if (latestPosition) {
       const point = [latestPosition.latitude, latestPosition.longitude];
