@@ -199,6 +199,7 @@
       <div class="parking-workspace">
         <div class="map-panel">
           <div class="map-toolbar"><h3>Explore BYU and Provo</h3><div class="map-tools"><button id="locate-me" type="button" class="location-button" aria-pressed="false" disabled>Use my location</button><button id="map-reset" type="button" class="map-reset" disabled><span aria-hidden="true">⌖</span> Reset view</button><button id="map-downtown" type="button" class="map-reset" disabled>Downtown</button><button id="map-provo" type="button" class="map-reset" disabled>Provo</button></div></div>
+          <p id="location-toolbar-status" class="map-note" role="status" aria-live="polite">Location is off.</p>
           <div class="map-stage">
             <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and Provo parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
@@ -216,7 +217,7 @@
           <section class="nearby-panel" aria-labelledby="nearby-heading">
             <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
             <p id="arrival-suggestion" class="hint" hidden></p>
-            <p id="location-status" class="location-status" role="status">Use your location to find nearby mapped lots.</p>
+            <p id="location-status" class="location-status">Use your location to find nearby mapped lots.</p>
             <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
             <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Only sections matching listed rules for your selected permit and time are included. Check signs.</p></div>
             <ul id="nearby-list" class="nearby-list"></ul>

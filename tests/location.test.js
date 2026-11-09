@@ -66,3 +66,48 @@ test('stopping while a retry is pending prevents another location request',()=>{
  const t=createLocationTracker({geolocation:geo,onChange:()=>{},scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{retry=null;}});
  t.start();fail({code:2});t.stop();assert.equal(retry,null);
 });
+
+test('an initial high-accuracy timeout retries with less demanding location settings',()=>{
+ let failure, success, retry; const options=[],states=[];
+ const geo={watchPosition(ok,bad,opts){success=ok;failure=bad;options.push(opts);return options.length;},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),now:()=>100000,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{retry=null;}});
+ t.start();assert.equal(options[0].enableHighAccuracy,true);failure({code:3});assert.equal(states.at(-1).status,'waiting');
+ retry();assert.equal(options[1].enableHighAccuracy,false);
+ success({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});assert.equal(states.at(-1).status,'live');assert.match(states.at(-1).message,/Approximate/);t.stop();
+});
+
+test('a coarse fallback stays visible while a higher accuracy watch refines it',()=>{
+ const callbacks=[],opts=[],states=[];let retry;const geo={watchPosition(ok,bad,o){callbacks.push({ok,bad});opts.push(o);return opts.length},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),now:()=>100000,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{}});
+ t.start();callbacks[0].bad({code:3});retry();callbacks[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});
+ assert.equal(opts[2].enableHighAccuracy,true);assert.equal(states.at(-1).position.accuracy,250);
+ callbacks[2].bad({code:3});assert.equal(states.at(-1).position.accuracy,250);t.stop();
+});
+test('a location request without a callback has a bounded wait',()=>{
+ let watchdog;const states=[];const geo={watchPosition(){return 1},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),scheduleWatchdog:fn=>(watchdog=fn,1),cancelWatchdog:()=>{}});
+ t.start();watchdog();assert.notEqual(states.at(-1).status,'waiting');t.stop();
+});
+
+test('refined location is not replaced by a less accurate fallback update and both watches stop',()=>{
+ const cb=[],cleared=[],states=[];let retry;const geo={watchPosition(ok,bad){cb.push({ok,bad});return cb.length;},clearWatch:id=>cleared.push(id)};
+ const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),now:()=>100000,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{}});
+ t.start();cb[0].bad({code:3});retry();cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});
+ cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15},timestamp:100000});
+ cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});assert.equal(states.at(-1).position.accuracy,15);
+ t.stop();assert.deepEqual(cleared,[1,3,2]);
+});
+
+test('newer coarse updates replace older precise positions',()=>{
+ let retry;const cb=[],states=[];const geo={watchPosition(ok,bad){cb.push({ok,bad});return cb.length},clearWatch(){}};
+ const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),now:()=>100100,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{}});
+ t.start();cb[0].bad({code:3});retry();cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15},timestamp:100010});
+ cb[1].ok({coords:{latitude:40.26,longitude:-111.65,accuracy:250},timestamp:100020});assert.equal(states.at(-1).position.latitude,40.26);
+ cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15},timestamp:100010});assert.equal(states.at(-1).position.latitude,40.26);t.stop();
+});
+test('late refinement error after pause cannot cancel the new watch',()=>{
+ let retry;const cb=[],cleared=[];const geo={watchPosition(ok,bad){cb.push({ok,bad});return cb.length},clearWatch:id=>cleared.push(id)};
+ const t=createLocationTracker({geolocation:geo,onChange:()=>{},now:()=>100000,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{}});
+ t.start();cb[0].bad({code:3});retry();cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});t.pause();t.resume();cb[3].bad({code:3});retry();cb[4].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});
+ cb[2].bad({code:3});assert.equal(cleared.includes(6),false);t.stop();assert.equal(cleared.includes(6),true);
+});

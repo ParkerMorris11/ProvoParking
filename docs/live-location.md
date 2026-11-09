@@ -12,7 +12,7 @@ No location is requested on startup. The browser's [Geolocation API](https://www
 
 Coordinates are held in browser memory and never sent to our Supabase database, saved to localStorage, or logged. Moving/centering the map still requests the visible OpenStreetMap tiles as usual. Stop tracking clears the watch, user marker, accuracy ring and nearby results. Leaving Areas or hiding the document pauses tracking and clears displayed coordinates; returning to the visible map resumes only if tracking was previously enabled. Signing out or opening authentication stops tracking and clears that opt-in. This is foreground web tracking, not a background or closed-app location service.
 
-A temporary unavailable-position error is retried once; permission denial, persistent errors, timeouts, invalid fixes and stale fixes display recovery guidance. The status includes the last fix time and approximate accuracy. A fix expires after 90 seconds without a fresh update, preventing old coordinates from continuing to appear live. Restarting does not create duplicate watches, and late callbacks after stop are ignored.
+An initial high-accuracy timeout or temporary unavailable-position error is retried once with approximate-location settings; permission denial, persistent errors, timeouts, invalid fixes and stale fixes display recovery guidance. The status beside the map controls includes errors, the last fix time and approximate accuracy. A fix expires after 90 seconds without a fresh update, preventing old coordinates from continuing to appear live. Restarting does not create duplicate watches, and late callbacks after stop are ignored.
 
 ## Verification — November 1, 2026
 
