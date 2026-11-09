@@ -18,6 +18,7 @@ import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPer
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { renderAreas } from "./pages/areas.js";
+import { initFullscreenMap } from "./pages/fullscreen-map.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
@@ -173,6 +174,7 @@ document.addEventListener("click", (e) => {
 initFind({ go });
 initCar({ requireAccount });
 initAuth({ onSignedIn, onGuest, authStorage });
+void initFullscreenMap(); // full-screen map + pull-up list on the Areas screen
 window.addEventListener("hashchange", () => { showView(); parkingClock.update(); });
 
 // Narrow-window tab menu (the ☰ button). Closes on Escape, on a tab choice, on an outside click,
