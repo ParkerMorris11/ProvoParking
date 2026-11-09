@@ -80,6 +80,13 @@ The layout is a single centered column, so on a desktop browser it looks like th
 <img src="docs/screens/desktop-5-help.png" alt="5. Help screen on desktop" width="640">
 
 
+### Dark mode
+The site follows the phone or laptop's light/dark setting. The round moon/sun button in the header (and in the corner of the sign-in screen) switches it, and the choice is saved on that device (`localStorage` key `pp-theme`). Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The map's street tiles are darkened with a CSS filter; lot outlines keep their colors.
+
+<img src="docs/screens/dark-mode-signin.png" alt="Sign-in screen, light and dark side by side" width="640">
+
+<img src="docs/screens/dark-mode-areas.png" alt="Areas screen, light and dark side by side" width="640">
+
 ## Accounts and sign-in
 
 | Situation | What the person sees |
