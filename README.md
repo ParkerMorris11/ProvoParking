@@ -169,7 +169,7 @@ Both diagrams use logical names (what happens to the data), not product names. P
 | D5 Destinations | `destination` |
 | D6 Rule change proposals | `rule_change_proposal` (planned, Sprint 3) |
 
-Editable sources: `docs/dfd/*.svg`.
+Sources: `docs/dfd/*.html` (self-contained; open in a browser). Dark-theme copies: `docs/dfd/*-dark.png`.
 
 ## Tech Stack
 | Layer | What we use |
