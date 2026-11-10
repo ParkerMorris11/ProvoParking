@@ -148,6 +148,29 @@ flowchart LR
 
 The planned AI workflow requires human review before rule changes are published.
 
+## Data flow diagrams (Sprint 2 review)
+
+Both diagrams use logical names (what happens to the data), not product names. Processes 5.0 and 6.0 are the AI workflow automation: the app reads parking rule pages, an AI service extracts proposed rule changes, and a team admin approves them before they reach the parking rules. That automation is **planned for Sprint 3**; everything else is live today.
+
+**Level 0 (context diagram):** the whole app as one process, every external entity, and the data flowing in and out. No data stores.
+
+![Level 0 data flow diagram](docs/dfd/dfd-level-0.png)
+
+**Level 1 (logical):** the same external entities and outside flows, opened into numbered processes and data stores.
+
+![Level 1 data flow diagram](docs/dfd/dfd-level-1.png)
+
+| Data store | Tables today |
+|---|---|
+| D1 Drivers | `app_user`, `user_permit` |
+| D2 Parking areas & rules | `parking_area`, `parking_rule`, `permit` |
+| D3 Favorites | `favorite_area` |
+| D4 Parking sessions & visits | `parking_session`, `app_visit` |
+| D5 Destinations | `destination` |
+| D6 Rule change proposals | `rule_change_proposal` (planned, Sprint 3) |
+
+Editable sources: `docs/dfd/*.svg`.
+
 ## Tech Stack
 | Layer | What we use |
 |---|---|
