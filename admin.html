@@ -12,9 +12,9 @@
 <body class="admin-page">
   <a class="skip-link" href="#admin-main">Skip to main content</a>
   <header class="admin-header">
-    <a class="home-link" href="index.html#login">Provo Parking</a>
+    <a class="home-link" href="index.html#login"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/><path d="M12 23V9h5.2a4.4 4.4 0 0 1 0 8.8H12" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Provo Parking <span class="admin-badge">Admin</span></a><div class="header-actions"><div class="theme-options" role="group" aria-label="Appearance"><button class="secondary" type="button" data-theme-choice="light" aria-pressed="false">Light</button><button class="secondary" type="button" data-theme-choice="dark" aria-pressed="false">Dark</button></div>
     <button id="admin-logout" type="button" class="secondary" hidden>Log out</button>
-  </header>
+  </div></header>
   <main id="admin-main" tabindex="-1">
     <p id="admin-status" class="status" role="status" aria-live="polite">Checking your sign-in…</p>
     <section id="admin-login" class="admin-login panel" aria-labelledby="admin-login-title">
@@ -32,20 +32,21 @@
       <a class="link" href="index.html#login">Back to regular sign in</a>
     </section>
     <section id="admin-dashboard" aria-labelledby="admin-title" hidden>
-      <p class="eyebrow">APP EFFECTIVENESS / LIVE DATABASE METRICS</p>
-      <div class="admin-heading"><h1 id="admin-title" tabindex="-1">Parking with less guesswork.</h1><button type="button" class="secondary" id="admin-refresh">Refresh metrics</button></div>
+      <p class="eyebrow">APP EFFECTIVENESS</p>
+      <div class="admin-heading"><h1 id="admin-title" tabindex="-1">A clearer view of parking.</h1><div class="heading-actions"><button type="button" class="secondary" id="admin-edit-goals" disabled>Edit goals</button><button type="button" class="secondary" id="admin-refresh">Refresh metrics</button></div></div>
       <p class="summary">All-time results from signed-up users. Demo data and admin accounts are excluded.</p>
-      <p class="hint" id="admin-updated"></p>
+      <p class="hint" id="admin-updated"></p><p id="goals-notice" class="hint" role="status"></p>
       <section class="okr-objective" aria-labelledby="objective-one">
-        <p class="eyebrow">OBJECTIVE 1</p><h2 id="objective-one">Get people to use the app and find their favorite spots.</h2>
+        <p class="eyebrow">OBJECTIVE 1</p><div class="objective-heading"><h2 id="objective-one"></h2><span id="objective-help-one"></span></div><p class="objective-summary">Adoption &amp; saved parking</p>
         <div class="metric-grid" id="okr-one"></div>
       </section>
       <section class="okr-objective" aria-labelledby="objective-two">
-        <p class="eyebrow">OBJECTIVE 2</p><h2 id="objective-two">Reduce user friction in parking.</h2>
+        <p class="eyebrow">OBJECTIVE 2</p><div class="objective-heading"><h2 id="objective-two"></h2><span id="objective-help-two"></span></div><p class="objective-summary">Distance &amp; time to park</p>
         <div class="metric-grid" id="okr-two"></div>
       </section>
       <p class="hint">Updates every 30 seconds while this page is visible. Coverage counts show how many sessions can be measured; missing history is never counted as zero.</p>
     </section>
+    <dialog id="goals-editor" aria-labelledby="goals-title"><h2 id="goals-title">Edit objectives &amp; targets</h2><p class="summary">Set goals for the team. Changes are saved for all admins. Metrics keep measuring the same quantities shown below.</p><form id="goals-form"><div id="goals-fields"></div><p id="goals-error" class="error" role="alert"></p><div class="heading-actions"><button id="goals-save" type="submit" class="primary">Save goals</button><button id="goals-cancel" type="button" class="secondary">Cancel</button></div></form></dialog>
     <dialog id="metric-help" aria-labelledby="metric-help-title" aria-describedby="metric-help-text">
       <h2 id="metric-help-title"></h2><p id="metric-help-text"></p>
       <form method="dialog"><button class="secondary" autofocus>Close explanation</button></form>
