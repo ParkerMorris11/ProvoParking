@@ -145,7 +145,6 @@
         <button type="button" class="tab" id="tab-favorites" data-view="favorites">
           Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
         </button>
-        <button type="button" class="tab" id="tab-car" data-view="car">My car</button>
         <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
       </div>
     </nav>
@@ -165,9 +164,9 @@
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
-        <label for="find-destination">Where are you going?</label>
-        <select id="find-destination" required aria-describedby="destination-hint"></select>
-        <p id="destination-hint" class="hint">Choose your BYU building. We save it with your parking timer to measure how close you parked.</p>
+        <label for="find-destination">Where are you going? (optional)</label>
+        <select id="find-destination" aria-describedby="destination-hint"></select>
+        <p id="destination-hint" class="hint">Optional. If you choose your BYU building, we save it with your parking timer to measure how close you parked. You can also pick it when you start a timer.</p>
         <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
         <p class="hint">Updates automatically as lot rules change. Uncheck to plan a different arrival day and time.</p>
 
@@ -205,7 +204,7 @@
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
-          <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Provo city and OpenStreetMap records are shown separately and their rules are not verified. They never start a My car timer. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
+          <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Provo city and OpenStreetMap records are shown separately and their rules are not verified. They never start a parking timer. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
           <details class="city-lots">
             <summary>Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
             <p id="city-status" class="map-note" role="status">Loading Provo parking records…</p>
@@ -258,53 +257,6 @@
       <h2 id="h-favorites" tabindex="-1">Favorites</h2>
       <ul id="fav-list" class="cards"></ul>
       <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
-    </section>
-
-    <!-- Screen 5: My car — parking timer + where I parked -->
-    <section id="view-car" aria-labelledby="h-car" hidden>
-      <h2 id="h-car" tabindex="-1">My car</h2>
-      <p class="summary"><a href="parking-timer.html" class="link">View a timer saved on this device</a> · <a href="parking-setup.html" class="link">Set up a local parking session</a></p>
-      <div id="car-guest" class="panel car-guest" hidden>
-        <h3>Start a parking timer</h3>
-        <p class="hint">Create a free account to start a timer, get a reminder before your time runs out, and save where you parked. Your timer stays on any device you sign in on.</p>
-        <button type="button" class="primary" id="car-signup">Create a free account</button>
-      </div>
-      <div id="car-active" hidden></div>
-      <form id="car-form" class="panel" hidden>
-        <label for="car-area">Where are you parking?</label>
-        <select id="car-area" required></select>
-        <label for="car-destination">Destination building</label>
-        <select id="car-destination" required></select>
-
-        <div class="row">
-          <div>
-            <label for="car-minutes">How long?</label>
-            <select id="car-minutes">
-              <option value="30">30 minutes</option>
-              <option value="60">1 hour</option>
-              <option value="120">2 hours</option>
-              <option value="180">3 hours</option>
-              <option value="240" selected>4 hours</option>
-              <option value="480">8 hours</option>
-            </select>
-          </div>
-          <div>
-            <label for="car-reminder">Remind me</label>
-            <select id="car-reminder">
-              <option value="5">5 min before</option>
-              <option value="10" selected>10 min before</option>
-              <option value="15">15 min before</option>
-              <option value="30">30 min before</option>
-            </select>
-          </div>
-        </div>
-
-        <label for="car-note">Where is your car? (optional)</label>
-        <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
-        <p id="car-warning" class="hint warn" hidden></p>
-        <button type="submit" class="primary">Start parking timer</button>
-        <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
-      </form>
     </section>
 
     <!-- Screen 6 tab: Help — BYU permits, how to read results, Provo rules, citations -->
@@ -367,6 +319,71 @@
         <p class="hint">Results compare the permit you pick with official map rules; BYU registration and eligibility are not verified. Capacity, live availability and tow contacts are unknown. Rules can change, so confirm with the source links before relying on them.</p>
       </div>
     </section>
+
+    <div id="car-sheet" class="car-sheet" hidden>
+      <div class="car-sheet-backdrop" id="car-backdrop"></div>
+      <!-- Parking timer sheet: opened by the floating car button (#car-fab) -->
+      <section id="view-car" class="car-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="h-car">
+        <button type="button" class="car-sheet-close" id="car-close" aria-label="Close parking timer"><span aria-hidden="true">×</span></button>
+        <h2 id="h-car" tabindex="-1">Parking timer</h2>
+        <div id="car-guest" class="panel car-guest" hidden>
+          <h3>Start a parking timer</h3>
+          <p class="hint">Create a free account to start a timer, get a reminder before your time runs out, and save where you parked. Your timer stays on any device you sign in on.</p>
+          <button type="button" class="primary" id="car-signup">Create a free account</button>
+        </div>
+        <div id="car-active" hidden></div>
+        <form id="car-form" class="panel" hidden>
+          <label for="car-area">Where are you parking?</label>
+          <select id="car-area" required></select>
+          <label for="car-destination">Destination building</label>
+          <select id="car-destination" required></select>
+
+          <div class="row">
+            <div>
+              <label for="car-minutes">How long?</label>
+              <select id="car-minutes">
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="120">2 hours</option>
+                <option value="180">3 hours</option>
+                <option value="240" selected>4 hours</option>
+                <option value="480">8 hours</option>
+              </select>
+            </div>
+            <div>
+              <label for="car-reminder">Remind me</label>
+              <select id="car-reminder">
+                <option value="5">5 min before</option>
+                <option value="10" selected>10 min before</option>
+                <option value="15">15 min before</option>
+                <option value="30">30 min before</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="car-note">Where is your car? (optional)</label>
+          <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
+          <p id="car-warning" class="hint warn" hidden></p>
+          <button type="submit" class="primary">Start parking timer</button>
+          <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
+        </form>
+        <p class="summary car-local-links"><a href="parking-timer.html" class="link">View a timer saved on this device</a> · <a href="parking-setup.html" class="link">Set up a local parking session</a></p>
+      </section>
+    </div>
+
+    <!-- Floating car button; becomes an h:mm timer pill while a parking timer is running -->
+    <button type="button" id="car-fab" class="car-fab" aria-haspopup="dialog" aria-label="Parking timer: start a timer">
+      <svg class="car-fab-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13.5 21 17.5 12.5C18 11.6 18.8 11 19.8 11H28.2C29.2 11 30 11.6 30.5 12.5L34.5 21"/>
+          <rect x="8" y="21" width="32" height="14" rx="4.5"/>
+          <path d="M3.5 19.5h4M40.5 19.5h4"/>
+          <path d="M13 28h4M31 28h4"/>
+          <path d="M14 35v4.5M34 35v4.5"/>
+        </g>
+      </svg>
+      <span class="car-fab-time" id="car-fab-time" hidden></span>
+    </button>
   </main>
 
   <footer class="site-footer" id="app-footer" hidden>
