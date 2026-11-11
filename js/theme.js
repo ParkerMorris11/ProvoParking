@@ -9,9 +9,11 @@
 (function () {
   var KEY = 'pp-theme';
   var root = document.documentElement;
+  var visitChoice = null;
   var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function saved() {
+    if (visitChoice) return visitChoice;
     try { var v = localStorage.getItem(KEY); return v === 'dark' || v === 'light' ? v : null; }
     catch (e) { return null; }
   }
@@ -21,6 +23,7 @@
     var choice = saved();
     if (choice) root.setAttribute('data-theme', choice); else root.removeAttribute('data-theme');
     var now = active();
+    updateChoices(now);
     root.setAttribute('data-theme-active', now);
     var buttons = document.querySelectorAll('.theme-toggle');
     for (var i = 0; i < buttons.length; i++) {
@@ -29,11 +32,16 @@
     }
   }
 
-  function toggle() {
-    var next = active() === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem(KEY, next); } catch (e) { /* private mode: still switch for this visit */ root.setAttribute('data-theme', next); }
+  function choose(next) {
+    if (next !== 'light' && next !== 'dark') return;
+    try { localStorage.setItem(KEY, next); visitChoice = null; } catch (e) { visitChoice = next; }
     apply();
-    if (!saved()) { root.setAttribute('data-theme', next); root.setAttribute('data-theme-active', next); }
+  }
+  function updateChoices(now) {
+    document.querySelectorAll("[data-theme-choice]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.themeChoice === now)); });
+  }
+  function toggle() {
+    choose(active() === 'dark' ? 'light' : 'dark');
   }
 
   apply();
@@ -41,6 +49,8 @@
   document.addEventListener('click', function (event) {
     var button = event.target.closest && event.target.closest('.theme-toggle');
     if (button) toggle();
+    var choice = event.target.closest && event.target.closest("[data-theme-choice]");
+    if (choice) choose(choice.dataset.themeChoice);
   });
   document.addEventListener('DOMContentLoaded', apply);
 })();

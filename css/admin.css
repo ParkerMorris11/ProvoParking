@@ -25,3 +25,53 @@
 .admin-page dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
 .admin-page dialog::backdrop { background: #172d4980; }
 @media (max-width: 650px) { .metric-grid { grid-template-columns: 1fr; } .metric-card { padding: 20px; } }
+
+/* Use the same surfaces, spacing, and contrast tokens as the parking app. */
+.admin-header { flex-wrap: wrap; }
+.header-actions, .heading-actions, .theme-options { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.admin-badge { color: var(--muted); font-size: .75rem; border-left: 1px solid var(--border); padding-left: 12px; margin-left: 8px; }
+.theme-options { gap: 4px; padding: 4px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); }
+.theme-options .secondary { min-height: 36px; padding: 0 12px; border-color: transparent; background: transparent; font-size: .85rem; }
+.theme-options [aria-pressed="true"] { color: var(--brand-ink); background: var(--card); border-color: var(--border); box-shadow: var(--shadow-sm); }
+.admin-page .eyebrow { font-size: .75rem; letter-spacing: .1em; }
+.admin-heading { margin: 12px 0; }
+.admin-heading h1 { margin: 0; letter-spacing: -.04em; }
+.admin-page .summary { font-size: 1rem; max-width: 55rem; }
+.admin-page .hint { font-size: .9rem; }
+.admin-page .status { min-height: 24px; }
+.admin-page .error { color: var(--err-ink); }
+.objective-heading { display: flex; align-items: flex-start; gap: 12px; }
+.admin-page .objective-heading h2 { font-size: clamp(1.25rem, 2.4vw, 1.55rem); margin: 0; max-width: 48rem; letter-spacing: -.025em; }
+.objective-summary { margin: 8px 0 20px; color: var(--muted); }
+.metric-card { padding: 24px; box-shadow: none; }
+.metric-card h3 { font-size: 1.15rem; line-height: 1.4; margin: 6px 0 0; overflow-wrap: anywhere; }
+.metric-description { color: var(--muted); font-size: .9rem; margin: 12px 0 0; }
+.metric-value { font-variant-numeric: tabular-nums; letter-spacing: -.03em; margin: 18px 0 8px; }
+.metric-unit { display: inline-block; letter-spacing: 0; }
+.metric-target { font-size: .95rem; color: var(--ink-2); margin: 0 0 8px; }
+.metric-status { font-size: .85rem; }
+.metric-card > .hint { padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border); }
+.help-wrap { position: relative; display: inline-flex; flex: none; }
+.metric-help { width: 36px; height: 36px; background: var(--surface-2); color: var(--muted); border-color: var(--border); font-size: .9rem; }
+.metric-help:hover { color: var(--brand-ink); border-color: var(--brand); }
+.help-tooltip { position: absolute; right: 0; top: 100%; padding: 16px; width: min(310px, calc(100vw - 64px)); z-index: 12; background: var(--card); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: var(--shadow); color: var(--text); font-size: .9rem; line-height: 1.6; font-weight: 400; visibility: hidden; opacity: 0; }
+.help-wrap:hover .help-tooltip, .help-wrap:focus-within .help-tooltip { visibility: visible; opacity: 1; }
+.help-wrap.help-dismissed .help-tooltip { visibility: hidden; opacity: 0; }
+.objective-heading > span { margin-left: auto; }
+.admin-page dialog { background: var(--card); }
+.admin-page #goals-editor { width: min(680px, calc(100% - 32px)); }
+#goals-fields { display: grid; gap: 24px; }
+#goals-fields fieldset { margin: 0; padding: 20px; border: 1px solid var(--border); border-radius: 12px; min-width: 0; display: grid; gap: 8px; }
+#goals-fields legend { font-weight: 700; padding: 0 8px; }
+#goals-fields label { color: var(--label); font-weight: 650; }
+.goal-result { display: grid; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.admin-page input[type=number] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; border: 1px solid var(--field); border-radius: 12px; background: var(--field-bg); color: var(--text); }
+@media (max-width: 650px) {
+  .admin-header { padding-block: 12px; gap: 12px; }
+  .header-actions { width: 100%; justify-content: space-between; }
+  .admin-heading { align-items: stretch; gap: 16px; }
+  .heading-actions { width: 100%; }
+  .heading-actions > button { flex: 1; }
+  .metric-card { padding: 20px; }
+  #goals-fields fieldset { padding: 14px; }
+}
