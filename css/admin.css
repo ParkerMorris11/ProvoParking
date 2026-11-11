@@ -1,5 +1,5 @@
 .admin-page { color: var(--text); }
-.skip-link { position: absolute; top: -100px; left: 16px; z-index: 20; padding: 12px; background: white; color: var(--brand-ink); }
+.skip-link { position: absolute; top: -100px; left: 16px; z-index: 20; padding: 12px; background: var(--card); color: var(--brand-ink); }
 .skip-link:focus { top: 8px; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px var(--page-edge); background: var(--card); border-bottom: 1px solid var(--border); }
 .admin-header .home-link { font-weight: 750; font-size: 1.15rem; }
@@ -8,7 +8,7 @@
 .admin-login { max-width: 460px; margin: 24px auto; }
 .admin-login p { margin: 0; }
 .admin-login form { display: grid; gap: 12px; }
-.admin-login input[type=password] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; border: 1px solid var(--field); border-radius: 12px; }
+.admin-login input[type=password] { width: 100%; min-height: 46px; padding: 8px 12px; font: inherit; border: 1px solid var(--field); border-radius: 12px; background: var(--field-bg); color: var(--text); }
 .admin-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
 .okr-objective { margin: 36px 0; }
 .metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -19,8 +19,8 @@
 .metric-value { font-size: clamp(2rem, 5vw, 3rem); font-weight: 750; line-height: 1.2; margin: 16px 0 8px; }
 .metric-unit { font-size: .95rem; font-weight: 500; color: var(--muted); }
 .metric-status { display: inline-block; padding: 5px 10px; border-radius: 8px; font-weight: 650; color: var(--brand-ink); background: var(--brand-wash); margin: 8px 0 12px; }
-.metric-status.met { color: #1b6e3a; background: #e8f5ed; }
-.metric-status.pending { color: #774000; background: #fff1dc; }
+.metric-status.met { color: var(--ok); background: var(--ok-tint); }
+.metric-status.pending { color: var(--warn-ink); background: var(--warn-tint); }
 .admin-page button:focus-visible, .admin-page a:focus-visible, .admin-page input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .admin-page dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
 .admin-page dialog::backdrop { background: #172d4980; }

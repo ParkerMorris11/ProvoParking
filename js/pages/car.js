@@ -1,4 +1,4 @@
-// Page: My car — parking timer, car note, end session (parking_session).
+// Parking timer sheet (opened by the floating car button): start a timer, car note, end session (parking_session).
 import { state, rulesFor } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
 import { escapeHtml, fmtClock, fmtDuration, directionsUrl } from "../lib/format.js";
@@ -6,9 +6,41 @@ import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { renderDestinationOptions } from "./find.js";
+import { renderCarFab } from "../components/car-fab.js";
 
 let timerHandle = null;
 let lastReminderState = "";
+
+// ---------- the sheet itself ----------
+let returnHash = "#areas"; // where Close takes the user back to
+let returnFocus = null;
+
+export function openCarSheet() {
+  const sheet = $("car-sheet");
+  if (!sheet.hidden) return;
+  sheet.hidden = false;
+  document.body.classList.add("car-sheet-open");
+  $("h-car").focus({ preventScroll: true });
+}
+
+// Returns true if the sheet was open (so the caller keeps focus where the sheet put it).
+export function closeCarSheet() {
+  const sheet = $("car-sheet");
+  if (!sheet || sheet.hidden) return false;
+  sheet.hidden = true;
+  document.body.classList.remove("car-sheet-open");
+  stopTimer();
+  const target = returnFocus;
+  returnFocus = null;
+  if (target && target.isConnected) target.focus({ preventScroll: true });
+  return true;
+}
+
+// Close = go back to the page the sheet was opened from (never back into #car).
+function requestClose() {
+  const hash = /^#car(\/|$)/.test(returnHash) ? "#areas" : returnHash;
+  if (location.hash === hash) closeCarSheet(); else location.hash = hash;
+}
 
 export function stopTimer() { if (timerHandle) { clearInterval(timerHandle); timerHandle = null; } }
 
@@ -132,6 +164,7 @@ async function onStart(e) {
     $("car-note").value = "";
     setStatus("Parking timer started.");
     renderCar();
+    renderCarFab();
     $("h-car").focus();
   } catch (err) {
     if (version !== state.authVersion) return;
@@ -152,6 +185,7 @@ async function onEnd(btn) {
     state.activeSession = null;
     setStatus(expired ? "Timer ended. You were over your planned time." : "Timer ended. Safe travels!");
     renderCar();
+    renderCarFab();
     $("h-car").focus();
   } catch (err) {
     if (version !== state.authVersion) return;
@@ -182,6 +216,16 @@ async function onSaveNote(e) {
 
 export function initCar(options = {}) {
   if (options.requireAccount) requireAccount = options.requireAccount;
+  $("car-close").addEventListener("click", requestClose);
+  $("car-backdrop").addEventListener("click", requestClose);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("car-sheet").hidden) requestClose();
+  });
+  // Remember the page the sheet was opened from, so Close goes back there.
+  window.addEventListener("hashchange", () => {
+    if (!/^#car(\/|$)/.test(location.hash)) returnHash = location.hash || "#areas";
+  });
+  returnHash = /^#car(\/|$)/.test(location.hash) ? "#areas" : (location.hash || "#areas");
   $("car-area").addEventListener("change", updateCarWarning);
   $("car-minutes").addEventListener("change", updateCarWarning);
   document.addEventListener("submit", (e) => {
@@ -191,6 +235,7 @@ export function initCar(options = {}) {
   document.addEventListener("click", (e) => {
     const end = e.target.closest("#end-session");
     if (end) onEnd(end);
+    if (e.target.closest("#car-fab")) returnFocus = $("car-fab");
     if (e.target.closest("#car-signup")) requireAccount("Create a free account to start a parking timer and save where you parked.");
   });
 }

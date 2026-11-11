@@ -80,6 +80,13 @@ The layout is a single centered column, so on a desktop browser it looks like th
 <img src="docs/screens/desktop-5-help.png" alt="5. Help screen on desktop" width="640">
 
 
+### Dark mode
+The site follows the phone or laptop's light/dark setting. The round moon/sun button in the header (and in the corner of the sign-in screen) switches it, and the choice is saved on that device (`localStorage` key `pp-theme`). Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The map's street tiles are darkened with a CSS filter; lot outlines keep their colors.
+
+<img src="docs/screens/dark-mode-signin.png" alt="Sign-in screen, light and dark side by side" width="640">
+
+<img src="docs/screens/dark-mode-areas.png" alt="Areas screen, light and dark side by side" width="640">
+
 ## Accounts and sign-in
 
 | Situation | What the person sees |
@@ -147,6 +154,29 @@ flowchart LR
 ```
 
 The planned AI workflow requires human review before rule changes are published.
+
+## Data flow diagrams (Sprint 2 review)
+
+Both diagrams use logical names (what happens to the data), not product names. Processes 5.0 and 6.0 are the AI workflow automation: the app reads parking rule pages, an AI service extracts proposed rule changes, and a team admin approves them before they reach the parking rules. That automation is **planned for Sprint 3**; everything else is live today.
+
+**Level 0 (context diagram):** the whole app as one process, every external entity, and the data flowing in and out. No data stores.
+
+![Level 0 data flow diagram](docs/dfd/dfd-level-0.png)
+
+**Level 1 (logical):** the same external entities and outside flows, opened into numbered processes and data stores.
+
+![Level 1 data flow diagram](docs/dfd/dfd-level-1.png)
+
+| Data store | Tables today |
+|---|---|
+| D1 Drivers | `app_user`, `user_permit` |
+| D2 Parking areas & rules | `parking_area`, `parking_rule`, `permit` |
+| D3 Favorites | `favorite_area` |
+| D4 Parking sessions & visits | `parking_session`, `app_visit` |
+| D5 Destinations | `destination` |
+| D6 Rule change proposals | `rule_change_proposal` (planned, Sprint 3) |
+
+Sources: `docs/dfd/*.html` (self-contained; open in a browser). Dark-theme copies: `docs/dfd/*-dark.png`.
 
 ## Tech Stack
 | Layer | What we use |

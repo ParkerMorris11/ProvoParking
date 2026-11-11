@@ -1,6 +1,6 @@
 // Provo Parking entry point. Screens:
 //   Sign up / Log in (first visit) -> Find (permit + arrival time) -> Areas (eligibility list)
-//   -> Area details (rules) -> Favorites (heart, favorite_area) -> My car (timer, parking_session)
+//   -> Area details (rules) -> Favorites (heart, favorite_area) -> the floating car button (parking timer sheet, parking_session)
 // Everything personal is read from / written to Supabase for the signed-in account.
 // Where things live: see docs/CONTRIBUTING.md.
 import { state } from "./state.js";
@@ -13,11 +13,13 @@ import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
-import { initCar, stopTimer } from "./pages/car.js";
+import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
+import { initCarFab, renderCarFab } from "./components/car-fab.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { renderAreas } from "./pages/areas.js";
+import { initFullscreenMap } from "./pages/fullscreen-map.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
@@ -134,6 +136,8 @@ function clearPersonalData() {
   state.find.destinationId = null;
   state.destinations = [];
   stopTimer();
+  closeCarSheet();
+  renderCarFab();
   renderViews();
 }
 
@@ -172,7 +176,9 @@ document.addEventListener("click", (e) => {
 
 initFind({ go });
 initCar({ requireAccount });
+initCarFab({ go });
 initAuth({ onSignedIn, onGuest, authStorage });
+void initFullscreenMap(); // full-screen map + pull-up list on the Areas screen
 window.addEventListener("hashchange", () => { showView(); parkingClock.update(); });
 
 // Narrow-window tab menu (the ☰ button). Closes on Escape, on a tab choice, on an outside click,
