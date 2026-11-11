@@ -147,6 +147,7 @@
       <div class="tab-list" id="tab-list">
         <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
         <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
+        <button type="button" class="tab" id="tab-lots" data-view="lots">All Lots</button>
         <button type="button" class="tab" id="tab-favorites" data-view="favorites">
           Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
         </button>
@@ -175,7 +176,7 @@
         <p id="permit-info" class="hint"></p>
         <label for="find-destination">Where are you going? (optional)</label>
         <select id="find-destination" aria-describedby="destination-hint"></select>
-        <p id="destination-hint" class="hint">Optional. If you choose your BYU building, we save it with your parking timer to measure how close you parked. You can also pick it when you start a timer.</p>
+        <p id="destination-hint" class="hint">Optional. Choose your BYU building to see the closest matching lots first. We also save it with your parking timer to measure how close you parked. You can also pick it when you start a timer.</p>
         <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
         <p class="hint">Updates automatically as lot rules change. Uncheck to plan a different arrival day and time.</p>
 
@@ -212,7 +213,7 @@
             <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and Provo parking map" aria-describedby="map-note"></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
-          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" checked disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
+          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
           <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Provo city and OpenStreetMap records are shown separately and their rules are not verified. They never start a parking timer. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
           <details class="city-lots">
             <summary>Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
@@ -242,7 +243,8 @@
             <div class="list-sort">
               <label for="area-sort">Sort</label>
               <select id="area-sort">
-                <option value="name">Lot number</option>
+                <option value="destination">Nearest to destination</option>
+                <option value="name" selected>Lot number</option>
                 <option value="distance">Nearest to me</option>
               </select>
             </div>
@@ -253,6 +255,30 @@
           <p id="areas-empty" class="empty" role="status" hidden></p>
         </aside>
       </div>
+    </section>
+
+    <section id="view-lots" aria-labelledby="h-lots" hidden>
+      <div class="areas-heading">
+        <div><p class="eyebrow">PARKING DIRECTORY</p><h2 id="h-lots" tabindex="-1">All Lots</h2></div>
+        <a class="permit-link" href="#areas">See permit matches →</a>
+      </div>
+      <p class="summary">Browse the parking locations we’ve mapped. Inclusion does not establish permission to park or space availability.</p>
+      <div class="list-tools"><div class="list-search">
+        <label for="all-lots-search">Search all lots</label>
+        <input type="search" id="all-lots-search" placeholder="e.g. 37Y, Covey or Airport" autocomplete="off">
+      </div></div>
+      <p id="all-lots-count" class="areas-count" role="status"></p>
+      <section class="catalog-group" aria-labelledby="all-byu-heading">
+        <h3 id="all-byu-heading">BYU sections</h3>
+        <ul class="nearby-list" id="all-byu-lots"></ul>
+        <button type="button" class="secondary" id="all-byu-more" hidden>Show more BYU sections</button>
+      </section>
+      <section class="catalog-group" aria-labelledby="all-city-heading">
+        <h3 id="all-city-heading">Provo city facilities</h3>
+        <p class="hint">City and OpenStreetMap records. Check posted signs for public access, hours and limits.</p>
+        <ul class="nearby-list" id="all-city-lots"></ul>
+        <button type="button" class="secondary" id="all-city-more" hidden>Show more city facilities</button>
+      </section>
     </section>
 
     <!-- Screen 3: Area details — plain-language rules -->

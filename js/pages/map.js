@@ -4,9 +4,10 @@ import { nearbyLots, arrivalSuggestion } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
+import { areaPoint } from "../domain/area-list.js";
 import { initCityLayer } from "./city-layer.js";
 
-let map;
+let map, centeredDestinationId;
 let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
 let boundaryLayer, visibleFeatures = [];
 const lotLayers = new Map();
@@ -167,6 +168,15 @@ function boundaryStyle(feature) {
   return { color: category.color, weight: 1.6, fillColor: category.color, fillOpacity: 0.24 };
 }
 
+function centerOnDestination() {
+  const id = state.find.destinationId;
+  if (!id || id === centeredDestinationId) return;
+  const point = areaPoint(state.destinations.find(d => d.destination_id === id));
+  if (!point) return;
+  centeredDestinationId = id;
+  map.setView([point.latitude, point.longitude], 16);
+}
+
 export async function initMap() {
   const el = document.querySelector("#parking-map");
   if (!el) return;
@@ -175,7 +185,7 @@ export async function initMap() {
     setMapStatus("Map unavailable. Use the parking list to view rules and details.");
     return;
   }
-  if (map) { refreshMap(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
+  if (map) { centerOnDestination(); refreshMap(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
   const L = window.L;
   try {
     map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true }).setView([40.2518, -111.6493], 15);
@@ -191,6 +201,7 @@ export async function initMap() {
       reset.disabled = false;
       reset.addEventListener("click", () => map.setView([40.2518, -111.6493], 15));
     }
+    centerOnDestination();
     refreshMap();
     initCityLayer(map, L);
     try {

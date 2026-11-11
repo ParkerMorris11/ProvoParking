@@ -485,3 +485,9 @@ body.car-sheet-open .car-fab { display: none; }
 main { padding-bottom: calc(48px + 72px); }
 @media (max-width: 600px) { main { padding-bottom: calc(32px + 72px); } }
 @media (prefers-reduced-motion: reduce) { .car-fab { transition: none; } }
+
+/* All Lots: the directory keeps campus rules and city source records separate. */
+.catalog-group { margin-block: 1.5rem; }
+.catalog-group .nearby-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+.catalog-group .nearby-card h4 { margin: 0; }
+.catalog-group > button { margin-top: .75rem; }

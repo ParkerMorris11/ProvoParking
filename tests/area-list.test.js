@@ -35,3 +35,15 @@ test('distances read in feet when close and miles otherwise', () => {
   assert.equal(formatDistance(1609.344 * 0.42), '0.4 mi');
   assert.equal(formatDistance(Infinity), '');
 });
+
+test("destination and GPS rank the same eligible sections from different origins", () => {
+  const areas = [
+    { area_name: "Lot 1", latitude: 40.25, longitude: -111.66 },
+    { area_name: "Lot 2", latitude: 40.25, longitude: -111.65 },
+  ];
+  const destination = { latitude: 40.25, longitude: -111.65 };
+  const position = { latitude: 40.25, longitude: -111.66 };
+  assert.equal(arrangeAreas(areas, { sort: "destination", destination, position }).items[0].area_name, "Lot 2");
+  assert.equal(arrangeAreas(areas, { sort: "distance", destination, position }).items[0].area_name, "Lot 1");
+  assert.equal(arrangeAreas(areas, { sort: "destination" }).sortedBy, "name");
+});

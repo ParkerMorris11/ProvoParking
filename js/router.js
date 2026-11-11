@@ -1,4 +1,4 @@
-// Hash routing: #find, #areas, #area/<id>, #favorites, #help.
+// Hash routing: #find, #areas, #area/<id>, #lots, #favorites, #help.
 // #car and #car/<areaId> are not pages: they open the parking timer sheet over the current page.
 // To add a page: add a <section id="view-NAME"> in index.html, a tab button, the name here,
 // and a render call in renderViews() or showView().
@@ -6,12 +6,13 @@ import { state } from "./state.js";
 import { $ } from "./lib/dom.js";
 import { renderAreas } from "./pages/areas.js";
 import { renderAreaDetail } from "./pages/area-detail.js";
+import { renderAllLots } from "./pages/all-lots.js";
 import { renderFavorites } from "./pages/favorites.js";
 import { renderCar, stopTimer, openCarSheet, closeCarSheet } from "./pages/car.js";
 
 import { initMap, pauseMapLocation } from "./pages/map.js";
 
-export const VIEWS = ["find", "areas", "area", "favorites", "help"];
+export const VIEWS = ["find", "areas", "area", "lots", "favorites", "help"];
 
 // Re-draws every page that shows area cards (after data changes, e.g. a favorite).
 export function renderViews() {
@@ -36,6 +37,7 @@ export function showView() {
   });
   renderViews();
   if (state.currentView === "areas") void initMap(); else pauseMapLocation();
+  if (state.currentView === "lots") renderAllLots();
   if (carSheet) {
     renderCar(routeId);
     openCarSheet();

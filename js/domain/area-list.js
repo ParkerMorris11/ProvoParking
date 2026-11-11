@@ -19,18 +19,19 @@ export function matchesQuery(area, query) {
 
 /**
  * Returns { items, total, sortedBy } where items is the filtered, sorted list (each item is the area,
- * plus distanceMeters when sorting by distance). Distance sort needs a valid position; without one,
+ * plus distanceMeters when sorting by distance). Distance sort needs a valid GPS or destination origin; without one,
  * it falls back to name order and reports sortedBy: "name".
  */
-export function arrangeAreas(areas, { query = "", sort = "name", position = null } = {}) {
+export function arrangeAreas(areas, { query = "", sort = "name", position = null, destination = null } = {}) {
   const matched = (areas || []).filter((area) => matchesQuery(area, query));
-  if (sort === "distance" && validLocation(position)) {
+  const origin = sort === "destination" ? destination : sort === "distance" ? position : null;
+  if (validLocation(origin)) {
     const withDistance = matched.map((area) => {
       const point = areaPoint(area);
-      return { area, distanceMeters: point ? metersBetween(position, point) : Infinity };
+      return { area, distanceMeters: point ? metersBetween(origin, point) : Infinity };
     });
     withDistance.sort((a, b) => a.distanceMeters - b.distanceMeters || byName(a.area, b.area));
-    return { items: withDistance.map(({ area, distanceMeters }) => ({ ...area, distanceMeters })), total: matched.length, sortedBy: "distance" };
+    return { items: withDistance.map(({ area, distanceMeters }) => ({ ...area, distanceMeters })), total: matched.length, sortedBy: sort };
   }
   return { items: [...matched].sort(byName), total: matched.length, sortedBy: "name" };
 }

@@ -49,6 +49,7 @@ export function initFind({ go }) {
     // The building is optional here; the timer form still requires it before a timer can start.
     const destinationId = Number($("find-destination").value);
     state.find.destinationId = state.destinations.some(d => d.destination_id === destinationId) ? destinationId : null;
+    if (state.find.destinationId) $("area-sort").value = "destination";
     state.find.permitId = id;
     state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);

@@ -4,7 +4,7 @@ import { $ } from "../lib/dom.js";
 import { DAY_NAMES, fmtTime } from "../lib/format.js";
 import { cardHtml } from "../components/area-card.js";
 import { eligibleAreas, parkingSelection } from "../domain/parking-results.js";
-import { arrangeAreas } from "../domain/area-list.js";
+import { areaPoint, arrangeAreas } from "../domain/area-list.js";
 import { refreshMapEligibility, currentPosition, showAreaOnMap } from "./map.js";
 
 export const PAGE_SIZE = 12;
@@ -15,6 +15,7 @@ function listOptions() {
     query: $("area-search")?.value || "",
     sort: $("area-sort")?.value || "name",
     position: currentPosition(),
+    destination: areaPoint(state.destinations.find(d => d.destination_id === state.find.destinationId)),
   };
 }
 
@@ -77,8 +78,11 @@ export function renderAreas() {
   }
   const count = $("areas-count");
   if (count) {
-    const order = sortedBy === "distance" ? "nearest first" : "by lot number";
-    const sortNote = options.sort === "distance" && sortedBy !== "distance" ? " Turn on “Use my location” to sort by distance." : "";
+    const building = state.destinations.find(d => d.destination_id === state.find.destinationId);
+    const order = sortedBy === "distance" ? "nearest to you first" : sortedBy === "destination" ? `nearest to ${building.name} first` : "by lot number";
+    const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on “Use my location” to sort by distance."
+      : sortedBy === "name" && options.sort === "destination" ? " Choose a building in Find to sort by destination."
+      : sortedBy !== "name" ? " Distances are approximate, measured in a straight line." : "";
     count.textContent = total
       ? `Showing ${shown.length} of ${total}${searching ? ` matching “${options.query.trim()}”` : ""}, ${order}.${sortNote}`
       : searching && eligible.length ? `No sections match “${options.query.trim()}”.` : "";
