@@ -80,7 +80,7 @@ main { max-width: calc(var(--page-max) + 2 * var(--gutter)); margin: 0 auto; pad
 .heart:focus-visible, .tab:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .empty { color: var(--muted); background: var(--card); border: 1px dashed var(--field); border-radius: var(--radius); padding: 28px 20px; text-align: center; }
 
-/* ---- Find, Area details, My car, Help ---- */
+/* ---- Find, Area details, Help (the parking timer sheet and car button are at the end) ---- */
 h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.15; letter-spacing: -.045em; color: var(--text); margin: 0 0 20px; }
 h3 { font-size: 1.05rem; color: var(--ink-2); letter-spacing: -.015em; }
 h2:focus, h3:focus { outline: none; }
@@ -454,3 +454,34 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .lot-popup-caution { font-weight: 650; color: var(--warn-ink); }
 .lot-popup-source { font-size: .7rem; color: var(--muted); }
 @media (max-width: 640px) { .city-lots { padding: 0 14px 16px; } }
+
+/* ---- Floating car button + parking timer sheet ---- */
+.car-fab { position: fixed; z-index: 40; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 56px; height: 56px; padding: 0; border: 0; border-radius: 999px; background: var(--brand); color: #fff; font: inherit; cursor: pointer; box-shadow: 0 6px 18px #183b6040, 0 2px 6px #183b6030; transition: background .15s, transform .15s, padding .2s; }
+.car-fab:hover { background: var(--brand-ink); transform: translateY(-1px); }
+.car-fab:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.car-fab-icon { width: 30px; height: 30px; flex: none; }
+.car-fab-time { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .01em; line-height: 1; }
+.car-fab.running { padding: 0 22px; }
+.car-fab.running .car-fab-icon { display: none; } /* the pill shows only the time */
+.car-fab.soon, .car-fab.soon:hover { background: #b45a00; }
+/* Time is up: red until the user ends the timer (the class is removed only when the session ends). */
+.car-fab.over, .car-fab.over:hover { background: var(--heart); }
+body.car-sheet-open { overflow: hidden; }
+body.car-sheet-open .car-fab { display: none; }
+.car-sheet { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.car-sheet[hidden] { display: none; }
+.car-sheet-backdrop { position: absolute; inset: 0; background: #0f213a8c; }
+.car-sheet-panel { position: relative; width: min(560px, 100%); max-height: min(92vh, 100%); overflow-y: auto; overscroll-behavior: contain; padding: 22px 20px calc(24px + env(safe-area-inset-bottom)); background: var(--bg); border-radius: var(--radius-lg) var(--radius-lg) 0 0; box-shadow: 0 -10px 40px #0f213a40; }
+.car-sheet-panel h2 { margin: 0 44px 16px 0; font-size: clamp(1.4rem, 5vw, 1.8rem); }
+.car-sheet-close { position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 50%; background: var(--card); color: var(--ink-2); font-size: 1.6rem; line-height: 1; cursor: pointer; }
+.car-sheet-close:hover { border-color: var(--brand); background: var(--brand-wash); }
+.car-sheet-close:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.car-local-links { margin: 14px 0 0; font-size: .84rem; }
+@media (min-width: 700px) {
+  .car-sheet { align-items: center; }
+  .car-sheet-panel { border-radius: var(--radius-lg); padding-bottom: 24px; }
+}
+/* Keep the last lines of every page clear of the floating button. */
+main { padding-bottom: calc(48px + 72px); }
+@media (max-width: 600px) { main { padding-bottom: calc(32px + 72px); } }
+@media (prefers-reduced-motion: reduce) { .car-fab { transition: none; } }
