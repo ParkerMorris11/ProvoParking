@@ -3,6 +3,7 @@
 //   account right away, so a taken email or rejected password is shown on this same screen.
 //   Then an optional "Which permit do you have?" step with Skip (also shown after a first Google sign-in).
 //   Log in: Google, or email + password, Keep me signed in, Forgot password. Also: reset and new-password forms.
+import { showAuthLoading, hideAuthLoading } from "../components/auth-loading.js";
 import { stopMapLocation } from "./map.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
@@ -25,6 +26,7 @@ let hooks = { onSignedIn: async () => {}, onGuest: async () => {}, authStorage: 
 
 // ---------- showing and hiding ----------
 export function showAuth(view, message = "", isError = false) {
+  hideAuthLoading();
   stopMapLocation();
   for (const id of APP_CHROME) $(id).hidden = true;
   $("auth-screen").hidden = false;
@@ -54,6 +56,7 @@ export function clearPasswords() {
 }
 
 export function hideAuth() {
+  hideAuthLoading();
   $("auth-screen").hidden = true;
   for (const id of APP_CHROME) $(id).hidden = false;
 }
@@ -305,6 +308,7 @@ async function onSignUp(e) {
 
 async function onLogIn(e) {
   e.preventDefault();
+  if ($("li-submit").disabled) return;
   clearErrors(); setMessage("");
   const email = $("li-email").value.trim();
   const ok = [
@@ -314,13 +318,16 @@ async function onLogIn(e) {
   if (!ok) return focusFirstError("login-form");
   const button = $("li-submit");
   busy(button, true, "Logging in…");
-  hooks.authStorage?.setRemember($("li-remember").checked);
+  showAuthLoading();
   try {
+    hooks.authStorage?.setRemember($("li-remember").checked);
     const session = await auth.logIn(email, $("li-password").value);
     $("li-password").value = "";
     startAtHome();
     await hooks.onSignedIn(session);
   } catch (err) {
+    hideAuthLoading();
+    $("li-email").focus();
     showAuthError(err, { action: "login", emailField: "li-email" });
   } finally {
     busy(button, false);
@@ -328,15 +335,19 @@ async function onLogIn(e) {
 }
 
 async function onGoogle(button) {
+  if (button.disabled) return;
   clearErrors(); setMessage("");
   busy(button, true, "Opening Google…");
+  showAuthLoading("Connecting to Google…");
   const onLoginScreen = $("auth-screen").dataset.view === "login";
   hooks.authStorage?.setRemember(onLoginScreen ? $("li-remember").checked : true);
   try {
     startAtHome();
     await auth.signInWithGoogle(); // the browser leaves for Google here
   } catch (err) {
+    hideAuthLoading();
     busy(button, false);
+    button.focus();
     showAuthError(err, { action: "login" });
   }
 }
