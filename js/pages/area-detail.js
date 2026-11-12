@@ -42,7 +42,9 @@ export function renderAreaDetail(areaId) {
   const tow = state.towById.get(area.tow_company_id);
   if (dayChoice.areaId !== areaId) dayChoice = { areaId, day: null };
   const day = dayChoice.day ?? selection.day;
-  const focusDay = document.activeElement?.id === "rules-day";
+  const controls = [...(box.querySelectorAll?.("a,button,select,summary") || [])];
+  const focusIndex = controls.indexOf(document.activeElement);
+  const disclosures = [...(box.querySelectorAll?.("details") || [])].map(el => el.open);
   const byu = area.operator === "BYU" && !area.is_sample_data;
   box.innerHTML = `
     <div class="detail-head">
@@ -87,5 +89,6 @@ export function renderAreaDetail(areaId) {
     renderAreaDetail(areaId);
     $("rules-day").focus({ preventScroll: true });
   });
-  if (focusDay) $("rules-day").focus({ preventScroll: true });
+  [...(box.querySelectorAll?.("details") || [])].forEach((el, index) => { el.open = disclosures[index] ?? false; });
+  if (focusIndex >= 0) box.querySelectorAll("a,button,select,summary")[focusIndex]?.focus({ preventScroll: true });
 }

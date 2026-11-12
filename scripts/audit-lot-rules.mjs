@@ -9,6 +9,7 @@ const fromTools=p=>pathToFileURL(path.join(toolsDir,"node_modules",p)).href;
 const { chromium }=await import(fromTools("playwright/index.mjs"));
 const { default:lighthouse }=await import(fromTools("lighthouse/core/index.js"));
 const chromeLauncher=await import(fromTools("chrome-launcher/dist/index.js"));
+const { default:desktopConfig }=await import(fromTools("lighthouse/core/config/desktop-config.js"));
 await mkdir("artifacts/lot-rules",{recursive:true});
 const base="http://127.0.0.1:8765/tests/manual/lot-rules.html";
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,headless:true,args:["--no-sandbox"]});
@@ -29,6 +30,9 @@ try {
     await page.getByLabel("Day",{exact:true}).selectOption("1");
     await page.getByText("Sources and verification",{exact:true}).click();
     assert.equal(await page.locator(".detail-source-disclosure").first().evaluate(el=>el.open),true);
+    await page.getByLabel("Day",{exact:true}).selectOption("6");
+    assert.equal(await page.locator(".detail-source-disclosure").first().evaluate(el=>el.open),true);
+    await page.getByLabel("Day",{exact:true}).selectOption("1");
     assert.deepEqual(errors,[]);
     await page.screenshot({path:`artifacts/lot-rules/${width}-${theme}.png`,fullPage:true});
     await page.close();
@@ -39,13 +43,18 @@ for(const form of ["mobile","desktop"]) for(const theme of ["light","dark"]) {
   const chrome=await chromeLauncher.launch({chromePath:process.env.CHROME_PATH,chromeFlags:["--headless","--no-sandbox"]});
   try {
     const options={port:chrome.port,output:"html",logLevel:"error",onlyCategories:["performance","accessibility","best-practices","seo"]};
-    const settings=form==="desktop"?{extends:"lighthouse:default",settings:{formFactor:"desktop",screenEmulation:{mobile:false,width:1440,height:1000,deviceScaleFactor:1,disabled:false}}}:undefined;
+    const settings=form==="desktop"?desktopConfig:undefined;
     const result=await lighthouse(base+"?theme="+theme,options,settings);
     if(result.lhr.runtimeError) throw new Error(result.lhr.runtimeError.message);
     await writeFile(`artifacts/lot-rules/lighthouse-${form}-${theme}.html`,result.report);
     await writeFile(`artifacts/lot-rules/lighthouse-${form}-${theme}.json`,JSON.stringify(result.lhr,null,2));
     const categories=Object.fromEntries(Object.entries(result.lhr.categories).map(([k,v])=>[k,Math.round(v.score*100)]));
     scores.push({form,theme,...categories});
+    console.log(form,theme,"metrics",JSON.stringify(Object.fromEntries(["first-contentful-paint","largest-contentful-paint","cumulative-layout-shift","total-blocking-time","speed-index"].map(id=>[id,result.lhr.audits[id].displayValue]))));
+    for(const ref of result.lhr.categories.accessibility.auditRefs) {
+      const audit=result.lhr.audits[ref.id];
+      if(audit.score!==null&&audit.score<1) console.log("Accessibility finding",JSON.stringify({id:ref.id,title:audit.title,details:audit.details}));
+    }
     for(const [category,score]of Object.entries(categories)) {
       if(score!==100) console.error(`${form} ${theme}: ${category} = ${score}; inspect the uploaded report.`);
     }

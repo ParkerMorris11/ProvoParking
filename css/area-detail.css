@@ -46,7 +46,7 @@
 .detail-sources li { margin: 8px 0; }
 .detail-sources li span:last-child { display: block; font-size: .75rem; }
 .detail-reference a { color: var(--brand-ink); text-underline-offset: 3px; }
-.detail-reference .primary { color: #fff; }
+.detail-reference .primary { color: #fff; background: var(--brand-hover); }
 #area-detail a:focus-visible, #area-detail summary:focus-visible, #area-detail select:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 @media (max-width: 850px) { .detail-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
 @media (max-width: 480px) {
