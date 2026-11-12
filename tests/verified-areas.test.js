@@ -18,11 +18,11 @@ test('primary Areas results show verified lots while retaining sample records fo
 
 test('a fully prohibited interval never describes itself as open to everyone',async()=>{
  const {renderAreaDetail}=await import('../js/pages/area-detail.js');
- const box={};globalThis.document={getElementById:()=>box};
+ const box={addEventListener(){},focus(){}};globalThis.document={getElementById:()=>box};
  state.areas=[{area_id:5,area_name:'BYU Lot 59Y',is_sample_data:false}];
  state.rulesByArea=new Map([[5,[{permit_id:null,days_of_week:'All',start_time:'01:00',end_time:'04:59',blocked_start:'01:00',blocked_end:'05:00',source_url:'https://security.byu.edu/parking-regulations',last_verified_on:'2026-11-04'}]]]);
  state.find={permitId:1,day:3,time:'03:00'};state.towById=new Map();
  renderAreaDetail(5);
  assert.doesNotMatch(box.innerHTML,/Open to everyone\./);
- assert.match(box.innerHTML,/No parking for any permit/);
+ assert.match(box.innerHTML,/Closed to ordinary parking, including permit holders/);
 });
