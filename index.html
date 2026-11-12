@@ -15,6 +15,18 @@
 <body>
   <p id="loading" class="app-loading" role="status">Loading…</p>
 
+
+  <!-- A separate status screen keeps the form inaccessible while sign-in is pending. -->
+  <section id="auth-loading" class="auth-loading" aria-labelledby="auth-loading-message" tabindex="-1" hidden>
+    <div class="auth-loading-content">
+      <div class="auth-loading-logo" aria-hidden="true">
+        <img src="css/images/y-parking-logo.png" width="1081" height="1455" alt="" decoding="async">
+      </div>
+      <h2 id="auth-loading-message" role="status" aria-live="polite" aria-atomic="true">Signing you in…</h2>
+      <p class="auth-loading-caption">Your next spot is just ahead.</p>
+    </div>
+  </section>
+
   <!-- Sign up / log in: shown first until someone signs in or continues as a guest -->
   <section id="auth-screen" class="auth" aria-labelledby="auth-title" hidden>
     <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="false">
