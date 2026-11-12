@@ -492,7 +492,7 @@ main { padding-bottom: calc(48px + 72px); }
 .catalog-group .nearby-card h4 { margin: 0; }
 .catalog-group > button { margin-top: .75rem; }
 
-/* Sign-in transition: the existing brand mark breathes with a soft halo of light. */
+/* Sign-in transition: the Y mark breathes with a soft halo of light. */
 .auth-loading {
   position: fixed;
   inset: 0;
@@ -510,10 +510,9 @@ main { padding-bottom: calc(48px + 72px); }
 .auth-loading-logo {
   position: relative;
   isolation: isolate;
-  width: 104px;
-  height: 104px;
-  margin: 0 auto 32px;
-  color: var(--brand);
+  width: 112px;
+  height: 151px;
+  margin: 0 auto 40px;
 }
 .auth-loading-logo::before {
   content: "";
@@ -524,19 +523,13 @@ main { padding-bottom: calc(48px + 72px); }
   background: radial-gradient(circle, #5086ff55, #5086ff00 70%);
   animation: auth-light-pulse 2.8s ease-in-out infinite;
 }
-.auth-loading-logo svg {
+.auth-loading-logo img {
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: contain;
   filter: drop-shadow(0 8px 20px #3168dc25);
   animation: auth-mark-pulse 2.8s ease-in-out infinite;
-}
-.auth-loading-brand {
-  margin: 0 0 36px;
-  color: var(--text);
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -.025em;
 }
 .auth-loading h2 {
   margin: 0;
@@ -556,6 +549,6 @@ main { padding-bottom: calc(48px + 72px); }
   50% { transform: scale(1.035); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .auth-loading-logo::before, .auth-loading-logo svg { animation: none; }
+  .auth-loading-logo::before, .auth-loading-logo img { animation: none; }
   .auth-loading-logo::before { opacity: .55; }
 }
