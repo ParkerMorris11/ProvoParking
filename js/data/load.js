@@ -3,6 +3,10 @@
 // My car session load only for a signed-in user, and row security returns only their rows.
 import { state } from "../state.js";
 
+// PP has only a legacy sample street, with no verified residential permit zones on the map.
+// Hide it from both pickers without deleting permits, rules, or existing account links.
+const selectablePermits = (permits) => permits.filter((p) => p.permit_code !== "PP");
+
 export async function loadData() {
   const db = state.db;
   const version = state.authVersion;
@@ -21,7 +25,7 @@ export async function loadData() {
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes, destRes]) if (res.error) throw res.error;
 
   state.areas = areasRes.data;
-  state.permits = permitRes.data;
+  state.permits = selectablePermits(permitRes.data);
   state.destinations = destRes.data;
   state.favoriteIds = new Set(favRes.data.map((f) => f.area_id));
   state.towById = new Map(towRes.data.map((t) => [t.tow_company_id, t]));
@@ -40,5 +44,5 @@ export async function loadPermitChoices() {
     .select("permit_id, permit_code, permit_name, issuer, description")
     .order("permit_id"); // table order: Y and G first
   if (error) throw error;
-  return data;
+  return selectablePermits(data);
 }
