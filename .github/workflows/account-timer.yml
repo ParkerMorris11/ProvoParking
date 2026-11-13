@@ -1,0 +1,40 @@
+name: Account timer browser checks
+on:
+  pull_request:
+    paths:
+      - 'js/**'
+      - 'css/**'
+      - 'index.html'
+      - 'parking-*.html'
+      - 'tests/manual/account-timer.html'
+      - 'scripts/check-account-timer.mjs'
+      - '.github/workflows/account-timer.yml'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --prefix "$RUNNER_TEMP/parking-browser" --no-save playwright@1.56.1
+      - name: Timer navigation, restoration and keyboard checks
+        env:
+          PARKING_BROWSER_TOOLS: ${{ runner.temp }}/parking-browser
+        run: |
+          export CHROME_PATH="$(command -v google-chrome)"
+          python3 -m http.server 8765 --bind 127.0.0.1 > "$RUNNER_TEMP/timer-preview.log" 2>&1 &
+          for attempt in 1 2 3 4 5; do
+            if curl --silent --fail http://127.0.0.1:8765/tests/manual/account-timer.html > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/check-account-timer.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: account-timer-browser
+          path: artifacts/account-timer/
+          if-no-files-found: warn

@@ -15,6 +15,18 @@
 <body>
   <p id="loading" class="app-loading" role="status">Loading…</p>
 
+
+  <!-- A separate status screen keeps the form inaccessible while sign-in is pending. -->
+  <section id="auth-loading" class="auth-loading" aria-labelledby="auth-loading-message" tabindex="-1" hidden>
+    <div class="auth-loading-content">
+      <div class="auth-loading-logo" aria-hidden="true">
+        <img src="css/images/y-parking-logo.png" width="224" height="301" alt="" decoding="async">
+      </div>
+      <h2 id="auth-loading-message" role="status" aria-live="polite" aria-atomic="true">Signing you in…</h2>
+      <p class="auth-loading-caption">Your next spot is just ahead.</p>
+    </div>
+  </section>
+
   <!-- Sign up / log in: shown first until someone signs in or continues as a guest -->
   <section id="auth-screen" class="auth" aria-labelledby="auth-title" hidden>
     <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="false">
@@ -361,6 +373,7 @@
       <section id="view-car" class="car-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="h-car">
         <button type="button" class="car-sheet-close" id="car-close" aria-label="Close parking timer"><span aria-hidden="true">×</span></button>
         <h2 id="h-car" tabindex="-1">Parking timer</h2>
+        <p id="car-action-status" class="hint" role="status" hidden></p>
         <div id="car-guest" class="panel car-guest" hidden>
           <h3>Start a parking timer</h3>
           <p class="hint">Create a free account to start a timer, get a reminder before your time runs out, and save where you parked. Your timer stays on any device you sign in on.</p>
@@ -402,7 +415,7 @@
           <button type="submit" class="primary">Start parking timer</button>
           <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
         </form>
-        <p class="summary car-local-links"><a href="parking-timer.html" class="link">View a timer saved on this device</a> · <a href="parking-setup.html" class="link">Set up a local parking session</a></p>
+        <p class="summary car-local-links">One timer per account. Your timer stays saved when you close this popup or the app. Reminders appear while the app is open.</p>
       </section>
     </div>
 

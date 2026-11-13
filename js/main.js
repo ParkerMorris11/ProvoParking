@@ -3,6 +3,8 @@
 //   -> Area details (rules) -> Favorites (heart, favorite_area) -> the floating car button (parking timer sheet, parking_session)
 // Everything personal is read from / written to Supabase for the signed-in account.
 // Where things live: see docs/CONTRIBUTING.md.
+import { showAuthLoading } from "./components/auth-loading.js";
+import { resetParkingClock } from "./lib/server-clock.js";
 import { state } from "./state.js";
 import { createVisitTracker } from "./data/visit-tracker.js";
 import { $, setStatus } from "./lib/dom.js";
@@ -60,7 +62,6 @@ function choosePermit() {
 }
 
 async function enterApp(note, version = state.authVersion) {
-  hideAuth();
   renderAccountBar();
   setStatus("Loading parking areas…");
   try {
@@ -69,11 +70,13 @@ async function enterApp(note, version = state.authVersion) {
     renderFind();
     const who = state.user ? `Signed in as ${state.user.displayName}.` : "Browsing as a guest. Create an account to save favorites and start a parking timer.";
     setStatus(`${note ? `${note} ` : ""}${state.areas.filter((area) => !area.is_sample_data).length} verified parking areas loaded. ${who}`);
+    hideAuth();
     showView();
     parkingClock.update();
   } catch (err) {
     if (version !== state.authVersion) return;
     console.error(err);
+    hideAuth();
     setStatus(`Could not load parking data: ${err.message}. Refresh to try again.`, true);
   }
 }
@@ -82,7 +85,7 @@ async function onSignedIn(session, note = "", { isNew = false } = {}) {
   clearPersonalData();
   const version = state.authVersion;
   state.authId = session.user.id;
-  showAuth("login", "Loading your account…");
+  showAuthLoading("Loading your account…");
   try {
     const profile = await auth.loadProfile(session.user.id);
     if (version !== state.authVersion) return;
@@ -133,6 +136,7 @@ function clearPersonalData() {
   state.guest = false;
   state.favoriteIds = new Set();
   state.activeSession = null;
+  resetParkingClock();
   state.find.destinationId = null;
   state.destinations = [];
   stopTimer();
@@ -266,7 +270,7 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     if (event === "SIGNED_IN" && changedSession?.user.id !== state.authId) {
       clearPersonalData();
       const version = state.authVersion;
-      showAuth("login", "Loading your account…");
+      showAuthLoading("Loading your account…");
       // Defer Supabase calls until its auth callback releases the session lock.
       setTimeout(() => {
         if (version === state.authVersion && state.authId !== changedSession.user.id) void onSignedIn(changedSession);
