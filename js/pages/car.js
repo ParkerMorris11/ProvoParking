@@ -1,4 +1,6 @@
 // Parking timer sheet (opened by the floating car button): start a timer, car note, end session (parking_session).
+import { parkingNow } from "../lib/server-clock.js";
+import { stayWarnings, warningText } from "../domain/stay-warnings.js";
 import { state, rulesFor } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
 import { escapeHtml, fmtClock, fmtDuration, directionsUrl } from "../lib/format.js";
@@ -10,6 +12,13 @@ import { renderCarFab } from "../components/car-fab.js";
 
 let timerHandle = null;
 let lastReminderState = "";
+let warningKey = "", mutation = false, refreshSequence = 0, refreshing = false;
+let backgroundInert = new Map();
+function timerStatus(message,isError=false) {
+  setStatus(message,isError);
+  const notice=$("car-action-status");
+  if(notice){notice.textContent=message;notice.hidden=false;notice.setAttribute("role",isError?"alert":"status");}
+}
 
 // ---------- the sheet itself ----------
 let returnHash = "#areas"; // where Close takes the user back to
@@ -18,6 +27,11 @@ let returnFocus = null;
 export function openCarSheet() {
   const sheet = $("car-sheet");
   if (!sheet.hidden) return;
+  returnFocus = document.activeElement;
+  backgroundInert = new Map();
+  for (const node of [document.getElementById("app-header"),document.getElementById("app-footer"),...(document.getElementById("app-main")?.children || [])]) {
+    if (node && node !== sheet) { backgroundInert.set(node,node.inert); node.inert=true; }
+  }
   sheet.hidden = false;
   document.body.classList.add("car-sheet-open");
   $("h-car").focus({ preventScroll: true });
@@ -28,6 +42,8 @@ export function closeCarSheet() {
   const sheet = $("car-sheet");
   if (!sheet || sheet.hidden) return false;
   sheet.hidden = true;
+  for (const [node,inert] of backgroundInert) node.inert=inert;
+  backgroundInert.clear();
   document.body.classList.remove("car-sheet-open");
   stopTimer();
   const target = returnFocus;
@@ -49,6 +65,7 @@ export function renderCar(selectedAreaId = "") {
   const session = state.activeSession;
   stopTimer();
   lastReminderState = "";
+  warningKey = "";
   // Guests see why they need an account before filling the form, not after pressing Start.
   if (guest) guest.hidden = Boolean(session || state.user);
   if (!session && !state.user && guest) {
@@ -69,6 +86,8 @@ export function renderCar(selectedAreaId = "") {
         <p class="countdown" id="countdown" aria-hidden="true"></p>
         <p id="countdown-text" class="sr-text"></p>
         <p id="reminder" class="reminder" hidden></p>
+        <p id="car-active-rule-warning" class="reminder" role="status" hidden></p>
+        <p class="hint">Saved to your account. You can close this popup, change pages, or reopen the app; the timer keeps its original end time.</p>
         <p class="meta">Started ${fmtClock(new Date(session.started_at))} · leave by <strong>${fmtClock(new Date(session.leave_by))}</strong> · reminder ${session.reminder_minutes_before} min before</p>
 
         <form id="note-form">
@@ -103,7 +122,7 @@ export function renderCar(selectedAreaId = "") {
 function tick() {
   const session = state.activeSession;
   if (!session) return;
-  const msLeft = new Date(session.leave_by).getTime() - Date.now();
+  const msLeft = new Date(session.leave_by).getTime() - parkingNow();
   const el = $("countdown");
   if (!el) return stopTimer();
   const over = msLeft < 0;
@@ -114,6 +133,15 @@ function tick() {
   el.classList.toggle("over", over);
   $("countdown-text").textContent = over ? `Time is up. You are over by ${fmtDuration(Math.max(1, Math.round(total / 60)))}.` : `${fmtDuration(Math.max(1, Math.ceil(total / 60)))} left.`;
 
+  const key = session.session_id + ":" + Math.floor(parkingNow()/60000);
+  if (warningKey !== key) {
+    warningKey=key;
+    const notices=stayWarnings(rulesFor(session.area_id),("permit_id_at_start" in session ? session.permit_id_at_start : state.find.permitId),
+      Math.max(Date.parse(session.started_at),parkingNow()-86400000+60000),Math.max(Date.parse(session.leave_by),parkingNow()+60000));
+    const notice=$("car-active-rule-warning");
+    notice.hidden=!notices.length;
+    notice.textContent=notices.map(warningText).join(" ");
+  }
   const remindMs = session.reminder_minutes_before * 60000;
   const reminderState = over ? "over" : msLeft <= remindMs ? "soon" : "ok";
   const rem = $("reminder");
@@ -129,18 +157,28 @@ function tick() {
 }
 
 export function updateCarWarning() {
-  const warn = $("car-warning");
-  const area = state.areas.find((a) => a.area_id === Number($("car-area").value));
-  const mins = Number($("car-minutes").value);
-  if (!area) { warn.hidden = true; return; }
-  const { day, time } = parkingSelection({ live: true }); // Provo time, same as Areas
-  const ev = evaluate(rulesFor(area.area_id), state.find.permitId, day, time);
-  let msg = "";
-  if (ev.kind === "no-permit") msg = `Heads up: your selected permit does not cover this area right now, so you could be ticketed.`;
-  else if (ev.kind === "blocked") msg = `Heads up: ${ev.text.toLowerCase()} here.`;
-  else if (ev.rule && ev.rule.max_stay_minutes && mins > ev.rule.max_stay_minutes) msg = `Heads up: this area has a ${fmtDuration(ev.rule.max_stay_minutes)} limit, shorter than ${fmtDuration(mins)}.`;
-  warn.textContent = msg;
-  warn.hidden = !msg;
+  const warn=$("car-warning");
+  const area=state.areas.find(a=>a.area_id===Number($("car-area").value));
+  if(!area){warn.hidden=true;return;}
+  const start=parkingNow(),end=start+Number($("car-minutes").value)*60000;
+  const notices=stayWarnings(rulesFor(area.area_id),state.find.permitId,start,end);
+  warn.textContent=notices.map(warningText).join(" ");
+  warn.hidden=!notices.length;
+}
+export async function refreshSavedTimer() {
+  if (!state.user || !state.db || mutation || refreshing || !$("auth-screen").hidden) return;
+  const version=state.authVersion,sequence=++refreshSequence;
+  const previous=JSON.stringify(state.activeSession);
+  refreshing=true;
+  try {
+    const snapshot=await sessions.getTimerSnapshot();
+    if(version!==state.authVersion||sequence!==refreshSequence||mutation)return;
+    sessions.acceptTimerSnapshot(snapshot);
+    renderCarFab();
+    if(!$("car-sheet").hidden && previous!==JSON.stringify(state.activeSession)) renderCar();
+  } catch {
+    if(version===state.authVersion && state.activeSession) timerStatus("Your timer could not be refreshed. Showing the last saved timer; check your connection.",true);
+  } finally {refreshing=false;}
 }
 
 let requireAccount = () => true;
@@ -148,6 +186,8 @@ let requireAccount = () => true;
 async function onStart(e) {
   e.preventDefault();
   if (!requireAccount("Create a free account to start a parking timer and save where you parked.")) return;
+  if (mutation) return;
+  mutation=true; refreshSequence++;
   const version = state.authVersion;
   const btn = e.submitter;
   btn.disabled = true;
@@ -158,41 +198,54 @@ async function onStart(e) {
       reminderMinutes: Number($("car-reminder").value),
       carNote: $("car-note").value.trim(),
       destinationId: Number($("car-destination").value),
+      permitId: state.find.permitId,
     });
     if (version !== state.authVersion) return;
-    state.activeSession = created;
+    sessions.acceptTimerSnapshot(created);
     $("car-note").value = "";
-    setStatus("Parking timer started.");
+    timerStatus("Parking timer started.");
     renderCar();
     renderCarFab();
     $("h-car").focus();
   } catch (err) {
     if (version !== state.authVersion) return;
     console.error(err);
-    setStatus(`Could not start the timer: ${err.message}`, true);
+    try {
+      const snapshot=await sessions.getTimerSnapshot();
+      if(version!==state.authVersion)return;
+      if(snapshot.session) {
+        sessions.acceptTimerSnapshot(snapshot); renderCar(); renderCarFab();
+        timerStatus("Your saved timer is already running. End it before starting another.");
+        return;
+      }
+    } catch { /* Keep the original failure and entered preferences visible. */ }
+    timerStatus(`Could not start the timer: ${err.message}`, true);
   } finally {
+    mutation=false;
     btn.disabled = false;
   }
 }
 
 async function onEnd(btn) {
+  if(mutation)return;
+  mutation=true;refreshSequence++;
   const version = state.authVersion;
   btn.disabled = true;
   try {
     const expired = Date.now() > new Date(state.activeSession.leave_by).getTime();
     await sessions.endSession(state.activeSession, expired);
     if (version !== state.authVersion) return;
-    state.activeSession = null;
-    setStatus(expired ? "Timer ended. You were over your planned time." : "Timer ended. Safe travels!");
+    sessions.acceptTimerSnapshot(snapshot);
+    timerStatus(expired ? "Timer ended. You were over your planned time." : "Timer ended. Safe travels!");
     renderCar();
     renderCarFab();
     $("h-car").focus();
   } catch (err) {
     if (version !== state.authVersion) return;
     console.error(err);
-    setStatus(`Could not end the timer: ${err.message}`, true);
+    timerStatus(`Could not end the timer: ${err.message}`, true);
     btn.disabled = false;
-  }
+  } finally { mutation=false; }
 }
 
 async function onSaveNote(e) {
@@ -203,13 +256,14 @@ async function onSaveNote(e) {
   try {
     const saved = await sessions.saveCarNote(state.activeSession, $("note-edit").value.trim() || null);
     if (version !== state.authVersion) return;
-    state.activeSession = saved;
-    setStatus("Saved your car note.");
+    if(state.activeSession?.session_id === saved.session_id) state.activeSession = saved;
+    timerStatus("Saved your car note.");
   } catch (err) {
     if (version !== state.authVersion) return;
     console.error(err);
-    setStatus(`Could not save the note: ${err.message}`, true);
+    timerStatus(`Could not save the note: ${err.message}`, true);
   } finally {
+    mutation=false;
     btn.disabled = false;
   }
 }
@@ -221,6 +275,21 @@ export function initCar(options = {}) {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !$("car-sheet").hidden) requestClose();
   });
+  document.addEventListener("keydown",event=>{
+    if(event.key!=="Tab"||$("car-sheet").hidden)return;
+    const nodes=[...$("car-sheet").querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"]')].filter(el=>!el.disabled&&el.getClientRects().length);
+    const first=nodes[0],last=nodes.at(-1);
+    if(!first){event.preventDefault();$("h-car").focus();return;}
+    if(event.shiftKey&&(document.activeElement===first||!nodes.includes(document.activeElement))){event.preventDefault();last.focus();}
+    else if(!event.shiftKey&&(document.activeElement===last||!nodes.includes(document.activeElement))){event.preventDefault();first.focus();}
+  });
+  const resume=()=>{if(!document.hidden)void refreshSavedTimer();};
+  window.addEventListener("focus",resume);
+  window.addEventListener("pageshow",resume);
+  window.addEventListener("online",resume);
+  document.addEventListener("visibilitychange",resume);
+  window.addEventListener("storage",event=>{if(sessions.isTimerChange(event.key))resume();});
+  setInterval(resume,30000);
   // Remember the page the sheet was opened from, so Close goes back there.
   window.addEventListener("hashchange", () => {
     if (!/^#car(\/|$)/.test(location.hash)) returnHash = location.hash || "#areas";

@@ -8,7 +8,7 @@ globalThis.document={getElementById:()=>({classList:{toggle(){}},textContent:''}
 const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r; }); return {promise,resolve}; };
 const rows = { parking_area: [], permit: [], parking_rule: [], tow_company: [], favorite_area: [{area_id:1}], parking_session:[{car_note:'Account A private note'}] };
 function client(wait) {
-  return { from(table) {
+  return { rpc() { return wait.promise.then(()=>({data:{session:{car_note:"Account A private note"},server_now:new Date().toISOString()},error:null})); }, from(table) {
     const chain = { select(){return this;}, eq(){return this;}, order(){return this;}, limit(){return this;}, insert(){return this;}, single(){return this;}, then(resolve,reject){return wait.promise.then(()=>({data:rows[table],error:null})).then(resolve,reject);} };
     return chain;
   } };

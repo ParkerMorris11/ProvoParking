@@ -272,6 +272,7 @@ async function onSavePermits(e) {
 // ---------- forms ----------
 // A fresh sign-in starts at the default screen, not wherever the previous person left off.
 function startAtHome() {
+  if (location.hash === "#car" || location.hash.startsWith("#car/")) return;
   if (location.hash) history.replaceState(null, "", location.pathname + location.search);
 }
 

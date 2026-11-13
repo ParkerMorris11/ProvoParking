@@ -1,6 +1,7 @@
 // Floating car button. A small blue bubble with a white car icon; while a parking timer is
 // running it turns into an oval pill showing the time left as h:mm. Tapping it opens the
 // parking timer sheet (#car). The countdown comes from the saved leave_by, like the sheet's.
+import { parkingNow } from "../lib/server-clock.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { fmtDuration } from "../lib/format.js";
@@ -32,7 +33,7 @@ export function renderCarFab() {
     }
     return;
   }
-  const msLeft = new Date(session.leave_by).getTime() - Date.now();
+  const msLeft = new Date(session.leave_by).getTime() - parkingNow();
   const text = fmtHourMinute(msLeft);
   const over = msLeft < 0;
   const soon = !over && msLeft <= session.reminder_minutes_before * 60000;

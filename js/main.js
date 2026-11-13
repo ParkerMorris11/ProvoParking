@@ -4,6 +4,7 @@
 // Everything personal is read from / written to Supabase for the signed-in account.
 // Where things live: see docs/CONTRIBUTING.md.
 import { showAuthLoading } from "./components/auth-loading.js";
+import { resetParkingClock } from "./lib/server-clock.js";
 import { state } from "./state.js";
 import { createVisitTracker } from "./data/visit-tracker.js";
 import { $, setStatus } from "./lib/dom.js";
@@ -135,6 +136,7 @@ function clearPersonalData() {
   state.guest = false;
   state.favoriteIds = new Set();
   state.activeSession = null;
+  resetParkingClock();
   state.find.destinationId = null;
   state.destinations = [];
   stopTimer();

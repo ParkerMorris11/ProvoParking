@@ -57,6 +57,9 @@ export function evaluate(rules, permitId, dayIdx, hhmm) {
   const active = (rules || []).filter((r) => hasValidSchedule(r) && ruleAppliesOnDay(r, dayIdx) && ruleCoversTime(r, minutes));
   if (!active.length) return { kind: "unknown", icon: "?", text: "No rules on file for that time" };
 
+  const closure = active.find(r => r.permit_id == null && ruleBlocksTime(r, minutes));
+  if (closure) return { kind: "blocked", icon: "✕", text: `No parking ${fmtTime(closure.blocked_start)}–${fmtTime(closure.blocked_end)}`, rule: closure };
+
   const mine = active.filter((r) => r.permit_id == null || r.permit_id === permitId);
   if (!mine.length) {
     return permitId == null

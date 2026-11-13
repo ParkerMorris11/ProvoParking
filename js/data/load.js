@@ -2,6 +2,7 @@
 // Reference data (areas, permits, rules, tow companies) is public. Favorites and the active
 // My car session load only for a signed-in user, and row security returns only their rows.
 import { state } from "../state.js";
+import { syncParkingClock } from "../lib/server-clock.js";
 
 export async function loadData() {
   const db = state.db;
@@ -14,7 +15,7 @@ export async function loadData() {
     db.from("permit").select("permit_id, permit_code, permit_name, issuer, description, cost_note, source_url, last_verified_on").order("permit_code"),
     db.from("parking_rule").select("rule_id, area_id, permit_id, days_of_week, start_time, end_time, max_stay_minutes, blocked_start, blocked_end, source_url, last_verified_on, rule_note"),
     db.from("tow_company").select("tow_company_id, company_name, phone, is_sample_data"),
-    userId ? db.from("parking_session").select("*").eq("user_id", userId).eq("status", "active").order("started_at", { ascending: false }).limit(1) : none,
+    userId ? db.rpc("parking_timer_snapshot") : none,
     db.from("destination").select("destination_id, building_code, name, latitude, longitude").order("name"),
   ]);
   if (version !== state.authVersion) return false;
@@ -30,7 +31,8 @@ export async function loadData() {
     if (!state.rulesByArea.has(r.area_id)) state.rulesByArea.set(r.area_id, []);
     state.rulesByArea.get(r.area_id).push(r);
   }
-  state.activeSession = sessRes.data[0] || null;
+  state.activeSession = userId ? sessRes.data?.session || null : null;
+  if (userId && sessRes.data?.server_now) syncParkingClock(sessRes.data.server_now);
   return true;
 }
 
