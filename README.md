@@ -19,7 +19,7 @@ P7 database persistence for parking sessions: [parking session persistence](docs
 
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
 
-Live app: https://parkermorris11.github.io/ProvoParking/ (works once the Pages setup in step 3 below is done)
+Live app: https://provo-parking.vercel.app/ (GitHub Pages: https://parkermorris11.github.io/ProvoParking/)
 
 P5/P6 local parking flow: [Parking timer setup](parking-setup.html) → review → **Confirm & Start Timer** → [Parking timer](parking-timer.html). Serve the repository locally; no Supabase configuration is needed. The session is saved in this browser so you can return through **View parking timer** or refresh without resetting its timestamps. See [the P5 contract](docs/parking-timer-setup.md) and [P6 timer contract and sample states](docs/active-parking-timer.md). The existing Supabase My car timer remains available separately; these sessions do not sync with it or across devices.
 
@@ -326,7 +326,7 @@ Lot outlines come from `data/byu-campus-parking.json` and `data/provo-city-parki
 
 **Why this fits our team:** Supabase gives us a real PostgreSQL database and an API on a free tier without anyone running or deploying a server. Everyone can see the tables in Supabase's Table Editor and all the code in GitHub. Supabase does not host web pages, so the frontend is hosted free on GitHub Pages from this same repo.
 
-**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and (optional) `GOOGLE_MAPS_API_KEY`. A browser Maps key is visible to visitors, so restrict it in Google Cloud to HTTP referrers `https://parkermorris11.github.io/ProvoParking/*` and `http://localhost:*/*`, to the Maps JavaScript API only, and set a budget alert. The anon key is meant to be used in a browser; Row Level Security lets visitors read only the public reference data (areas, permits, rules, tow companies); a signed-in user can also read and change only their own profile, permits, favorites and My car sessions.
+**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and (optional) `GOOGLE_MAPS_API_KEY`. A browser Maps key is visible to visitors, so restrict it in Google Cloud to HTTP referrers `https://provo-parking.vercel.app/*`, `https://parkermorris11.github.io/ProvoParking/*`, and `http://localhost:*/*`, to the Maps JavaScript API only, and set a budget alert. The anon key is meant to be used in a browser; Row Level Security lets visitors read only the public reference data (areas, permits, rules, tow companies); a signed-in user can also read and change only their own profile, permits, favorites and My car sessions.
 
 ## Project Structure
 ```
@@ -449,5 +449,5 @@ Nothing below happens automatically; the Edge Function is not deployed by this b
 
 ### Supabase settings for smooth sign-in (project owner)
 1. **Authentication > Sign In / Providers:** turn **Confirm email** off, so an email sign-up can use the app immediately (the free email service also sends only 2 emails per hour).
-2. **Authentication > URL Configuration:** Site URL `https://parkermorris11.github.io/ProvoParking/`; Redirect URLs `https://parkermorris11.github.io/ProvoParking/**` and `http://localhost:8000/**`.
+2. **Authentication > URL Configuration:** Site URL `https://provo-parking.vercel.app`; Redirect URLs `https://provo-parking.vercel.app`, `https://provo-parking.vercel.app/**`, `https://provo-parking-*.vercel.app/**`, `https://parkermorris11.github.io/ProvoParking/**`, `http://localhost:8000/**`, and `http://127.0.0.1:8000/**`. If a redirect URL is not on this list, Supabase falls back to the Site URL.
 3. **Google:** in [Google Cloud Console](https://console.cloud.google.com/), create an OAuth client (type *Web application*) with the authorized redirect URI `https://rikekjksneoymybnehpo.supabase.co/auth/v1/callback`, and set the consent screen to *In production*. Paste its Client ID and Client secret into **Authentication > Sign In / Providers > Google** and enable it. The app shows *Continue with Google* automatically once this is on.

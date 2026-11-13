@@ -1,13 +1,13 @@
 /* ---- Unified design system (palette taken from the Areas screen) ---- */
 :root {
-  --bg: #f3f5f8; --card: #ffffff; --text: #172d49; --ink-2: #243b58; --muted: #52647a; --soft: #5d6e83;
-  --brand: #3168dc; --brand-ink: #214da7; --brand-tint: #e0e9fc; --brand-wash: #eef3ff;
-  --heart: #c8102e; --heart-tint: #fde8eb; --border: #dbe2eb; --field: #cfd8e5; --ok: #1b6e3a; --low: #8a4b00;
-  --focus: #3168dc; --brand-hover: #214da7; --shadow: 0 8px 26px #183b6010; --shadow-sm: 0 2px 8px #183b600c;
-  /* Extra tokens added for dark mode (light values match the old hardcoded colors). */
-  --label: #455a75; --border-strong: #b9cbe0; --hover: #e8edf5; --surface-2: #f5f8fd;
+  /* BYU chrome: Navy #002E5D, Royal #0062B8. Permit map colors stay in js/domain/map-geometry.js. */
+  --bg: #f3f6f9; --card: #ffffff; --text: #002E5D; --ink-2: #123a66; --muted: #4a6480; --soft: #56708a;
+  --brand: #0062B8; --brand-ink: #002E5D; --brand-tint: #e4eef7; --brand-wash: #f0f5fa;
+  --heart: #c8102e; --heart-tint: #fde8eb; --border: #d5deea; --field: #c5d0de; --ok: #1b6e3a; --low: #8a4b00;
+  --focus: #0062B8; --brand-hover: #002E5D; --shadow: 0 8px 26px #002E5D14; --shadow-sm: 0 2px 8px #002E5D12;
+  --label: #3e5a78; --border-strong: #b3c3d6; --hover: #e8eef5; --surface-2: #f4f7fb;
   --field-bg: #ffffff; --card-glass: #fffffff2;
-  --glass: rgba(255, 255, 255, .72); --glass-strong: rgba(255, 255, 255, .88); --glass-border: rgba(23, 45, 73, .12); --glass-shadow: 0 6px 22px rgba(15, 30, 55, .18); --glass-filter: blur(18px) saturate(1.7); --ok-tint: #e8f5ed; --city: #7a4fb5;
+  --glass: rgba(255, 255, 255, .72); --glass-strong: rgba(255, 255, 255, .88); --glass-border: rgba(0, 46, 93, .12); --glass-shadow: 0 6px 22px rgba(0, 46, 93, .18); --glass-filter: blur(18px) saturate(1.7); --ok-tint: #e8f5ed; --city: #7a4fb5;
   --warn-tint: #fff3dc; --warn-line: #f3dcb0; --warn-ink: #5c3600; --err-line: #f2b8c1; --err-ink: #8a0a1f;
   color-scheme: light;
   --radius: 15px; --radius-lg: 22px;
@@ -451,25 +451,25 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
    <html data-theme="dark"> or <html data-theme="light"> (set in js/theme.js). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e1520; --card: #162030; --text: #e7eef8; --ink-2: #d4dfee; --muted: #9db0c6; --soft: #95a8bf;
-    --brand: #3f74e6; --brand-ink: #a8c3ff; --brand-hover: #3060cc; --brand-tint: #233660; --brand-wash: #1a2944;
-    --heart: #ff7b8e; --heart-tint: #3b1c26; --border: #28364a; --field: #3a4b62; --ok: #6fd69a; --low: #f2b866;
-    --focus: #7ea6ff; --shadow: 0 8px 26px #00000059; --shadow-sm: 0 2px 8px #00000040;
-    --label: #b8c6d8; --border-strong: #4d6079; --hover: #213049; --surface-2: #1b2638;
-    --field-bg: #101928; --card-glass: #162030f0;
-    --glass: rgba(22, 32, 48, .66); --glass-strong: rgba(22, 32, 48, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
+    --bg: #07111d; --card: #0d1c2e; --text: #e8eef6; --ink-2: #d5e0ee; --muted: #9db0c6; --soft: #93a8bf;
+    --brand: #3d8fd4; --brand-ink: #9ec4ea; --brand-hover: #2e7fc4; --brand-tint: #123351; --brand-wash: #0c223b;
+    --heart: #ff7b8e; --heart-tint: #3b1c26; --border: #1d334c; --field: #2a4563; --ok: #6fd69a; --low: #f2b866;
+    --focus: #7eb6ea; --shadow: 0 8px 26px #00000059; --shadow-sm: 0 2px 8px #00000040;
+    --label: #b8c6d8; --border-strong: #3c5773; --hover: #14324c; --surface-2: #102235;
+    --field-bg: #0a1624; --card-glass: #0d1c2ef0;
+    --glass: rgba(13, 28, 46, .66); --glass-strong: rgba(13, 28, 46, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
     --warn-tint: #3a2c13; --warn-line: #6b4f1d; --warn-ink: #f6d28f; --err-line: #6c2c3a; --err-ink: #ffb8c3;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-    --bg: #0e1520; --card: #162030; --text: #e7eef8; --ink-2: #d4dfee; --muted: #9db0c6; --soft: #95a8bf;
-    --brand: #3f74e6; --brand-ink: #a8c3ff; --brand-hover: #3060cc; --brand-tint: #233660; --brand-wash: #1a2944;
-    --heart: #ff7b8e; --heart-tint: #3b1c26; --border: #28364a; --field: #3a4b62; --ok: #6fd69a; --low: #f2b866;
-    --focus: #7ea6ff; --shadow: 0 8px 26px #00000059; --shadow-sm: 0 2px 8px #00000040;
-    --label: #b8c6d8; --border-strong: #4d6079; --hover: #213049; --surface-2: #1b2638;
-    --field-bg: #101928; --card-glass: #162030f0;
-    --glass: rgba(22, 32, 48, .66); --glass-strong: rgba(22, 32, 48, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
+    --bg: #07111d; --card: #0d1c2e; --text: #e8eef6; --ink-2: #d5e0ee; --muted: #9db0c6; --soft: #93a8bf;
+    --brand: #3d8fd4; --brand-ink: #9ec4ea; --brand-hover: #2e7fc4; --brand-tint: #123351; --brand-wash: #0c223b;
+    --heart: #ff7b8e; --heart-tint: #3b1c26; --border: #1d334c; --field: #2a4563; --ok: #6fd69a; --low: #f2b866;
+    --focus: #7eb6ea; --shadow: 0 8px 26px #00000059; --shadow-sm: 0 2px 8px #00000040;
+    --label: #b8c6d8; --border-strong: #3c5773; --hover: #14324c; --surface-2: #102235;
+    --field-bg: #0a1624; --card-glass: #0d1c2ef0;
+    --glass: rgba(13, 28, 46, .66); --glass-strong: rgba(13, 28, 46, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
     --warn-tint: #3a2c13; --warn-line: #6b4f1d; --warn-ink: #f6d28f; --err-line: #6c2c3a; --err-ink: #ffb8c3;
     color-scheme: dark;
 }

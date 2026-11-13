@@ -22,7 +22,7 @@ export const DARK_STYLE = [
   { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#64748b" }] },
 ];
 
-const USER_COLOR = "#3168dc";
+const USER_COLOR = "#0062B8";
 const metersPerPixel = (zoom, lat) => 156543.03392 * Math.cos(lat * Math.PI / 180) / 2 ** zoom;
 
 /** `maps` is google.maps; `lib` is the result of maps.importLibrary("maps"). */

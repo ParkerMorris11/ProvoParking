@@ -23,5 +23,5 @@
 .metric-status.pending { color: var(--warn-ink); background: var(--warn-tint); }
 .admin-page button:focus-visible, .admin-page a:focus-visible, .admin-page input:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .admin-page dialog { width: min(500px, calc(100% - 32px)); max-height: calc(100% - 32px); overflow: auto; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); }
-.admin-page dialog::backdrop { background: #172d4980; }
+.admin-page dialog::backdrop { background: #002E5D80; }
 @media (max-width: 650px) { .metric-grid { grid-template-columns: 1fr; } .metric-card { padding: 20px; } }

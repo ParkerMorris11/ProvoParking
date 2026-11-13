@@ -5,7 +5,7 @@ import { CAMPUS_CENTER, withAlpha } from "../domain/map-geometry.js";
 const ALTITUDE = 1415;
 const DEFAULT_CAMERA = { tilt: 65, heading: 335, range: 1200 };
 // Zoom level 17 in 2D is about 850 m of camera range; each level doubles or halves it.
-const USER_COLOR = "#3168dc";
+const USER_COLOR = "#0062B8";
 // A circle of `radius` meters around `point`, as a ring of lat/lng vertices for a ground-clamped polygon.
 function circleRing(point, radius, steps = 48) {
   const dLat = radius / 111320, dLng = radius / (111320 * Math.cos(point.lat * Math.PI / 180));
