@@ -140,7 +140,8 @@ export function isAllowedOrigin(origin, extra = []) {
   if (DEFAULT_ORIGINS.includes(origin) || extra.includes(origin)) return true;
   try {
     const url = new URL(origin);
-    return url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1");
+    if (url.protocol === "http:" && (url.hostname === "localhost" || url.hostname === "127.0.0.1")) return true;
+    return url.protocol === "https:" && (url.hostname === "provo-parking.vercel.app" || /^provo-parking-[a-z0-9-]+\.vercel\.app$/.test(url.hostname));
   } catch { return false; }
 }
 

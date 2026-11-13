@@ -185,7 +185,7 @@ test('lot card links to Area details and the timer for each matching area', () =
 
 test('Pages deployment includes the map boundary snapshot and passes the Maps key', async () => {
   const workflow = await readFile(new URL('../.github/workflows/pages.yml', import.meta.url), 'utf8');
-  assert.match(workflow, /cp -r css js data site\//);
+  assert.match(workflow, /cp -r css js data assets site\//);
   assert.match(workflow, /GOOGLE_MAPS_API_KEY/);
 });
 

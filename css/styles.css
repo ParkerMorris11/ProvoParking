@@ -509,3 +509,6 @@ main { padding-bottom: calc(48px + 72px); }
 .catalog-group .nearby-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
 .catalog-group .nearby-card h4 { margin: 0; }
 .catalog-group > button { margin-top: .75rem; }
+
+img.brand-mark { object-fit: contain; border-radius: 6px; }
+:root[data-theme="dark"] img.brand-mark { background: rgba(255, 255, 255, 0.92); padding: 2px; }
