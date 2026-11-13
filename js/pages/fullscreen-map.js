@@ -1,21 +1,13 @@
-// Full-screen map for the Areas screen (phone + laptop).
-//
-// Phone:  the map fills the screen under the header. A permit chip ("Y · Now") floats top left,
-//         a round location button floats bottom right, and the lot list lives in a pull-up sheet
-//         ("peek" = one line, "half", "full"). Drag or tap the bar to move it.
-// Laptop: the same sheet is a side panel on the left and the map fills the rest.
-//
-// How it works: this file does NOT change index.html, map.js or areas.js. When the app starts it
-// moves the existing Areas elements (same ids, same event listeners) into the new layout, then
-// adds the "fs-home" class that turns on css/fullscreen-map.css. If anything here fails, nothing
-// is moved and the Areas screen keeps the original layout.
+// The map stays mounted while existing screens move through one floating drawer.
+// Desktop uses a collapsible glass sidebar; phones keep the same peek / half / full drag behavior.
+// Moving the original nodes preserves their ids, form values and event listeners.
 import { state } from "../state.js";
 import { DAY_NAMES, escapeHtml, fmtTime } from "../lib/format.js";
 import { parkingSelection, eligibleAreas } from "../domain/parking-results.js";
-import { refreshMap } from "./map.js";
+import { initMap, refreshMap, toggleMapStyle, zoomMap } from "./map.js";
 
 const STATES = ["peek", "half", "full"];
-const DESKTOP = "(min-width: 980px)";
+const DESKTOP = "(min-width: 601px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
 let view, sheet, handle, body, chip, ready = false, applyPermit = () => false;
@@ -34,10 +26,12 @@ export function setSheet(next) {
   if (!sheet || !STATES.includes(next)) return;
   sheet.dataset.state = next;
   sheet.style.removeProperty("--drag-y");
-  const open = next !== "peek" || isDesktop();
+  const open = next !== "peek";
+  document.querySelector(".fs-shell")?.classList.toggle("sidebar-open", open);
+  document.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.setAttribute("aria-expanded", String(open)));
   handle.setAttribute("aria-expanded", String(open));
-  sheet.querySelector(".sheet-action").textContent = next === "peek" ? "Show list" : "Hide list";
-  // A list that is out of sight should not be reachable with Tab on phones.
+  sheet.querySelector(".sheet-action").textContent = next === "peek" ? "Open" : "Close";
+  // Collapsed content stays out of the keyboard focus order on every screen size.
   body.toggleAttribute("inert", !open);
 }
 
@@ -70,7 +64,7 @@ function updateChrome() {
     chip.setAttribute("aria-label", info.label);
     const selection = parkingSelection(state.find);
     const count = eligibleAreas(state.areas || [], state.rulesByArea || new Map(), selection).length;
-    sheet.querySelector(".sheet-title").textContent = sheetTitle(count, Boolean(state.find.permitId));
+    sheet.querySelector(".sheet-title").textContent = state.currentView === "areas" ? sheetTitle(count, Boolean(state.find.permitId)) : (ROUTE_TITLES[state.currentView] || "Explore Provo");
   } catch (err) {
     console.error("[fullscreen-map] could not update the permit chip", err);
   }
@@ -123,7 +117,7 @@ function initDrag() {
   handle.addEventListener("pointercancel", end);
   handle.addEventListener("click", () => {
     if (handle.dataset.dragged) { delete handle.dataset.dragged; return; }
-    if (isDesktop()) return;
+    if (isDesktop()) { setSheet("peek"); document.getElementById("sidebar-toggle")?.focus(); return; }
     setSheet({ peek: "half", half: "full", full: "peek" }[sheet.dataset.state] || "half");
   });
 }
@@ -140,17 +134,24 @@ function buildSearch() {
   const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
   if (!nlForm || !nlText) return null;
   const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking in plain language" },
-    `<span class="map-search-icon">${SEARCH_ICON}</span>` +
-    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Class at 3 pm at the JKB…">` +
+    `<button type="button" class="map-search-btn" data-sidebar-toggle aria-expanded="false" aria-controls="home-sheet" aria-label="Open navigation and parking drawer">${SEARCH_ICON}</button>` +
+    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
+  const account = el("button", { type: "button", class: "map-search-btn map-account", "aria-label": "Guide and account" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>');
+  account.addEventListener("click", () => {
+    if (location.hash === "#help") { setSheet("half"); document.getElementById("account-action")?.focus(); }
+    else location.hash = "#help";
+  });
+  bar.append(account);
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
   const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
 
   bar.addEventListener("submit", (e) => {
     e.preventDefault();
     const text = input.value.trim();
-    if (!text) { status.textContent = "Type or say something like “class at 3 pm at the JKB”."; input.focus(); return; }
+    if (!text) { status.hidden = false; status.textContent = "Type or say something like “class at 3 pm at the JKB”."; input.focus(); return; }
+    setSheet("half");
     nlText.value = text;
     const send = () => nlForm.requestSubmit ? nlForm.requestSubmit() : nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
     // Open Find first (it redraws its fields), then let the existing form read the text.
@@ -205,7 +206,7 @@ function buildPermitPopover() {
   chip.setAttribute("aria-controls", "permit-pop");
   chip.addEventListener("click", (e) => { e.preventDefault(); setOpen(pop.hidden); if (!pop.hidden) select.focus(); });
   select.addEventListener("change", () => { if (applyPermit(select.value)) setOpen(false); chip.focus(); });
-  pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { setOpen(false); chip.focus(); } });
+  pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); setOpen(false); chip.focus(); } });
   document.addEventListener("click", (e) => { if (!pop.hidden && !e.target.closest("#permit-pop, #permit-chip")) setOpen(false); });
   pop.querySelector(".permit-pop-more").addEventListener("click", () => setOpen(false));
   return pop;
@@ -236,14 +237,23 @@ function build() {
   const row = el("div", { class: "map-top-row" });
   row.append(chip);
   const modeSwitch = stage.querySelector(".map-mode");
-  if (modeSwitch) row.append(modeSwitch);
   if (search) top.append(search.bar);
-  top.append(row);
   if (search) top.append(search.status);
-  top.append(buildPermitPopover());
+  row.append(buildPermitPopover());
   const help = el("button", { type: "button", class: "map-help", id: "map-help", "data-help-open": "", "aria-haspopup": "dialog", "aria-label": "Quick guide: permit colors, 2D/3D, location", title: "Quick guide" },
     `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.9-1.1 1.6M12 16.6v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
-  stage.append(top, help);
+  const controls = el("div", { class: "map-controls", role: "group", "aria-label": "Map controls" });
+  const style = el("button", { type: "button", id: "map-style", "aria-pressed": "false", "aria-label": "Switch to satellite with labels", title: "Switch to satellite with labels" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>');
+  style.addEventListener("click", () => void toggleMapStyle());
+  controls.append(style, locate);
+  for (const [id, label, delta, text] of [["map-zoom-in", "Zoom in", 1, "+"], ["map-zoom-out", "Zoom out", -1, "−"]]) {
+    const zoom = el("button", { type: "button", id, "aria-label": label, title: label }, text);
+    zoom.addEventListener("click", () => zoomMap(delta));
+    controls.append(zoom);
+  }
+  if (modeSwitch) controls.append(modeSwitch);
+  controls.append(help);
+  stage.append(top, controls);
   mapWrap.append(stage);
 
   // Sheet: handle + body. Everything that was beside or under the map goes in the body, in order.
@@ -282,11 +292,26 @@ function build() {
   if (heading) results.querySelector(".nearby-panel")?.after(heading);
   if (mapKey) body.append(mapKey);
   if (cityLots) body.append(cityLots);
+  // Navigation and account controls keep their original ids and delegated click handlers.
+  const nav = document.getElementById("app-nav");
+  const carTab = el("button", { type: "button", class: "tab", "data-view": "car" }, '<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 10 2-5h12l2 5v8H4v-8Zm0 0h16M7 18v3m10-3v3M7 14h2m6 0h2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>My Car</span>');
+  document.getElementById("tab-list").append(carTab);
+  const accountBar = document.querySelector(".account-bar");
+  const accountSection = el("section", { class: "drawer-account", "aria-label": "Your account" });
+  accountSection.append(accountBar);
+  document.getElementById("view-help").prepend(accountSection);
+  const areasContent = [...body.children];
+  view.querySelector(".parking-workspace")?.remove();
+  view.append(...areasContent);
+  body.append(nav, row, document.getElementById("status"));
+  for (const name of ["find", "areas", "lots", "area", "favorites", "help"]) body.append(document.getElementById(`view-${name}`));
   sheet.append(handle, body);
 
-  const shell = el("div", { class: "fs-shell" });
-  shell.append(mapWrap, sheet);
-  view.append(shell);
+  const shell = el("div", { class: "fs-shell fs-home" });
+  const toggle = el("button", { type: "button", id: "sidebar-toggle", class: "sidebar-toggle", "data-sidebar-toggle": "", "aria-expanded": "false", "aria-controls": "home-sheet", "aria-label": "Toggle parking sidebar", title: "Toggle sidebar" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.8"/></svg>');
+  shell.append(mapWrap, sheet, toggle);
+  document.getElementById("app-main").append(shell);
+  shell.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.addEventListener("click", () => setSheet(sheet.dataset.state === "peek" ? "half" : "peek")));
   view.classList.add("fs-home");
   document.body.classList.add("has-fs-home");
 
@@ -300,12 +325,8 @@ function build() {
   body.addEventListener("click", (e) => {
     if (!isDesktop() && e.target.closest("[data-map-area], [data-nearby-index], #map-reset, #map-downtown, #map-provo, .map-tools button:not(#locate-me)")) setSheet("peek");
   });
-  // Keyboard users tabbing toward the list open it.
-  handle.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !isDesktop()) setSheet("peek");
-  });
-  sheet.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !isDesktop() && sheet.dataset.state !== "peek") { setSheet("peek"); handle.focus(); }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("dialog[open]") && document.getElementById("car-sheet")?.hidden && sheet.dataset.state !== "peek") { setSheet("peek"); document.querySelector("[data-sidebar-toggle]")?.focus(); }
   });
   // A quick tap on the map (not a pan) lowers a full sheet, like other map apps.
   let down = null;
@@ -319,14 +340,20 @@ function build() {
   // The map must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
   if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshMap()).observe(mapEl);
   window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet("peek"));
-  // Each time Areas opens: start with the list lowered and the map sized to the screen.
-  new MutationObserver(() => {
-    if (!view.hidden) { setSheet(isDesktop() ? "half" : "peek"); updateChrome(); refreshMap(); }
-  }).observe(view, { attributes: true, attributeFilter: ["hidden"] });
-
   observeRenders();
-  setSheet(isDesktop() ? "half" : "peek");
+  syncFullscreenRoute(state.currentView || "areas");
+  if (state.currentView) void initMap();
+}
+
+const ROUTE_TITLES = { find: "Find parking", lots: "All parking lots", area: "Lot details", favorites: "Your favorites", help: "Guide & account" };
+
+// Called after the router selects a screen. The canvas is a sibling of the drawer, never a route.
+export function syncFullscreenRoute(name) {
+  if (!sheet) return false;
+  setSheet(name === "areas" && !isDesktop() ? "peek" : "half");
   updateChrome();
+  refreshMap();
+  return true;
 }
 
 function loadStylesheet() {

@@ -83,6 +83,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, onSelect, 
       fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 2)) });
     },
     getView() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng }; },
+    zoomBy(delta) { map.range = Math.min(20000, Math.max(150, (map.range ?? DEFAULT_CAMERA.range) / 2 ** delta)); },
     setDark() {}, // the photorealistic view has its own lighting
     resize() {},
     show() { container.hidden = false; },

@@ -39,16 +39,17 @@ test('list title counts areas with the right wording', () => {
   assert.equal(sheetTitle(0, false), '0 areas match for everyone');
 });
 
-test('full-screen layout stays out of the shared files teammates edit', async () => {
+test('runtime layout preserves the original forms, results and map landmarks', async () => {
   // The layout is built at runtime from the existing Areas markup, so index.html keeps every id it relies on.
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   for (const id of ['view-areas', 'parking-map', 'locate-me', 'area-list', 'areas-summary', 'areas-count', 'map-note']) {
     assert.match(html, new RegExp(`id="${id}"`), `index.html still has #${id}`);
   }
   for (const cls of ['map-stage', 'parking-results', 'parking-workspace']) assert.match(html, new RegExp(`class="${cls}`));
-  // Every color in the new stylesheet comes from a site variable, so dark mode applies automatically.
+  // Fixed dark glass colors belong in the dark-theme override; controls use shared tokens.
   const css = await readFile(new URL('../css/fullscreen-map.css', import.meta.url), 'utf8');
-  const bareColors = css.replace(/var\(--[a-z0-9-]+, #[0-9a-f]{3,8}\)/gi, '').replace(/url\("data:[^"]*"\)/g, '').match(/#[0-9a-f]{3,8}\b/gi) || [];
+  const themed = css.replace(/:root\[data-theme-active="dark"\] \.fs-shell \{[^}]*\}/g, "");
+  const bareColors = themed.replace(/var\(--[a-z0-9-]+, #[0-9a-f]{3,8}\)/gi, '').replace(/url\("data:[^"]*"\)/g, '').match(/#[0-9a-f]{3,8}\b/gi) || [];
   assert.deepEqual(bareColors.filter(c => !/^#(fff|0f1e37\w*)$/i.test(c)), [], 'only white-on-blue text and shadows are fixed colors');
 });
 

@@ -164,6 +164,10 @@ test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () 
   const view = createMap3D({ lib, container, onSelect: (s) => selected.push(s) });
   assert.equal(events.map.options.mode, 'HYBRID');
   assert.equal(events.map.options.tilt, 65);
+  view.zoomBy(1);
+  assert.equal(events.map.range, 600);
+  view.zoomBy(-1);
+  assert.equal(events.map.range, 1200);
   const poly = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
   view.setShapes([poly]);
   assert.equal(children.length, 1);
@@ -220,4 +224,22 @@ test('without a key the map canvas shows a clean message and loads nothing', asy
     assert.equal(NO_KEY_MESSAGE.includes('AIza'), false);
     assert.equal(status.textContent, '');
   } finally { delete globalThis.window; delete globalThis.document; }
+});
+
+test('2D satellite retains labels, restores the dark roadmap, and uses shared zoom controls', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  const view = createMap2D({ maps, lib, container: {}, dark: true, onSelect() {} });
+  assert.equal(made.maps[0].options.zoomControl, false);
+  view.setStyle('hybrid');
+  assert.equal(made.maps[0].options.mapTypeId, 'hybrid');
+  assert.equal(made.maps[0].options.styles, null);
+  view.setDark(false);
+  view.setDark(true);
+  view.setStyle('roadmap');
+  assert.equal(made.maps[0].options.mapTypeId, 'roadmap');
+  assert.ok(made.maps[0].options.styles.length);
+  view.zoomBy(1);
+  assert.equal(made.maps[0].zoom, 16);
+  view.zoomBy(-1);
+  assert.equal(made.maps[0].zoom, 15);
 });

@@ -1,9 +1,9 @@
-/* ===== Full-screen map on the Areas screen =====
+/* ===== Floating app chrome over a persistent map =====
    Loaded by js/pages/fullscreen-map.js, which also adds .fs-home to #view-areas. Every rule here is
    scoped to .fs-home / .has-fs-home, so the rest of the site is unaffected.
    Colors use the site variables (with light fallbacks), so dark mode follows automatically. */
 
-/* While Areas is open, the page itself doesn't scroll: header on top, map + sheet fill the rest. */
+/* Keep the original Areas content inside the shared drawer. */
 body.has-fs-home:has(#view-areas:not([hidden])) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
 body.has-fs-home:has(#view-areas:not([hidden])) main { max-width: none; padding: 0; display: flex; flex-direction: column; min-height: 0; flex: 1 1 auto; }
 body.has-fs-home:has(#view-areas:not([hidden])) .site-footer { display: none; }
@@ -120,19 +120,103 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
 .fs-home .sheet-body .map-key { padding: 18px 0 8px; border-top: 1px solid var(--border, #dbe2eb); margin-top: 18px; }
 .fs-home .sheet-body .city-lots { padding: 0 0 12px; }
 
-/* Laptops: the sheet is a fixed side panel on the left; the map fills the rest */
-@media (min-width: 980px) {
-  #view-areas.fs-home:not([hidden]) { --peek: 0px; --panel: 400px; }
-  .fs-map { left: var(--panel); }
-  .home-sheet { top: 0; right: auto; width: var(--panel); border-radius: 0; transform: none; background: var(--card, #fff); -webkit-backdrop-filter: none; backdrop-filter: none; border-top: 0; box-shadow: 1px 0 0 var(--border, #dbe2eb); }
-  .home-sheet .sheet-body { visibility: visible !important; padding-top: 4px; }
-  .sheet-handle { cursor: default; padding: 20px 16px 8px; min-height: 0; touch-action: auto; }
-  .sheet-grip, .sheet-action { display: none; }
-  .sheet-title { font-size: 1.15rem; }
-  .fs-home .map-status { bottom: 24px; }
-  .fs-home .location-button.map-fab { bottom: 32px; right: 24px; }
-  .map-top { top: 16px; left: 16px; right: 16px; }
-  .map-help { bottom: 96px; right: 28px; }
-  .fs-home .map-card { top: 132px; left: 16px; }
-  .fs-home .map-stage:has(.parking-map[hidden]) .map-status { top: 132px; }
+/* Shared app canvas: the drawer floats over the geography on every hash route. */
+body.has-fs-home:has(#app-main:not([hidden])) { height: 100vh; height: 100dvh; overflow: hidden; padding: 0; }
+.has-fs-home #app-header, .has-fs-home #app-footer { display: none; }
+.has-fs-home #app-main { padding: 0; max-width: none; }
+html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
+.fs-shell { --peek: 64px; --panel: 344px; position: fixed; inset: 0; height: 100vh; height: 100dvh; z-index: 0; overflow: clip; }
+.fs-shell .fs-map { inset: 0; }
+.fs-shell .parking-map { min-height: 0; height: 100%; }
+.fs-shell .map-top { top: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 12px; right: auto; width: min(480px, calc(100% - 24px)); z-index: 1003; }
+.fs-shell .map-search { max-width: none; width: 100%; padding-left: 4px; min-height: 56px; }
+.fs-shell .map-search-btn { width: 44px; height: 44px; color: var(--ink-2); }
+.fs-shell .map-search-go { display: none; }
+.fs-shell .map-search input { font-size: .88rem; padding: 0 4px; }
+.fs-shell .map-search-status { order: -1; }
+.map-account { background: var(--brand-tint); }
+.fs-shell .home-sheet { top: max(12px, env(safe-area-inset-top, 0px)); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; border: 1px solid var(--glass-border); border-radius: 24px; overflow: hidden; }
+.fs-shell .home-sheet[data-state="peek"] { --sheet-y: calc(100% - var(--peek)); }
+.fs-shell .sheet-body { padding: 0 16px 24px; }
+.fs-shell .sheet-handle { min-height: 64px; padding: 18px 16px 10px; }
+.fs-shell .sheet-title { font-size: 1rem; letter-spacing: -.02em; }
+.fs-shell .sheet-action { font-size: .75rem; }
+.fs-shell .sheet-body > section { margin: 16px 0 0; }
+.fs-shell .sheet-body h2 { font-size: 1.55rem; line-height: 1.15; letter-spacing: -.035em; }
+.fs-shell .sheet-body h3 { font-size: 1rem; }
+.fs-shell .sheet-body .cards { grid-template-columns: minmax(0, 1fr); }
+.fs-shell .sheet-body .nl-row { flex-wrap: wrap; }
+.fs-shell .sheet-body .nl-row input { flex-basis: 100%; }
+.fs-shell .sheet-body .panel { padding: 14px; border-radius: 16px; box-shadow: none; }
+.fs-shell .sheet-body .row, .fs-shell .sheet-body .grid { grid-template-columns: minmax(0, 1fr); }
+.fs-shell .sheet-body .list-tools { display: flex; flex-wrap: wrap; }
+.fs-shell .sheet-body .list-tools > * { flex: 1 1 115px; min-width: 0; }
+.fs-shell .sheet-body .parking-results { padding: 0; border: 0; background: transparent; box-shadow: none; }
+.fs-shell .sheet-body .nearby-panel { padding: 12px; margin: 12px 0; }
+.fs-shell .map-top-row { position: relative; display: block; margin-top: 14px; }
+.fs-shell .permit-chip { max-width: 100%; }
+.fs-shell .permit-pop { width: 100%; margin-top: 8px; }
+.fs-shell #app-nav { position: static; display: block; transform: none; margin: 0; padding: 0; width: 100%; background: none; border: 0; box-shadow: none; backdrop-filter: none; }
+.fs-shell #menu-toggle { display: none; }
+.fs-shell #tab-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 0 0 12px; border-bottom: 1px solid var(--glass-border); }
+.fs-shell #tab-list .tab { flex-direction: column; gap: 3px; min-height: 60px; padding: 6px 2px; border-radius: 12px; font-size: .7rem; width: 100%; }
+.fs-shell .tab .badge { position: static; font-size: .6rem; }
+.fs-shell #status { font-size: .75rem; margin: 12px 0; }
+.fs-shell #status:not(.error) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.fs-shell .drawer-account { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
+.fs-shell .account-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+.fs-shell .account-name { display: block; flex: 1; font-size: .8rem; }
+.fs-shell .map-controls { position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; z-index: 1000; display: flex; flex-direction: column; align-items: stretch; width: 52px; padding: 4px; border-radius: 18px; background: var(--glass-strong); border: 1px solid var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); }
+.fs-shell .map-controls > button { position: static; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; box-shadow: none; background: transparent; color: var(--text); font-size: 1.6rem; cursor: pointer; }
+.fs-shell .map-controls svg { width: 23px; height: 23px; }
+.fs-shell .map-controls > button:hover { background: var(--hover); }
+.fs-shell .map-controls button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-ink); }
+.fs-shell .map-controls .location-button.map-fab { position: static; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; box-shadow: none; background: transparent; font-size: 0; color: transparent; }
+.fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand); }
+.fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.fs-shell .map-mode button { width: 44px; min-height: 44px; border-radius: 10px; }
+.fs-shell :is(button, a, select, input):focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
+.fs-shell .map-card { top: 80px; left: 12px; right: 80px; max-width: 340px; max-height: calc(100% - 250px); }
+.fs-shell .map-status { left: auto; right: 78px; bottom: auto; top: 16px; max-width: min(300px, calc(100% - 100px)); font-size: .7rem; }
+.fs-shell .map-status:empty { display: none; }
+.sidebar-toggle { position: absolute; top: 16px; left: 16px; z-index: 1003; width: 48px; height: 48px; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); color: var(--text); cursor: pointer; }
+.sidebar-toggle svg { width: 24px; height: 24px; }
+.has-fs-home .car-fab { right: 16px; bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+.has-fs-home:has(.sidebar-open) .car-fab { z-index: 0; }
+.has-fs-home .car-sheet-panel { background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); border: 1px solid var(--glass-border); }
+
+@media (min-width: 601px) {
+  .fs-shell .home-sheet { top: 16px; left: 16px; right: auto; bottom: 84px; width: min(var(--panel), calc(100% - 104px)); border-radius: 22px; transform: none; transition: transform .25s ease, opacity .25s ease; }
+  .fs-shell .home-sheet[data-state="peek"] { transform: translateX(calc(-100% - 32px)); opacity: 0; visibility: hidden; }
+  .fs-shell .home-sheet:not([data-state="peek"]) .sheet-body { visibility: visible; }
+  .fs-shell .sheet-grip { display: none; }
+  .fs-shell .sheet-handle { padding-top: 12px; min-height: 56px; }
+  .fs-shell .map-top { width: var(--panel); left: 16px; bottom: max(16px, env(safe-area-inset-bottom, 0px)); }
+  .fs-shell.sidebar-open .sidebar-toggle { left: calc(var(--panel) + 28px); }
+  .fs-shell.sidebar-open .map-card { left: calc(var(--panel) + 28px); max-width: min(340px, calc(100% - var(--panel) - 112px)); }
+  .has-fs-home .car-fab { bottom: 24px; z-index: 40; }
+  .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; }
 }
+@media (max-width: 600px) {
+  .sidebar-toggle { display: none; }
+  .has-fs-home .car-fab { top: max(16px, env(safe-area-inset-top, 0px)); left: 12px; bottom: auto; right: auto; }
+  .fs-shell .map-controls { top: auto; bottom: calc(156px + env(safe-area-inset-bottom, 0px)); right: 12px; width: auto; display: grid; grid-template-columns: repeat(2, 44px); }
+  .fs-shell .map-controls .map-mode { flex-direction: row; grid-column: 1 / -1; grid-row: 1; }
+  .fs-shell .map-controls #locate-me { grid-column: 1; grid-row: 2; }
+  .fs-shell .map-controls #map-style { grid-column: 2; grid-row: 2; }
+  .fs-shell .map-controls #map-zoom-in, .fs-shell .map-controls #map-zoom-out { display: none; }
+  .fs-shell .map-controls .map-help { grid-column: 1 / -1; justify-self: center; }
+  .fs-shell .map-card { max-height: calc(100% - 400px); }
+  .fs-shell.sidebar-open .map-controls { z-index: 1002; bottom: auto; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; display: flex; flex-direction: row; width: auto; }
+  .fs-shell.sidebar-open .map-controls > :not(.map-mode):not(#locate-me) { display: none; }
+  .fs-shell .home-sheet { top: 80px; }
+  .has-fs-home:has(.sidebar-open) .car-fab { visibility: hidden; }
+  .fs-shell.sidebar-open .map-status { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fs-shell .home-sheet, .fs-shell .sidebar-toggle { transition: none; }
+}
+
+:root[data-theme-active="dark"] .fs-shell { --glass: rgba(24, 31, 39, .76); --glass-strong: rgba(24, 31, 39, .88); --card: #18212b; --surface-2: #202c38; --field-bg: #151e28; --border: #34414f; --field: #405164; --glass-filter: blur(24px) saturate(1.4); }
+@supports not (backdrop-filter: blur(1px)) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
+@media (prefers-reduced-transparency: reduce) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }

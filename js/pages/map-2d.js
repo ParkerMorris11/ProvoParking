@@ -30,10 +30,11 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   const map = new lib.Map(container, {
     center, zoom,
     gestureHandling: "greedy", clickableIcons: false,
-    disableDefaultUI: true, zoomControl: true, keyboardShortcuts: true,
-    zoomControlOptions: { position: maps.ControlPosition?.RIGHT_CENTER },
-    styles: dark ? DARK_STYLE : null,
+    disableDefaultUI: true, zoomControl: false, keyboardShortcuts: true,
+    mapTypeId: "roadmap", styles: dark ? DARK_STYLE : null,
   });
+  let mapStyle = "roadmap", darkOn = dark;
+  const applyStyle = () => map.setOptions({ mapTypeId: mapStyle, styles: mapStyle === "roadmap" && darkOn ? DARK_STYLE : null });
   let drawn = [], accuracyRing = null, userDot = null, userPoint = null;
 
   const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; };
@@ -46,7 +47,7 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
     setShapes(shapes) {
       clear();
       for (const shape of shapes) {
-        const style = { strokeColor: shape.color, strokeOpacity: 0.9, strokeWeight: 1.6, fillColor: shape.color, map };
+        const style = { strokeColor: shape.color, strokeOpacity: 1, strokeWeight: 2.4, fillColor: shape.color, map };
         const item = shape.kind === "polygon"
           ? new lib.Polygon({ ...style, paths: shape.rings, fillOpacity: 0.24 })
           : new lib.Circle({ ...style, center: shape.center, radius: 24, fillOpacity: 0.35 });
@@ -73,7 +74,9 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
       maps.event.addListenerOnce(map, "idle", () => { if (map.getZoom() > 18) map.setZoom(18); });
     },
     getView() { const c = map.getCenter(); return { lat: c.lat(), lng: c.lng() }; },
-    setDark(on) { map.setOptions({ styles: on ? DARK_STYLE : null }); },
+    setDark(on) { darkOn = on; applyStyle(); },
+    setStyle(style) { mapStyle = style === "hybrid" ? "hybrid" : "roadmap"; applyStyle(); },
+    zoomBy(delta) { map.setZoom(Math.min(21, Math.max(3, (map.getZoom() ?? zoom) + delta))); },
     resize() { maps.event.trigger(map, "resize"); },
     show() { container.hidden = false; this.resize(); },
     hide() { container.hidden = true; },

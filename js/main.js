@@ -38,7 +38,7 @@ const recall = (key) => { try { return localStorage.getItem(key); } catch { retu
 
 let signingOut = false;
 const parkingClock = createParkingClock({
-  enabled: () => Boolean(state.db && state.find.live && state.currentView === "areas" && !document.hidden && $("auth-screen").hidden),
+  enabled: () => Boolean(state.db && state.find.live && (state.currentView === "areas" || document.body.classList.contains("has-fs-home")) && !document.hidden && $("auth-screen").hidden),
   refresh: renderAreas,
 });
 document.addEventListener("visibilitychange", () => parkingClock.update());
@@ -198,6 +198,7 @@ document.addEventListener("keydown", (e) => {
 // Switch to the menu button only when the title, tabs, and account don't fit on one row.
 // Re-checked whenever the header or the account area (name changes on sign-in) resizes.
 function fitHeader() {
+  if (document.body.classList.contains("has-fs-home")) return;
   const header = $("app-header");
   header.classList.remove("nav-compact");
   const cs = getComputedStyle(header);

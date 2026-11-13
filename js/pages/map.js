@@ -16,6 +16,7 @@ import { createMap2D } from "./map-2d.js";
 import { createMap3D } from "./map-3d.js";
 
 let maps, started = false, mode = "2d", centeredDestinationId;
+let mapStyle = "roadmap";
 const views = {};           // "2d" / "3d" -> adapter, created the first time each is shown
 const layers = {};          // "2d" / "3d" -> the <div> inside #parking-map that holds it
 let features = [], tracker, latestPosition = null, nearby = [];
@@ -104,7 +105,7 @@ function initLocation() {
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseMapLocation();
-    else if (state.currentView === "areas" && document.getElementById("auth-screen")?.hidden) tracker.resume();
+    else if (document.getElementById("auth-screen")?.hidden) tracker.resume();
   });
   window.addEventListener("pagehide", pauseMapLocation);
 }
@@ -212,6 +213,7 @@ async function ensureView(next, center) {
   if (next === "2d") {
     const lib = await maps.importLibrary("maps");
     views[next] = createMap2D({ maps, lib, container, center, dark: isDark(), onSelect: selectShape });
+    views[next].setStyle(mapStyle);
   } else {
     const lib = await maps.importLibrary("maps3d");
     views[next] = createMap3D({ lib, container, center, onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
@@ -249,7 +251,26 @@ export async function setMode(next, failureMessage = "") {
     setMapStatus(failureMessage || "3D view unavailable on this device. Showing the 2D map.");
   }
   syncToggle();
+  syncStyleControl();
 }
+
+// Satellite is always labeled hybrid; 3D keeps its photorealistic hybrid imagery.
+function syncStyleControl() {
+  const button = byId("map-style");
+  if (!button) return;
+  button.setAttribute("aria-pressed", String(mode === "3d" || mapStyle === "hybrid"));
+  button.setAttribute("aria-label", mode === "3d" ? "Switch to 2D road map" : mapStyle === "hybrid" ? "Switch to road map" : "Switch to satellite with labels");
+  button.title = button.getAttribute("aria-label");
+}
+
+export async function toggleMapStyle() {
+  mapStyle = mode === "3d" || mapStyle === "hybrid" ? "roadmap" : "hybrid";
+  views["2d"]?.setStyle(mapStyle);
+  if (mode === "3d") await setMode("2d");
+  syncStyleControl();
+}
+
+export function zoomMap(delta) { activeView()?.zoomBy(delta); }
 
 function centerOnDestination() {
   const id = state.find.destinationId;
