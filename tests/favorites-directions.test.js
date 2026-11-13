@@ -79,3 +79,23 @@ test('favorites render a separate directions button per saved lot and update aft
     else globalThis.document = previousDocument;
   }
 });
+
+test('Apple Maps directions use the same exact destination, driving or walking, with no start point', async () => {
+  const { appleDirectionsUrl } = await import('../js/lib/format.js');
+  for (const lot of lots) {
+    const url = new URL(appleDirectionsUrl(lot, 'driving'));
+    assert.equal(url.origin, 'https://maps.apple.com');
+    assert.equal(url.searchParams.get('daddr'), `${Number(lot.latitude)},${Number(lot.longitude)}`);
+    assert.equal(url.searchParams.get('dirflg'), 'd');
+    assert.equal(url.searchParams.has('saddr'), false);
+  }
+  assert.equal(new URL(appleDirectionsUrl(lots[0])).searchParams.get('dirflg'), 'w');
+  assert.equal(appleDirectionsUrl({ latitude: 91, longitude: 0 }, 'driving'), null);
+});
+
+test('each favorite offers Google Maps and Apple Maps driving directions', () => {
+  const html = cardHtml(lots[0], { showDirections: true });
+  assert.ok(html.includes(directionsUrl(lots[0], 'driving').replaceAll('&', '&amp;')));
+  assert.match(html, /href="https:\/\/maps\.apple\.com\/\?daddr=40\.243896%2C-111\.649081&amp;dirflg=d"/);
+  assert.equal((html.match(/class="secondary"/g) || []).length, 1);
+});

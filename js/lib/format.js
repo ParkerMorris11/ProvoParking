@@ -42,11 +42,24 @@ export function timeAgo(iso) {
   return `${Math.round(mins / 1440)} days ago`;
 }
 
-export function directionsUrl(area, travelmode = "walking") {
+function destinationPoint(area) {
   const coordinate = value => (typeof value === "number" || typeof value === "string" && value.trim() !== "") ? Number(value) : NaN;
-  const latitude = coordinate(area.latitude), longitude = coordinate(area.longitude);
+  const latitude = coordinate(area?.latitude), longitude = coordinate(area?.longitude);
   if (!Number.isFinite(latitude) || Math.abs(latitude) > 90 || !Number.isFinite(longitude) || Math.abs(longitude) > 180) return null;
+  return { latitude, longitude };
+}
+
+export function directionsUrl(area, travelmode = "walking") {
+  const point = destinationPoint(area);
+  if (!point) return null;
   // Omit origin so Google Maps uses the device's current location (or asks for a start).
   // Leave dir_action unset to show directions first, letting the user choose Start.
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${latitude},${longitude}`)}&travelmode=${encodeURIComponent(travelmode)}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${point.latitude},${point.longitude}`)}&travelmode=${encodeURIComponent(travelmode)}`;
+}
+
+// Apple Maps: no saddr, so it starts from the device's current location. dirflg d = driving, w = walking.
+export function appleDirectionsUrl(area, travelmode = "walking") {
+  const point = destinationPoint(area);
+  if (!point) return null;
+  return `https://maps.apple.com/?daddr=${encodeURIComponent(`${point.latitude},${point.longitude}`)}&dirflg=${travelmode === "driving" ? "d" : "w"}`;
 }

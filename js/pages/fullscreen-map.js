@@ -10,7 +10,7 @@
 // adds the "fs-home" class that turns on css/fullscreen-map.css. If anything here fails, nothing
 // is moved and the Areas screen keeps the original layout.
 import { state } from "../state.js";
-import { DAY_NAMES, fmtTime } from "../lib/format.js";
+import { DAY_NAMES, escapeHtml, fmtTime } from "../lib/format.js";
 import { parkingSelection, eligibleAreas } from "../domain/parking-results.js";
 import { refreshMap } from "./map.js";
 
@@ -18,7 +18,7 @@ const STATES = ["peek", "half", "full"];
 const DESKTOP = "(min-width: 980px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
-let view, sheet, handle, body, chip, ready = false;
+let view, sheet, handle, body, chip, ready = false, applyPermit = () => false;
 
 const isDesktop = () => Boolean(window.matchMedia?.(DESKTOP).matches);
 
@@ -128,6 +128,89 @@ function initDrag() {
   });
 }
 
+// ---- Floating search bar -----------------------------------------------------------------------
+// A compact front door to the plain-language / voice search on Find (#nl-form). It hands the text to
+// that form and opens Find so the person can review the filled-in fields. It never searches for them.
+const SEARCH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const MIC_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const GO_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function buildSearch() {
+  const nlForm = document.getElementById("nl-form"), nlText = document.getElementById("nl-text");
+  const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
+  if (!nlForm || !nlText) return null;
+  const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking in plain language" },
+    `<span class="map-search-icon">${SEARCH_ICON}</span>` +
+    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Class at 3 pm at the JKB…">` +
+    `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
+    `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
+  const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
+  const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
+
+  bar.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) { status.textContent = "Type or say something like “class at 3 pm at the JKB”."; input.focus(); return; }
+    nlText.value = text;
+    const send = () => nlForm.requestSubmit ? nlForm.requestSubmit() : nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
+    // Open Find first (it redraws its fields), then let the existing form read the text.
+    if (location.hash === "#find") send(); else { window.addEventListener("hashchange", send, { once: true }); location.hash = "#find"; }
+  });
+
+  // Mirror the microphone and the status line of the Find form, so the one speech engine is shared.
+  if (nlMic) {
+    const syncMic = () => {
+      mic.hidden = nlMic.hidden;
+      mic.setAttribute("aria-pressed", nlMic.getAttribute("aria-pressed") || "false");
+      mic.setAttribute("aria-label", nlMic.getAttribute("aria-label") || "Speak your trip");
+    };
+    new MutationObserver(syncMic).observe(nlMic, { attributes: true });
+    mic.addEventListener("click", () => nlMic.click());
+    syncMic();
+  }
+  if (nlStatus) {
+    const syncStatus = () => {
+      const text = nlStatus.textContent.trim();
+      status.textContent = text;
+      status.classList.toggle("warn", nlStatus.classList.contains("warn"));
+      if (text.includes("Check the fields")) status.insertAdjacentHTML("beforeend", ` <a href="#find">Review</a>`);
+      status.hidden = !text;
+    };
+    new MutationObserver(syncStatus).observe(nlStatus, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    status.hidden = true;
+  }
+  return { bar, status };
+}
+
+// ---- Permit popover (the permit chip) --------------------------------------------------------------
+// Tapping the chip opens a small list of permits; choosing one re-filters lots on the map and in the list
+// at once. Without JavaScript the chip is still a plain link to Find.
+function buildPermitPopover() {
+  const pop = el("div", { class: "permit-pop", id: "permit-pop", role: "dialog", "aria-label": "Choose your permit", hidden: "" },
+    `<label for="chip-permit">Your permit</label><select id="chip-permit"></select>` +
+    `<a class="permit-pop-more" href="#find">Change time or building</a>`);
+  const select = pop.querySelector("select");
+  const fill = () => {
+    select.innerHTML = `<option value="">Choose a permit…</option>` + (state.permits || []).map(p =>
+      `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
+    select.value = state.find.permitId ?? "";
+  };
+  const setOpen = (open) => {
+    if (open) fill();
+    pop.hidden = !open;
+    chip.setAttribute("aria-expanded", String(open));
+  };
+  chip.setAttribute("aria-haspopup", "dialog");
+  chip.setAttribute("aria-expanded", "false");
+  chip.setAttribute("aria-controls", "permit-pop");
+  chip.addEventListener("click", (e) => { e.preventDefault(); setOpen(pop.hidden); if (!pop.hidden) select.focus(); });
+  select.addEventListener("change", () => { if (applyPermit(select.value)) setOpen(false); chip.focus(); });
+  pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { setOpen(false); chip.focus(); } });
+  document.addEventListener("click", (e) => { if (!pop.hidden && !e.target.closest("#permit-pop, #permit-chip")) setOpen(false); });
+  pop.querySelector(".permit-pop-more").addEventListener("click", () => setOpen(false));
+  return pop;
+}
+
 // ---- Building the layout ----------------------------------------------------------------------
 function build() {
   view = document.getElementById("view-areas");
@@ -145,7 +228,22 @@ function build() {
   locate.classList.add("map-fab");
   locate.setAttribute("aria-label", "Use my location");
   locate.title = "Use my location";
-  stage.append(chip, locate);
+  stage.append(locate);
+  // Floating controls over the map. Top stack: search bar, then a row with the permit chip and the 2D/3D
+  // switch, then the search status and permit popover. Bottom right: "?" guide button above the location button.
+  const search = buildSearch();
+  const top = el("div", { class: "map-top", id: "map-top" });
+  const row = el("div", { class: "map-top-row" });
+  row.append(chip);
+  const modeSwitch = stage.querySelector(".map-mode");
+  if (modeSwitch) row.append(modeSwitch);
+  if (search) top.append(search.bar);
+  top.append(row);
+  if (search) top.append(search.status);
+  top.append(buildPermitPopover());
+  const help = el("button", { type: "button", class: "map-help", id: "map-help", "data-help-open": "", "aria-haspopup": "dialog", "aria-label": "Quick guide: permit colors, 2D/3D, location", title: "Quick guide" },
+    `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.9-1.1 1.6M12 16.6v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
+  stage.append(top, help);
   mapWrap.append(stage);
 
   // Sheet: handle + body. Everything that was beside or under the map goes in the body, in order.
@@ -242,9 +340,10 @@ function loadStylesheet() {
 }
 
 // Called once from main.js. Waits for the stylesheet so the screen never shows a half-built layout.
-export async function initFullscreenMap() {
+export async function initFullscreenMap({ applyPermit: choose } = {}) {
   if (ready || typeof document === "undefined") return;
   ready = true;
+  if (choose) applyPermit = choose;
   try {
     await loadStylesheet();
     build();

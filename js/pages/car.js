@@ -1,7 +1,7 @@
 // Parking timer sheet (opened by the floating car button): start a timer, car note, end session (parking_session).
 import { state, rulesFor } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
-import { escapeHtml, fmtClock, fmtDuration, directionsUrl } from "../lib/format.js";
+import { escapeHtml, fmtClock, fmtDuration, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
 import { parkingSelection } from "../domain/parking-results.js";
@@ -78,7 +78,7 @@ export function renderCar(selectedAreaId = "") {
         </form>
 
         <div class="actions">
-          ${area && directionsUrl(area) ? `<a class="secondary" href="${escapeHtml(directionsUrl(area))}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : ""}
+          ${area && directionsUrl(area) ? `<a class="secondary" href="${escapeHtml(directionsUrl(area, "walking"))}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Walking directions to approximate section"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirectionsUrl(area, "walking"))}" target="_blank" rel="noopener">Apple Maps</a>` : ""}
           <button type="button" class="primary" id="end-session">I left — end timer</button>
         </div>
       </div>`;

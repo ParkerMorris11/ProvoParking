@@ -11,7 +11,7 @@ import { createAuthStorage } from "./lib/auth-storage.js";
 import { loadData } from "./data/load.js";
 import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
-import { renderFind, initFind } from "./pages/find.js";
+import { renderFind, initFind, applyPermitChoice } from "./pages/find.js";
 import { toggleFavorite } from "./pages/favorites.js";
 import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
 import { initCarFab, renderCarFab } from "./components/car-fab.js";
@@ -20,6 +20,7 @@ import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { renderAreas } from "./pages/areas.js";
 import { initFullscreenMap } from "./pages/fullscreen-map.js";
+import { initHelpModal } from "./pages/help-modal.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
 const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
@@ -174,11 +175,12 @@ document.addEventListener("click", (e) => {
   }
 });
 
-initFind({ go, choosePermit });
+initFind({ go, choosePermit, refresh: renderViews });
 initCar({ requireAccount });
 initCarFab({ go });
 initAuth({ onSignedIn, onGuest, authStorage });
-void initFullscreenMap(); // full-screen map + pull-up list on the Areas screen
+initHelpModal();
+void initFullscreenMap({ applyPermit: (id) => applyPermitChoice(id, renderViews) }); // full-screen map + pull-up list on the Areas screen
 window.addEventListener("hashchange", () => { showView(); parkingClock.update(); });
 
 // Narrow-window tab menu (the ☰ button). Closes on Escape, on a tab choice, on an outside click,

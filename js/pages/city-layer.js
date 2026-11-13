@@ -1,7 +1,7 @@
 // Provo public parking from the city GIS + OSM snapshot, with an accessible list.
 // Drawing is done by the map in map.js through a small `host`; this file owns the data, toggle and list.
 // Kept separate from BYU eligibility: these are unverified records, not rules.
-import { escapeHtml, directionsUrl } from "../lib/format.js";
+import { escapeHtml, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
 import { facilitySummary, cityLayerBounds } from "../domain/city-parking.js";
 import { boundsFromCorners, DOWNTOWN_CENTER } from "../domain/map-geometry.js";
 
@@ -11,7 +11,8 @@ let started = false, facilities = [], source = {};
 const byId = id => globalThis.document?.getElementById?.(id) ?? null;
 
 export function cityPopupHtml(summary) {
-  const directions = summary.center && directionsUrl(summary.center);
+  const directions = summary.center && directionsUrl(summary.center, "driving");
+  const appleDirections = summary.center && appleDirectionsUrl(summary.center, "driving");
   const sourceLink = summary.sourceUrl
     ? `<a href="${escapeHtml(summary.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(summary.sourceLabel || "Source")}</a> · `
     : "";

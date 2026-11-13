@@ -92,9 +92,23 @@ function initPlainLanguage({ choosePermit }) {
   });
 }
 
-export function initFind({ go, choosePermit = () => {} }) {
+// Picking a permit takes effect right away: the Areas list, the map and the permit chip all
+// re-filter through domain/eligibility.js, without waiting for "Show parking areas".
+export function applyPermitChoice(permitId, refresh = () => {}) {
+  const id = Number(permitId);
+  if (!state.permits.some((p) => p.permit_id === id)) return false;
+  state.find.permitId = id;
+  savePermit(id);
+  refresh();
+  return true;
+}
+
+export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
   initPlainLanguage({ choosePermit });
-  $("permit-select").addEventListener("change", renderPermitInfo);
+  $("permit-select").addEventListener("change", () => {
+    renderPermitInfo();
+    applyPermitChoice($("permit-select").value, refresh);
+  });
   $("arrive-now").addEventListener("change", syncTimeControls);
   $("find-form").addEventListener("submit", (e) => {
     e.preventDefault();
