@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
@@ -170,6 +169,19 @@
     <!-- Screen 1: Find — pick permit + arrival time -->
     <section id="view-find" aria-labelledby="h-find" hidden>
       <h2 id="h-find" tabindex="-1">Find parking</h2>
+      <!-- Plain-language / voice search: fills the form below for review. It never submits for you. -->
+      <form id="nl-form" class="panel nl-find" aria-labelledby="nl-label">
+        <label id="nl-label" for="nl-text">Tell us about your trip</label>
+        <div class="nl-row">
+          <input type="text" id="nl-text" maxlength="500" autocomplete="off" aria-describedby="nl-hint" placeholder="Hey, I have class at 3 pm at the JKB with my current permit...">
+          <button type="button" id="nl-mic" class="nl-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button type="submit" id="nl-go" class="secondary">Fill in form</button>
+        </div>
+        <p id="nl-hint" class="hint">Optional. Say or type your permit, building and time. You can review and change everything below before searching.</p>
+        <p id="nl-status" class="hint nl-status" role="status" aria-live="polite"></p>
+      </form>
       <form id="find-form" class="panel">
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
@@ -211,6 +223,11 @@
           <p id="location-toolbar-status" class="map-note" role="status" aria-live="polite">Location is off.</p>
           <div class="map-stage">
             <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and Provo parking map" aria-describedby="map-note"></div>
+            <div class="map-mode" role="group" aria-label="Map view">
+              <button type="button" id="map-mode-2d" aria-pressed="true" disabled>2D</button>
+              <button type="button" id="map-mode-3d" aria-pressed="false" disabled>3D</button>
+            </div>
+            <div id="map-card" class="map-card" role="region" aria-label="Selected parking lot" tabindex="-1" hidden></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
@@ -427,7 +444,6 @@
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

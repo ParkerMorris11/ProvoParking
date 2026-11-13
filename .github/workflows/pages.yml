@@ -24,6 +24,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
             echo "::error::Repository secrets SUPABASE_URL and SUPABASE_ANON_KEY must be set (Settings > Secrets and variables > Actions > Secrets tab > Repository secrets)."
@@ -32,7 +33,8 @@ jobs:
           mkdir -p site
           cp index.html admin.html parking-setup.html parking-timer.html site/
           cp -r css js data site/
-          printf 'window.APP_CONFIG = { SUPABASE_URL: "%s", SUPABASE_ANON_KEY: "%s" };\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > site/config.js
+          # GOOGLE_MAPS_API_KEY is optional: without it the map shows a short message and the list still works.
+          printf 'window.APP_CONFIG = { SUPABASE_URL: "%s", SUPABASE_ANON_KEY: "%s", GOOGLE_MAPS_API_KEY: "%s" };\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" "$GOOGLE_MAPS_API_KEY" > site/config.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

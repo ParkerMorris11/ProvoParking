@@ -18,8 +18,8 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
 .fs-map .map-stage { position: absolute; inset: 0; }
 .fs-home .parking-map { height: 100%; border-radius: 0; }
 .fs-home .map-status { left: 12px; right: auto; bottom: calc(var(--peek) + 12px + env(safe-area-inset-bottom, 0px)); }
-.fs-home .parking-map .leaflet-top.leaflet-left { top: 58px; } /* +/- sits under the permit chip */
-.fs-home .parking-map .leaflet-bottom { bottom: calc(var(--peek) + env(safe-area-inset-bottom, 0px)); }
+.fs-home .map-mode { z-index: 1000; right: max(12px, env(safe-area-inset-right, 0px)); }
+.fs-home .map-card { z-index: 1000; top: 68px; bottom: auto; left: max(12px, env(safe-area-inset-left, 0px)); }
 .fs-home .map-stage:has(.parking-map[hidden]) .map-status { position: absolute; top: 70px; bottom: auto; margin: 0; }
 
 /* Permit chip (top left): permit + time, tap to change */
@@ -88,5 +88,6 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
   .fs-home .map-status { bottom: 24px; }
   .fs-home .location-button.map-fab { bottom: 32px; right: 24px; }
   .permit-chip { top: 16px; left: 16px; }
-  .fs-home .parking-map .leaflet-top.leaflet-left { top: 66px; }
+  .fs-home .map-mode { top: 16px; right: 16px; }
+  .fs-home .map-card { top: 76px; left: 16px; }
 }

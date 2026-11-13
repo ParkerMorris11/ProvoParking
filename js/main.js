@@ -174,7 +174,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-initFind({ go });
+initFind({ go, choosePermit });
 initCar({ requireAccount });
 initCarFab({ go });
 initAuth({ onSignedIn, onGuest, authStorage });

@@ -1,3 +1,7 @@
+// The Areas map: Google Maps 2D (default) or Photorealistic 3D, with the same lots in both.
+// Pure Google Maps, no other map library. The key is read from config.js (see lib/google-maps.js).
+// This file decides WHAT to draw (eligible BYU sections + optional Provo city lots) and what a tap does;
+// map-2d.js / map-3d.js only draw. Eligibility itself stays in domain/eligibility.js via parking-results.js.
 import { escapeHtml } from "../lib/format.js";
 
 import { nearbyLots, arrivalSuggestion } from "../domain/nearby.js";
@@ -5,18 +9,21 @@ import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint } from "../domain/area-list.js";
-import { initCityLayer } from "./city-layer.js";
+import { PERMIT_CATEGORIES, CAMPUS_CENTER, byuShape, cityShape } from "../domain/map-geometry.js";
+import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-maps.js";
+import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
+import { createMap2D } from "./map-2d.js";
+import { createMap3D } from "./map-3d.js";
 
-let map, centeredDestinationId;
-let features = [], tracker, latestPosition = null, nearby = [], userMarker, accuracyRing;
-let boundaryLayer, visibleFeatures = [];
-const lotLayers = new Map();
+let maps, started = false, mode = "2d", centeredDestinationId;
+const views = {};           // "2d" / "3d" -> adapter, created the first time each is shown
+const layers = {};          // "2d" / "3d" -> the <div> inside #parking-map that holds it
+let features = [], tracker, latestPosition = null, nearby = [];
+let visibleFeatures = [], cityFacilities = [], cityVisible = false, shapes = [];
 
-function clearUserLocation() {
-  if (userMarker) map.removeLayer(userMarker);
-  if (accuracyRing) map.removeLayer(accuracyRing);
-  userMarker = accuracyRing = null;
-}
+const byId = (id) => document.getElementById(id);
+const isDark = () => document.documentElement?.getAttribute("data-theme-active") === "dark";
+const activeView = () => views[mode];
 
 function updateArrivalSuggestion(element, candidate) {
   if (!element) return;
@@ -70,18 +77,11 @@ function initLocation() {
     if (toolbarStatus) toolbarStatus.textContent = update.message;
     document.getElementById("location-status").classList.toggle("is-live", update.status === "live");
     if (latestPosition) {
-      const point = [latestPosition.latitude, latestPosition.longitude];
-      const L = window.L;
-      if (!userMarker) {
-        accuracyRing = L.circle(point, { radius: latestPosition.accuracy, color: "#3168dc", weight: 1, fillOpacity: 0.07, interactive: false }).addTo(map);
-        userMarker = L.circleMarker(point, { radius: 8, color: "#ffffff", weight: 3, fillColor: "#3168dc", fillOpacity: 1 }).bindPopup("Your current location").addTo(map);
-      } else {
-        userMarker.setLatLng(point);
-        accuracyRing.setLatLng(point).setRadius(latestPosition.accuracy);
-      }
-      if (firstFix) { map.setView(point, 16); firstFix = false; }
+      const point = { lat: latestPosition.latitude, lng: latestPosition.longitude };
+      for (const view of Object.values(views)) view.setUser(point, latestPosition.accuracy);
+      if (firstFix) { activeView()?.focus(point, 16); firstFix = false; }
     } else {
-      if (wasLive) clearUserLocation();
+      if (wasLive) for (const view of Object.values(views)) view.setUser(null);
       firstFix = true;
     }
     renderNearby();
@@ -98,8 +98,8 @@ function initLocation() {
     const control = event.target.closest("[data-nearby-index]");
     const lot = control && nearby[Number(control.dataset.nearbyIndex)];
     if (!lot) return;
-    map.setView([lot.point.latitude, lot.point.longitude], 17);
-    lotLayers.get(lot.feature)?.openPopup();
+    activeView()?.focus({ lat: lot.point.latitude, lng: lot.point.longitude }, 17);
+    showFeatureCard(lot.feature);
     document.getElementById("parking-map").focus({ preventScroll: false });
   });
   document.addEventListener("visibilitychange", () => {
@@ -112,11 +112,16 @@ function initLocation() {
 /** The live location from "Use my location", or null. Used to sort the Areas list by distance. */
 export function currentPosition() { return latestPosition; }
 
-// Popup for one mapped section: what the GIS layer says, plus links into the app for the
-// matching sections of the current list (Rules & details).
-function popupHtml(feature) {
+// ---- Selected-lot card ------------------------------------------------------------------------
+// Replaces the old map popup. One BYU section -> straight to Area details; shared or city lots -> this card.
+function matchesFor(feature) {
+  const id = feature?.properties?.OBJECTID;
+  return state.areas.filter((area) => area.source_feature_id === id && !area.is_sample_data);
+}
+
+// What the GIS layer says about one mapped section, plus links into the app for its matching areas.
+export function lotCardHtml(feature, matches = matchesFor(feature)) {
   const p = feature.properties || {};
-  const matches = state.areas.filter((area) => area.source_feature_id === p.OBJECTID && !area.is_sample_data);
   const links = matches.map((area) => {
     const label = matches.length > 1 ? ` · ${escapeHtml(area.area_name)}` : "";
     return `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details${label} →</a>
@@ -125,16 +130,43 @@ function popupHtml(feature) {
   return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(p.Map_Catego || "Parking boundary")}</span><h3>${escapeHtml(matches.length === 1 ? matches[0].area_name : (p.Lot_Type || "BYU parking area"))}</h3><span class="lot-popup-permit">Lot category ${escapeHtml(p.permit_typ || "not recorded")}</span><p>${escapeHtml(p.Descriptio || "See posted signage.")}</p>${links}</div>`;
 }
 
-/** "Show on map" from an Areas card: zoom to that section's boundary and open its popup. */
+function showCard(html) {
+  const card = byId("map-card");
+  if (!card) return;
+  card.innerHTML = `<button type="button" class="map-card-close" aria-label="Close lot details"><span aria-hidden="true">×</span></button>${html}`;
+  card.hidden = false;
+  card.focus({ preventScroll: true });
+}
+
+export function hideCard() {
+  const card = byId("map-card");
+  if (card && !card.hidden) { card.hidden = true; card.innerHTML = ""; }
+}
+
+function showFeatureCard(feature) { showCard(lotCardHtml(feature)); }
+
+function selectShape(shape) {
+  if (shape.source.type === "city") {
+    const summary = cityFacilitySummary(shape.source.index);
+    if (summary) showCard(cityPopupHtml(summary));
+    return;
+  }
+  const matches = matchesFor(shape.source.feature);
+  if (matches.length === 1) { hideCard(); location.hash = `#area/${matches[0].area_id}`; } // the existing Area details screen
+  else showFeatureCard(shape.source.feature);
+}
+
+/** "Show on map" from an Areas card: zoom to that section's boundary and open its card. */
 export function showAreaOnMap(area) {
-  if (!map || !area) return false;
+  const view = activeView();
+  if (!view || !area) return false;
   const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
-  const layer = feature && lotLayers.get(feature);
-  if (!layer) return false;
-  const el = document.getElementById("parking-map");
+  const shape = feature && shapes.find((s) => s.source.feature === feature);
+  if (!shape) return false;
+  const el = byId("parking-map");
   el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-  if (layer.getBounds) map.fitBounds(layer.getBounds(), { maxZoom: 18, padding: [24, 24] });
-  layer.openPopup();
+  if (mode === "2d") view.fitBounds(shape.bounds, 24); else view.focus(shape.center, 18);
+  showFeatureCard(feature);
   el?.focus?.({ preventScroll: true });
   return true;
 }
@@ -148,24 +180,75 @@ export function stopMapLocation() {
 }
 
 function setMapStatus(message) {
-  const el = document.getElementById("map-status");
+  const el = byId("map-status");
   if (el) el.textContent = message;
 }
 
-const categories = [
-  { label: "Student · Y / G", color: "#3168dc", codes: ["Y", "G"] },
-  { label: "Employee · A", color: "#b07b23", codes: ["A"] },
-  { label: "Visitor · V", color: "#07859a", codes: ["V"] },
-  { label: "Free · U", color: "#16806b", codes: ["U"] },
-  { label: "Housing", color: "#8062b3", codes: ["B", "C", "D", "YM", "YV", "BCD"] },
-  { label: "Timed · T / EV", color: "#c2643a", codes: ["T", "EV"] },
-  { label: "Restricted / other", color: "#687589", codes: [] },
-];
+// ---- Drawing -----------------------------------------------------------------------------------
+function drawShapes() {
+  shapes = [
+    ...visibleFeatures.map(byuShape),
+    ...(cityVisible ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
+  ].filter(Boolean);
+  activeView()?.setShapes(shapes);
+}
 
-function boundaryStyle(feature) {
-  const permit = feature?.properties?.permit_typ;
-  const category = categories.find((item) => item.codes.includes(permit)) || categories.at(-1);
-  return { color: category.color, weight: 1.6, fillColor: category.color, fillOpacity: 0.24 };
+// What the city layer asks the map to do.
+const cityHost = {
+  setFacilities(list) { cityFacilities = list; drawShapes(); },
+  setVisible(on) { cityVisible = on; drawShapes(); },
+  focus(point, zoom) { activeView()?.focus(point, zoom); },
+  fitBounds(bounds) { activeView()?.fitBounds(bounds, 24); },
+  select(index) { const summary = cityFacilitySummary(index); if (summary) showCard(cityPopupHtml(summary)); },
+};
+
+// ---- 2D / 3D -----------------------------------------------------------------------------------
+async function ensureView(next, center) {
+  if (views[next]) return views[next];
+  const container = document.createElement("div");
+  container.className = `map-layer map-layer-${next}`;
+  byId("parking-map").append(container);
+  layers[next] = container;
+  if (next === "2d") {
+    const lib = await maps.importLibrary("maps");
+    views[next] = createMap2D({ maps, lib, container, center, dark: isDark(), onSelect: selectShape });
+  } else {
+    const lib = await maps.importLibrary("maps3d");
+    views[next] = createMap3D({ lib, container, center, onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
+  }
+  return views[next];
+}
+
+function syncToggle() {
+  for (const m of ["2d", "3d"]) {
+    const button = byId(`map-mode-${m}`);
+    if (button) button.setAttribute("aria-pressed", String(mode === m));
+  }
+}
+
+export async function setMode(next, failureMessage = "") {
+  if (!maps || (next === mode && views[next])) return;
+  const center = activeView()?.getView() ?? CAMPUS_CENTER;
+  try {
+    const view = await ensureView(next, center);
+    activeView()?.hide();
+    mode = next;
+    view.show();
+    view.setShapes(shapes);
+    view.setUser(latestPosition ? { lat: latestPosition.latitude, lng: latestPosition.longitude } : null, latestPosition?.accuracy);
+    if (next === "3d") view.focus(center, 16);
+    hideCard();
+    setMapStatus(failureMessage);
+  } catch (error) {
+    console.warn(`[map] ${next} view unavailable`, error);
+    layers[next]?.remove();
+    delete views[next];
+    delete layers[next];
+    mode = "2d";
+    views["2d"]?.show();
+    setMapStatus(failureMessage || "3D view unavailable on this device. Showing the 2D map.");
+  }
+  syncToggle();
 }
 
 function centerOnDestination() {
@@ -174,49 +257,59 @@ function centerOnDestination() {
   const point = areaPoint(state.destinations.find(d => d.destination_id === id));
   if (!point) return;
   centeredDestinationId = id;
-  map.setView([point.latitude, point.longitude], 16);
+  activeView()?.focus({ lat: point.latitude, lng: point.longitude }, 16);
 }
+
+/** Clean, minimal message on the map canvas when there is no usable Google Maps key. */
+export function renderMapMessage(el, message) {
+  el.innerHTML = `<p class="map-empty">${escapeHtml(message)}</p>`;
+}
+
+export const NO_KEY_MESSAGE = "The map needs a Google Maps key. Add GOOGLE_MAPS_API_KEY to config.js. The parking list below still works.";
 
 export async function initMap() {
   const el = document.querySelector("#parking-map");
   if (!el) return;
-  if (!window.L) {
-    el.hidden = true;
-    setMapStatus("Map unavailable. Use the parking list to view rules and details.");
+  if (started) { centerOnDestination(); refreshMap(); hideCard(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
+  const key = getMapsApiKey();
+  if (!key) {
+    renderMapMessage(el, NO_KEY_MESSAGE);
+    setMapStatus("");
     return;
   }
-  if (map) { centerOnDestination(); refreshMap(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
-  const L = window.L;
+  started = true;
   try {
-    map = L.map(el, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true }).setView([40.2518, -111.6493], 15);
-    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-    }).addTo(map);
+    maps = await loadGoogleMaps({ key });
+    onMapsAuthFailure(() => { renderMapMessage(el, "Google rejected the map key. Check its allowed sites and that Maps JavaScript API is enabled."); setMapStatus(""); });
+    el.textContent = "";
+    mode = "2d";
+    await ensureView("2d", CAMPUS_CENTER);
+    views["2d"].show();
+    syncToggle();
+    new MutationObserver(() => views["2d"]?.setDark(isDark())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
+    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); el.focus({ preventScroll: true }); } });
+    for (const m of ["2d", "3d"]) {
+      const button = byId(`map-mode-${m}`);
+      if (button) { button.disabled = false; button.addEventListener("click", () => void setMode(m)); }
+    }
 
     const legend = document.getElementById("map-legend");
-    if (legend) legend.innerHTML = categories.map((item) => `<li><span class="legend-dot" style="background:${item.color}" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join("");
+    if (legend) legend.innerHTML = PERMIT_CATEGORIES.map((item) => `<li><span class="legend-dot" style="background:${item.color}" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join("");
     const reset = document.getElementById("map-reset");
     if (reset) {
       reset.disabled = false;
-      reset.addEventListener("click", () => map.setView([40.2518, -111.6493], 15));
+      reset.addEventListener("click", () => activeView()?.focus(CAMPUS_CENTER, 15));
     }
     centerOnDestination();
     refreshMap();
-    initCityLayer(map, L);
+    void initCityLayer(cityHost);
     try {
       const response = await fetch("data/byu-campus-parking.json");
       if (!response.ok) throw new Error(`Boundary request failed (${response.status})`);
       const geometry = await response.json();
       if (geometry.type !== "FeatureCollection" || !Array.isArray(geometry.features)) throw new Error("Invalid boundary snapshot");
       features = geometry.features;
-      boundaryLayer = L.geoJSON({ type: "FeatureCollection", features: [] }, {
-        style: boundaryStyle,
-        onEachFeature: (feature, layer) => {
-          lotLayers.set(feature, layer);
-          layer.bindPopup(() => popupHtml(feature), { maxWidth: 280 });
-        }
-      }).addTo(map);
       refreshMapEligibility();
       initLocation();
     } catch (error) {
@@ -225,25 +318,22 @@ export async function initMap() {
     }
   } catch (error) {
     console.warn("[map] unavailable", error);
-    if (map) map.remove();
-    map = null;
-    el.hidden = true;
-    setMapStatus("Map unavailable. Use the parking list to view rules and details.");
+    started = false;
+    renderMapMessage(el, "Map unavailable right now. Use the parking list to view rules and details.");
+    setMapStatus("");
   }
 }
 
 export function refreshMap() {
-  if (map) setTimeout(() => map?.invalidateSize(), 0);
+  if (activeView()) setTimeout(() => activeView()?.resize(), 0);
 }
 
 export function refreshMapEligibility(selection = parkingSelection(state.find), areas = eligibleAreas(state.areas, state.rulesByArea, selection)) {
-  if (!map || !boundaryLayer) return;
+  if (!maps || !features.length && !visibleFeatures.length) return;
   const next = eligibleMapFeatures(features, areas);
   if (next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
-    boundaryLayer.clearLayers();
-    lotLayers.clear();
-    boundaryLayer.addData({ type: "FeatureCollection", features: next });
     visibleFeatures = next;
+    drawShapes();
   }
   setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`);
   renderNearby();

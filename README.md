@@ -12,7 +12,8 @@ Provo Parking helps BYU drivers see where their permit lets them park right now,
 | Favorites | Saved lots with **Get Directions** | [Screens](#screens) |
 | Help | BYU permit table (who it is for, where it is valid), how to read results, Provo and citation rules, all with source links | [Screens](#screens) |
 | OKRs | Admin dashboard (`admin.html`) reports all four Key Results from database aggregates; KR 2b visit timing is recorded | [Admin OKR dashboard](docs/admin-okr.md), [visit metrics](docs/visit-metrics-handoff.md) |
-| Still to do | AI workflow automation and its Level 1 DFD (Sprint 3), Lighthouse re-check of the new map and Help content | Trello Product Backlog |
+| Sprint 3 (branch `feat/ai-voice-find-and-3d-map`, not merged) | Plain-language + voice **Find** (Gemini via the `parse-find` Edge Function) and a pure **Google Maps 2D/3D** Areas map | [Plain-language & voice Find](#plain-language--voice-find-sprint-3-ai-workflow), [Google Maps 2D/3D map](#google-maps-2d3d-map-sprint-3) |
+| Still to do | Rule-change extraction (processes 5.0/6.0 below), Lighthouse re-check of the Google map and Help content | Trello Product Backlog |
 
 P7 database persistence for parking sessions: [parking session persistence](docs/parking-session-persistence.md).
 
@@ -31,8 +32,8 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | # | Screen | What it does | Data it uses |
 |---|---|---|---|
 | 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
-| 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit) | `permit`, `user_permit` |
-| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, map and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
+| 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit), or say/type your trip in plain language and review the filled-in form | `permit`, `user_permit`, `destination`, `parse-find` Edge Function |
+| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, the Google map (2D by default, 3D optional) and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
@@ -132,7 +133,7 @@ Sprint 2 review evidence: [Parker’s card verification and remaining checks](do
 
 ## System architecture (Sprint 1 review)
 
-The customer app is live on GitHub Pages and uses Supabase. The AWS admin portal and AI workflow below are **planned**, not deployed. The FigJam contains the team's visual copy.
+The customer app is live on GitHub Pages and uses Supabase. The Google Maps 2D/3D map and `parse-find` (Sprint 3) are on the `feat/ai-voice-find-and-3d-map` branch and are not deployed until it is merged and the Edge Function is deployed. The AWS admin portal and rule-extraction AI below are **planned**, not deployed. The FigJam contains the team's visual copy.
 
 ```mermaid
 flowchart LR
@@ -141,7 +142,10 @@ flowchart LR
   P -->|serves app| UI
   UI -->|queries and session requests| API[Supabase API and Auth]
   API -->|rows and credentials| DB[(Supabase PostgreSQL)]
-  UI -->|map tiles| OSM[OpenStreetMap / Leaflet]
+  UI -->|2D / 3D map| GMaps[Google Maps JavaScript API v=beta]
+  UI -->|plain-language or voice trip| Parse[Supabase Edge Function parse-find]
+  Parse -->|text or audio + allowed IDs| Gemini[Gemini Flash]
+  Parse -->|labels for permit and building IDs| API
   CityGIS[Provo City parking GIS - snapshot] -->|public lot outlines and notes| UI
   Admin[Admin dashboard admin.html] -->|KR aggregates| API
   UI -->|lot coordinates| Maps[Google Maps directions]
@@ -153,30 +157,161 @@ flowchart LR
   AI -->|proposed rule changes - planned| S
 ```
 
-The planned AI workflow requires human review before rule changes are published.
+The planned rule-extraction AI requires human review before rule changes are published. The Sprint 3 `parse-find` AI only fills in the Find form; the person reviews it and the deterministic `eligibility.js` engine decides what is allowed.
 
-## Data flow diagrams (Sprint 2 review)
+## Data flow diagrams (Sprint 3)
 
-Both diagrams use logical names (what happens to the data), not product names. Processes 5.0 and 6.0 are the AI workflow automation: the app reads parking rule pages, an AI service extracts proposed rule changes, and a team admin approves them before they reach the parking rules. That automation is **planned for Sprint 3**; everything else is live today.
+Both diagrams use logical names (what happens to the data), not product names. Sprint 3 adds the live AI workflow **8.0 Interpret trip request** (plain-language / voice Find) and **9.0 Draw map** (Google Maps 2D/3D). Processes 5.0 and 6.0 (reading rule pages and approving extracted changes) are still **planned**. The AI never decides eligibility: its output only fills the Find form, the person reviews it, and process 2.0 applies the stored rules.
 
 **Level 0 (context diagram):** the whole app as one process, every external entity, and the data flowing in and out. No data stores.
 
-![Level 0 data flow diagram](docs/dfd/dfd-level-0.png)
+```mermaid
+flowchart LR
+  Driver([Driver])
+  Admin([Team admin])
+  Sites([Parking rule websites])
+  AI([AI service: Gemini Flash])
+  Maps([Map service: Google Maps])
+  Speech([Browser speech service])
 
-**Level 1 (logical):** the same external entities and outside flows, opened into numbered processes and data stores.
+  P0((0 Provo Parking))
 
-![Level 1 data flow diagram](docs/dfd/dfd-level-1.png)
+  Driver -->|sign-up details, trip details, parking start/end, favorite pick| P0
+  Driver -->|typed or spoken trip| P0
+  P0 -->|eligible lots, time left, filled-in Find form| Driver
+  Driver -.->|voice| Speech
+  Speech -.->|transcript| P0
+  P0 -->|trip text or audio, allowed permit and building IDs| AI
+  AI -->|structured fields: permit, building, live, day, time, confidence| P0
+  P0 -->|map load request| Maps
+  Maps -->|2D tiles, 3D scene| P0
+  Admin -->|approval decisions| P0
+  P0 -->|proposals, KR values| Admin
+  Sites -.->|rule page text, planned| P0
+```
+
+**Level 1 (logical):** the same external entities and outside flows, opened into numbered processes and data stores. Dashed lines are planned (Sprint 4+) or optional (voice).
+
+```mermaid
+flowchart TB
+  Driver([Driver])
+  Admin([Team admin])
+  Sites([Parking rule websites])
+  AI([AI service: Gemini Flash])
+  Maps([Map service: Google Maps])
+  Speech([Browser speech service])
+
+  P1(1.0 Register driver)
+  P2(2.0 Find eligible parking)
+  P3(3.0 Save favorite lots)
+  P4(4.0 Track parking session)
+  P5(5.0 Extract rule changes - planned)
+  P6(6.0 Approve rule changes - planned)
+  P7(7.0 Report key results)
+  P8(8.0 Interpret trip request)
+  P9(9.0 Draw map)
+
+  D1[(D1 Drivers)]
+  D2[(D2 Parking areas and rules)]
+  D3[(D3 Favorites)]
+  D4[(D4 Sessions and visits)]
+  D5[(D5 Destinations)]
+  D6[(D6 Rule change proposals - planned)]
+
+  Driver -->|sign-up details| P1
+  P1 -->|driver record| D1
+  D1 -->|saved permit| P8
+  Driver -->|typed trip| P8
+  Driver -.->|voice| Speech
+  Speech -.->|transcript| P8
+  D5 -->|building list| P8
+  D2 -->|permit list| P8
+  P8 -->|text or audio + allowed IDs| AI
+  AI -->|permit, building, live, day, time, confidence| P8
+  P8 -->|filled-in Find form for review| Driver
+  Driver -->|reviewed or typed permit, building, day, time| P2
+  D2 -->|lot rules| P2
+  D5 -->|destination| P2
+  P2 -->|eligible lots| Driver
+  P2 -->|eligible lots| P9
+  D2 -->|lot outlines| P9
+  P9 -->|map load request| Maps
+  Maps -->|2D tiles, 3D scene| P9
+  P9 -->|map, selected lot| Driver
+  Driver -->|favorite pick| P3
+  P3 -->|favorite record| D3
+  Driver -->|parking start/end| P4
+  P4 -->|session record| D4
+  P4 -->|time left| Driver
+  P4 -->|session times| P7
+  D4 --> P7
+  P7 -->|KR values| Admin
+  Sites -.->|rule page text| P5
+  D2 -.->|current rules| P5
+  P5 -.->|extracted changes| P6
+  P6 -.->|proposal| D6
+  Admin -->|approval decisions| P6
+  D6 -.->|pending proposals| P6
+  P6 -.->|approved rules| D2
+```
 
 | Data store | Tables today |
 |---|---|
 | D1 Drivers | `app_user`, `user_permit` |
-| D2 Parking areas & rules | `parking_area`, `parking_rule`, `permit` |
+| D2 Parking areas & rules | `parking_area`, `parking_rule`, `permit` (plus the `data/*.json` lot outlines the map draws) |
 | D3 Favorites | `favorite_area` |
 | D4 Parking sessions & visits | `parking_session`, `app_visit` |
 | D5 Destinations | `destination` |
-| D6 Rule change proposals | `rule_change_proposal` (planned, Sprint 3) |
+| D6 Rule change proposals | `rule_change_proposal` (planned) |
 
-Sources: `docs/dfd/*.html` (self-contained; open in a browser). Dark-theme copies: `docs/dfd/*-dark.png`.
+The Sprint 2 PNG versions, which showed the AI workflow as planned only, are kept for reference: [Level 0](docs/dfd/dfd-level-0.png), [Level 1](docs/dfd/dfd-level-1.png). Their HTML sources are in `docs/dfd/`.
+
+## Plain-language & voice Find (Sprint 3 AI workflow)
+
+Above the Find form there is one text box and a microphone button: *"Hey, I have class at 3 pm at the JKB with my current permit..."*. Pressing **Fill in form** (or finishing a spoken sentence) fills **Your permit**, **Where are you going?**, **Parking right now** and the arrival day/time. Nothing is submitted for the person: they review or correct the fields, then press **Show parking areas**, and the deterministic rules in `js/domain/eligibility.js` decide what is allowed. Typing always works; the mic is hidden when the browser has no speech support.
+
+```
+#nl-form (js/pages/find.js)
+  -> js/lib/speech.js        Web Speech API (SpeechRecognition / webkitSpeechRecognition),
+                             or MediaRecorder audio on iOS Safari (clip is sent, never stored)
+  -> js/data/parse-find.js   builds { text, permit_ids, destination_ids, audio? }, calls the function,
+                             re-validates every ID, fills #permit-select, #find-destination,
+                             #arrive-now, #arrive-day, #arrive-time ("my current permit" goes through
+                             choosePermit() in main.js)
+  -> supabase/functions/parse-find/index.ts   (Deno, Gemini Flash, GEMINI_API_KEY from Deno.env)
+       sanitize.js / handler.js               validation, prompt, CORS, ID whitelist (also unit tested in Node)
+```
+
+**Contract.** `POST /functions/v1/parse-find` with `{ text, permit_ids, destination_ids }` (optionally `audio: { data_base64, mime_type }` for the iOS Safari fallback) returns exactly `{ permit_id, use_saved_permit, destination_id, live, day, time, confidence }`:
+
+| Field | Meaning |
+|---|---|
+| `permit_id` | A permit from `permit_ids` the person named, else `null` |
+| `use_saved_permit` | `true` for "my current permit" (no permit named); the page resolves it with `choosePermit()` |
+| `destination_id` | A building from `destination_ids`, else `null` |
+| `live` | `true` for right now or no time given; `false` when a day or time was said |
+| `day`, `time` | `0` (Sunday) to `6`, and 24-hour `"HH:MM"`, only when `live` is `false` |
+| `confidence` | `0` to `1`. Below `0.5` the page asks the person to check every field |
+
+The function re-checks the model's answer: any ID that was not in the lists the page sent becomes `null`, bad times/days are dropped, and the response contains only those seven keys. CORS allows `https://parkermorris11.github.io` and `localhost` / `127.0.0.1` only. Text is capped at 500 characters and audio at about 2 MB. Permit and building names are read from the public `permit` and `destination` tables (labels sent by the page are the fallback), so the model can match "JKB".
+
+**Privacy.** Only what the person types or says, plus permit and building IDs/names, is sent to Gemini. No account details, location or favorites are sent. Audio is recorded only while the mic is on and is not stored by the app.
+
+## Google Maps 2D/3D map (Sprint 3)
+
+The Areas map is pure Google Maps (the earlier OpenStreetMap-tile map library is gone). It loads `maps.googleapis.com/maps/api/js?v=beta&libraries=maps3d,places,marker` only when Areas opens, using the key in `config.js`.
+
+| Piece | File |
+|---|---|
+| Loader and key reading (`window.APP_CONFIG.GOOGLE_MAPS_API_KEY`) | `js/lib/google-maps.js` |
+| Lot colors and GeoJSON → `{lat, lng}` shapes | `js/domain/map-geometry.js` |
+| 2D view (default; dark road style follows the site's dark mode) | `js/pages/map-2d.js` |
+| 3D Photorealistic view (`gmp-map-3d`, extruded lots) | `js/pages/map-3d.js` |
+| Which lots to draw, taps, location, nearby list | `js/pages/map.js`, `js/pages/city-layer.js` |
+
+On the map itself: full-bleed map, a **2D | 3D** switch, the locate button and the permit chip. **2D is the default** (lighter and better for Lighthouse Accessibility). Tapping a BYU lot opens the existing **Area details** screen; tapping a lot shared by several areas, or a Provo city lot, opens a small card (city lots never start a timer). Eligibility still comes from Supabase `parking_rule` rows through `js/domain/eligibility.js` and `js/domain/parking-results.js`; favorites and the car timer are unchanged. The lot list stays beside or below the map, so every lot is reachable by keyboard and screen reader. If no key is configured, the map area shows a short message and the list still works.
+
+Lot outlines come from `data/byu-campus-parking.json` and `data/provo-city-parking.json` (already in this repo; the same snapshots ProvoParking3D uses).
 
 ## Tech Stack
 | Layer | What we use |
@@ -184,12 +319,14 @@ Sources: `docs/dfd/*.html` (self-contained; open in a browser). Dark-theme copie
 | Frontend | Plain HTML, CSS, and JavaScript ES modules, no build step (`index.html`, `css/styles.css`, `js/`) |
 | Backend / API | Supabase auto-generated REST API, called with `supabase-js` 2.45.4 |
 | Database | Supabase PostgreSQL (`supabase/schema.sql`), with Row Level Security (`supabase/policies.sql`) |
+| Maps | Google Maps JavaScript API (2D + Photorealistic 3D, `v=beta`), loaded on demand from `js/lib/google-maps.js` |
+| AI | Gemini Flash called only from the `parse-find` Supabase Edge Function (`supabase/functions/parse-find/`); `GEMINI_API_KEY` is a Supabase secret, never in the browser |
 | Hosting | GitHub Pages, deployed by GitHub Actions (`.github/workflows/pages.yml`) |
 | Checks | Syntax check and unit tests on every pull request (`.github/workflows/ci.yml`, `npm test`) |
 
 **Why this fits our team:** Supabase gives us a real PostgreSQL database and an API on a free tier without anyone running or deploying a server. Everyone can see the tables in Supabase's Table Editor and all the code in GitHub. Supabase does not host web pages, so the frontend is hosted free on GitHub Pages from this same repo.
 
-**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY`. The anon key is meant to be used in a browser; Row Level Security lets visitors read only the public reference data (areas, permits, rules, tow companies); a signed-in user can also read and change only their own profile, permits, favorites and My car sessions.
+**Keys:** the Supabase URL and anon key are never committed. Locally they go in `config.js`, which is in `.gitignore`. For the live site, GitHub Actions writes `config.js` from the repository secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and (optional) `GOOGLE_MAPS_API_KEY`. A browser Maps key is visible to visitors, so restrict it in Google Cloud to HTTP referrers `https://parkermorris11.github.io/ProvoParking/*` and `http://localhost:*/*`, to the Maps JavaScript API only, and set a budget alert. The anon key is meant to be used in a browser; Row Level Security lets visitors read only the public reference data (areas, permits, rules, tow companies); a signed-in user can also read and change only their own profile, permits, favorites and My car sessions.
 
 ## Project Structure
 ```
@@ -198,12 +335,13 @@ css/styles.css    styles
 js/main.js        entry point
 js/router.js      hash routes
 js/state.js       shared state
-js/pages/         one file per screen
+js/pages/         one file per screen (map.js + map-2d.js + map-3d.js draw the Google map)
 js/data/          every Supabase call
 js/domain/        eligibility rules (unit tested)
 js/components/    shared HTML pieces
 tests/            unit tests (npm test)
 supabase/         schema, policies, dated change files
+supabase/functions/parse-find/   Edge Function for plain-language / voice Find
 ```
 How to add a page, branch naming, pull requests and database changes: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
@@ -247,12 +385,12 @@ Existing team database: if parking areas load but Find has no permit choices, se
 
 ### 2. Run it on your computer
 1. Clone the repo: `git clone https://github.com/ParkerMorris11/ProvoParking.git` and `cd ProvoParking`.
-2. Copy `config.example.js` to `config.js` and paste in your Project URL and anon key.
+2. Copy `config.example.js` to `config.js` and paste in your Project URL and anon key. Optionally add `GOOGLE_MAPS_API_KEY` (Maps JavaScript API) to see the map; without it the map area shows a short message.
 3. Start a local web server in the folder, for example `npm start` (Node) or `python3 -m http.server 8000`. Opening `index.html` directly as a file does not work, because the app uses JavaScript modules.
 4. Open the address it prints (e.g. `http://localhost:8000`). You should see "4 parking areas loaded."
 
 ### 3. Live site (GitHub Pages)
-1. In the GitHub repo, go to **Settings > Secrets and variables > Actions** and add two repository secrets: `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+1. In the GitHub repo, go to **Settings > Secrets and variables > Actions** and add repository secrets `SUPABASE_URL` and `SUPABASE_ANON_KEY`, plus `GOOGLE_MAPS_API_KEY` for the map (optional; the deploy still works without it).
 2. Go to **Settings > Pages** and set **Source** to **GitHub Actions**.
 3. Push to `main` (or run the "Deploy to GitHub Pages" workflow from the **Actions** tab). The live URL appears in the workflow run.
 
@@ -283,7 +421,7 @@ Testing note: the screen logic was checked in a headless browser against an in-m
 
 ### Map integration (PR #11)
 
-The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. A subdued base map and labeled permit-color legend help distinguish the boundaries. Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. The team approved integration with merge commits to retain contributor history; see [integration verification](docs/integration-2026-11-01.md).
+The Areas map displays a BYU boundary snapshot without sample location circles, alongside a separate list of database areas. The Google base map and labeled permit-color legend help distinguish the boundaries (Sprint 3 replaced the original tile map; see [map integration](docs/map-integration.md)). Boundary categories do not indicate live availability or permit eligibility. See [map integration and verification](docs/map-integration.md) for data limitations and testing. The team approved integration with merge commits to retain contributor history; see [integration verification](docs/integration-2026-11-01.md).
 
 ### Map and data sources
 
@@ -291,7 +429,7 @@ The Areas map displays a BYU boundary snapshot without sample location circles, 
 |---|---|---|---|
 | BYU lot sections (colored by category) | [BYU campus parking map](https://map.byu.edu/?layer=parking) and [BYU Parking Regulations](https://security.byu.edu/parking-regulations) | Nov 4, 2026 | Only sections whose listed rules match your permit and time are drawn |
 | Provo lots and garages (dashed purple) | Provo City GIS layer [`Provo_Parking_Facilities`](https://services2.arcgis.com/u1JcjHKiYxDeQU3C/arcgis/rest/services/Provo_Parking_Facilities/FeatureServer/0), public facilities only; [Provo Parking](https://www.provo.gov/273/Parking); plus [OpenStreetMap](https://www.openstreetmap.org) `amenity=parking` inside OSM relation 198903 (Provo) | Nov 6, 2026 (city GIS records edited 2018–2023; OSM snapshot the same day) | Name, type, recorded spaces, hours and notes as the source recorded them. Not verified rules and never used for permit matching or the My car timer; every popup says to check signs |
-| Base map | OpenStreetMap via Leaflet | | Background only |
+| Base map | Google Maps (2D road map; 3D Photorealistic) | | Background only |
 
 The city snapshot is `data/provo-city-parking.json` (outlines simplified to about 10 m). Rebuild with `python3 scripts/build-city-parking.py` after refreshing `/tmp/provo-osm-parking-geom.json`. Turn the layer on or off with **Show Provo lots**, jump downtown with **Downtown**, fit the citywide layer with **Provo**, or open the list under the map for a keyboard- and screen-reader-friendly version with **Show on map**. Code: `js/pages/city-layer.js`, `js/domain/city-parking.js`, tests in `tests/city-parking.test.js`. City GIS still covers named downtown and civic public facilities. OSM adds lots across the city limits after dropping BYU/MTC campus features and explicitly restricted records. OpenStreetMap access that the snapshot cannot establish is labeled unknown. Residential permit zones and most signed on-street time limits are still missing.
 
@@ -300,6 +438,14 @@ The city snapshot is `data/provo-city-parking.json` (outlines simplified to abou
 ### Nearby lots with your location
 
 On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).
+
+### Turning on plain-language / voice Find (project owner)
+Nothing below happens automatically; the Edge Function is not deployed by this branch.
+1. Get a Gemini API key (Google AI Studio).
+2. `supabase secrets set GEMINI_API_KEY=<key>` (optional: `GEMINI_MODEL`, default `gemini-flash-latest`; `ALLOWED_ORIGINS` for extra sites).
+3. `supabase functions deploy parse-find`. The default JWT check stays on; the app calls it with the signed-in or anonymous Supabase key.
+4. Until it is deployed, the text box says plain-language search isn't set up yet and the normal form works as before.
+5. Test locally with `supabase functions serve parse-find --env-file <file with GEMINI_API_KEY>` and a `config.js` pointing at that project. iOS Safari audio (MediaRecorder `audio/mp4`) needs a real-device check.
 
 ### Supabase settings for smooth sign-in (project owner)
 1. **Authentication > Sign In / Providers:** turn **Confirm email** off, so an email sign-up can use the app immediately (the free email service also sends only 2 emails per hour).

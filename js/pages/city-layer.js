@@ -1,13 +1,13 @@
-// Draws Provo public parking from the city GIS + OSM snapshot on the shared Leaflet map,
-// with an accessible list. Kept separate from BYU eligibility: these are unverified records, not rules.
+// Provo public parking from the city GIS + OSM snapshot, with an accessible list.
+// Drawing is done by the map in map.js through a small `host`; this file owns the data, toggle and list.
+// Kept separate from BYU eligibility: these are unverified records, not rules.
 import { escapeHtml, directionsUrl } from "../lib/format.js";
 import { facilitySummary, cityLayerBounds } from "../domain/city-parking.js";
+import { boundsFromCorners, DOWNTOWN_CENTER } from "../domain/map-geometry.js";
 
 import { loadCitySnapshot } from "../data/city-snapshot.js";
 
-const CITY_COLOR = "#7a4fb5";
-let layer, facilities = [], source = {};
-const layersByIndex = [];
+let started = false, facilities = [], source = {};
 const byId = id => globalThis.document?.getElementById?.(id) ?? null;
 
 export function cityPopupHtml(summary) {
@@ -24,7 +24,11 @@ export function cityPopupHtml(summary) {
     (directions ? `<p><a href="${escapeHtml(directions)}" target="_blank" rel="noopener">Get directions</a></p>` : "") + `</div>`;
 }
 
-function renderList(map) {
+export function cityFacilitySummary(index) {
+  return facilities[index] ? facilitySummary(facilities[index], source) : null;
+}
+
+function renderList(host) {
   const list = byId("city-lot-list");
   const count = byId("city-lot-count");
   if (count) count.textContent = String(facilities.length);
@@ -44,50 +48,47 @@ function renderList(map) {
     const s = facilities[index] && facilitySummary(facilities[index], source);
     if (!s?.center) return;
     const toggle = byId("city-toggle");
-    if (toggle && !toggle.checked) { toggle.checked = true; layer.addTo(map); }
-    map.setView([s.center.latitude, s.center.longitude], 17);
-    layersByIndex[index]?.openPopup();
+    if (toggle && !toggle.checked) { toggle.checked = true; host.setVisible(true); }
+    host.focus({ lat: s.center.latitude, lng: s.center.longitude }, 17);
+    host.select(index);
     byId("parking-map")?.focus({ preventScroll: false });
   };
 }
 
-export async function initCityLayer(map, L = window.L, fetchImpl = fetch) {
-  if (!map || !L || layer) return;
+/**
+ * host: { setFacilities(list), setVisible(bool), focus({lat, lng}, zoom), fitBounds(bounds), select(index) }.
+ * Safe to call more than once; only the first call does anything.
+ */
+export async function initCityLayer(host, fetchImpl = fetch) {
+  if (!host || started) return;
+  started = true;
   const status = byId("city-status");
   try {
     ({ facilities, source } = await loadCitySnapshot(fetchImpl));
-    layer = L.geoJSON({ type: "FeatureCollection", features: facilities }, {
-      style: () => ({ color: CITY_COLOR, weight: 1.6, dashArray: "5 4", fillColor: CITY_COLOR, fillOpacity: 0.16 }),
-      pointToLayer: (_feature, latlng) => L.circleMarker(latlng, {
-        radius: 7, color: CITY_COLOR, weight: 1.6, fillColor: CITY_COLOR, fillOpacity: 0.35,
-      }),
-      onEachFeature: (feature, featureLayer) => {
-        layersByIndex[facilities.indexOf(feature)] = featureLayer;
-        featureLayer.bindPopup(cityPopupHtml(facilitySummary(feature, source)), { maxWidth: 280 });
-      },
-    });
+    host.setFacilities(facilities);
     const toggle = byId("city-toggle");
     if (toggle) {
       toggle.disabled = false;
-      toggle.addEventListener("change", () => { if (toggle.checked) layer.addTo(map); else map.removeLayer(layer); });
+      toggle.addEventListener("change", () => host.setVisible(toggle.checked));
     }
-    if (!toggle || toggle.checked) layer.addTo(map);
-    const jump = byId("map-downtown");
+    host.setVisible(Boolean(toggle?.checked));
     const showCity = () => {
-      if (toggle && !toggle.checked) { toggle.checked = true; layer.addTo(map); }
+      if (toggle && !toggle.checked) { toggle.checked = true; host.setVisible(true); }
     };
-    if (jump) { jump.disabled = false; jump.addEventListener("click", () => { showCity(); map.setView([40.2338, -111.6595], 16); }); }
+    const jump = byId("map-downtown");
+    if (jump) { jump.disabled = false; jump.addEventListener("click", () => { showCity(); host.focus(DOWNTOWN_CENTER, 16); }); }
     const citywide = byId("map-provo");
-    const bounds = cityLayerBounds(facilities);
+    const bounds = boundsFromCorners(cityLayerBounds(facilities));
     if (citywide && bounds) {
       citywide.disabled = false;
-      citywide.addEventListener("click", () => { showCity(); map.fitBounds(bounds, { padding: [24, 24], maxZoom: 13 }); });
+      citywide.addEventListener("click", () => { showCity(); host.fitBounds(bounds); });
     }
-    renderList(map);
+    renderList(host);
     const gis = facilities.filter(f => f.properties?.record_source !== "osm").length;
     const osm = facilities.length - gis;
     if (status) status.textContent = `${facilities.length} mapped lots and garages across Provo (${gis} city GIS public facilities, ${osm} OpenStreetMap). Coverage is partial. Check posted signs for access, hours, and limits.`;
   } catch (error) {
+    started = false;
     console.warn("[map] Provo city lots unavailable", error);
     if (status) status.textContent = "Provo city lots are unavailable right now. BYU lots still work.";
   }

@@ -4,6 +4,8 @@ import { $, setStatus } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, nowHHMM } from "../lib/format.js";
 import { savePermit } from "../lib/storage.js";
 import { parkingSelection } from "../domain/parking-results.js";
+import { requestParseFind, applyParsedToForm } from "../data/parse-find.js";
+import { createSpeech } from "../lib/speech.js";
 
 export function renderFind() {
   renderDestinationOptions("find-destination", state.find.destinationId, "No specific building");
@@ -25,7 +27,7 @@ export function renderDestinationOptions(id, selected, placeholder = "Choose a B
   $(id).value = selected ?? "";
 }
 
-function syncTimeControls() {
+export function syncTimeControls() {
   const live = $("arrive-now").checked;
   $("arrive-day").disabled = live;
   $("arrive-time").disabled = live;
@@ -39,7 +41,59 @@ function renderPermitInfo() {
     : "";
 }
 
-export function initFind({ go }) {
+// ---- Plain-language / voice search ---------------------------------------------------------------------
+// Fills the form below and stops. The person reviews it and presses "Show parking areas" themselves.
+function initPlainLanguage({ choosePermit }) {
+  const form = $("nl-form"), input = $("nl-text"), mic = $("nl-mic"), go = $("nl-go"), status = $("nl-status");
+  if (!form) return;
+  const say = (message, warn = false) => { status.textContent = message; status.classList.toggle("warn", warn); };
+  let busy = false;
+
+  async function run(request) {
+    if (busy) return;
+    busy = true;
+    go.disabled = true;
+    say("Reading that…");
+    try {
+      const lists = { permits: state.permits, destinations: state.destinations };
+      const parsed = await requestParseFind(state.db, request, lists);
+      const els = { permit: $("permit-select"), destination: $("find-destination"), now: $("arrive-now"), day: $("arrive-day"), time: $("arrive-time") };
+      const result = applyParsedToForm(parsed, els, { ...lists, choosePermit, getPermitId: () => state.find.permitId });
+      syncTimeControls();
+      renderPermitInfo();
+      say([result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].join(" "), result.needsReview || result.warnings.length > 0);
+    } catch (error) {
+      say(error.message || "I couldn't read that. Use the form below.", true);
+    } finally {
+      busy = false;
+      go.disabled = false;
+      speech.done();
+    }
+  }
+
+  const speech = createSpeech({
+    onTranscript: (text, final) => { input.value = text; if (final && text) void run({ text }); },
+    onAudio: (audio) => void run({ audio }),
+    onError: (message) => say(message, true),
+    onState: (next) => {
+      mic.setAttribute("aria-pressed", String(next === "listening"));
+      mic.setAttribute("aria-label", next === "listening" ? "Stop listening" : "Speak your trip");
+      if (next === "listening") say("Listening… tap the microphone again when you're done.");
+      else if (next === "processing") say("Reading that…");
+    },
+  });
+  mic.hidden = speech.mode === "none";
+  mic.addEventListener("click", () => speech.toggle());
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) { say("Type or say something like “class at 3 pm at the JKB with my current permit”.", true); input.focus(); return; }
+    void run({ text });
+  });
+}
+
+export function initFind({ go, choosePermit = () => {} }) {
+  initPlainLanguage({ choosePermit });
   $("permit-select").addEventListener("change", renderPermitInfo);
   $("arrive-now").addEventListener("change", syncTimeControls);
   $("find-form").addEventListener("submit", (e) => {

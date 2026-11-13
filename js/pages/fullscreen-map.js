@@ -218,7 +218,7 @@ function build() {
     down = null;
     if (still && sheet.dataset.state === "full") setSheet("peek");
   });
-  // Leaflet must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
+  // The map must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
   if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshMap()).observe(mapEl);
   window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet("peek"));
   // Each time Areas opens: start with the list lowered and the map sized to the screen.
