@@ -232,8 +232,8 @@ async function onEnd(btn) {
   const version = state.authVersion;
   btn.disabled = true;
   try {
-    const expired = Date.now() > new Date(state.activeSession.leave_by).getTime();
-    await sessions.endSession(state.activeSession, expired);
+    const expired = parkingNow() > new Date(state.activeSession.leave_by).getTime();
+    const snapshot = await sessions.endSession(state.activeSession);
     if (version !== state.authVersion) return;
     sessions.acceptTimerSnapshot(snapshot);
     timerStatus(expired ? "Timer ended. You were over your planned time." : "Timer ended. Safe travels!");
@@ -250,6 +250,8 @@ async function onEnd(btn) {
 
 async function onSaveNote(e) {
   e.preventDefault();
+  if(mutation)return;
+  mutation=true;refreshSequence++;
   const version = state.authVersion;
   const btn = e.submitter;
   btn.disabled = true;
