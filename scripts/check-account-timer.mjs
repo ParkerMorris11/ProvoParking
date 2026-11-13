@@ -31,9 +31,14 @@ try{
   await page.keyboard.press("Shift+Tab");
   assert.equal(await page.getByRole("button",{name:"I left — end timer",exact:true}).evaluate(el=>el===document.activeElement),true);
   await page.getByRole("button",{name:"Close parking timer",exact:true}).click();
-  const other=await context.newPage();await other.goto(url+"#car");
+  await page.screenshot({path:`artifacts/account-timer/${width}-${theme}-active.png`,fullPage:true});
+  const other=await context.newPage();other.on("pageerror",e=>errors.push(e.message));
+  other.on("console",m=>{if(m.type()==="error")errors.push(m.text());});
+  await other.goto(url+"#car");
   await other.getByRole("button",{name:"I left — end timer",exact:true}).waitFor();
   await other.getByRole("button",{name:"I left — end timer",exact:true}).click();
+  await other.getByRole("button",{name:"Start timer",exact:true}).waitFor();
+  assert.ok((await other.locator("#car-action-status").innerText()).startsWith("Timer ended."));
   await page.evaluate(()=>window.dispatchEvent(new Event("focus")));
   await page.locator("#car-fab:not(.running)").waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
