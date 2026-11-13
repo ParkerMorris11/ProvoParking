@@ -221,7 +221,22 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .parking-map { position: relative; height: 540px; width: 100%; background: var(--surface-2); z-index: 0; overflow: hidden; }
 .map-layer { position: absolute; inset: 0; }
 .map-layer[hidden] { display: none; }
-.map-layer-3d > gmp-map-3d { display: block; width: 100%; height: 100%; }
+.map-layer-3d { background: #090d16; }
+.map-layer-3d > gmp-map-3d { display: block; width: 100%; height: 100%; background: #090d16; }
+/* Only the 3D tiles and their WebGL overlays receive the satellite night treatment. */
+.map-layer-3d--night > gmp-map-3d { filter: brightness(0.78) contrast(1.12) saturate(0.85) hue-rotate(-8deg); }
+
+.map-user-cursor { position: absolute; width: 0; height: 0; z-index: 10000; pointer-events: none; }
+.map-user-dot { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; box-sizing: border-box; border: 3px solid #fff; border-radius: 50%; background: #007aff; box-shadow: 0 1px 4px #10244080, 0 0 1px 1px #10244040; }
+.map-user-halo { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border-radius: 50%; background: #007aff26; animation: map-location-pulse 2.4s ease-in-out infinite; }
+.map-user-heading { position: absolute; left: -32px; top: -48px; width: 64px; height: 48px; transform-origin: 50% 100%; clip-path: polygon(50% 100%, 0 12%, 14% 4%, 32% 0, 68% 0, 86% 4%, 100% 12%); background: linear-gradient(to top, #007aff80, #007aff08); }
+.map-user-heading[hidden] { display: none; }
+@keyframes map-location-pulse { 0%, 100% { transform: scale(0.85); opacity: 0.8; } 50% { transform: scale(1.2); opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .map-user-halo { animation: none; } }
+@media (prefers-reduced-transparency: reduce) {
+  .map-layer-3d--night > gmp-map-3d { filter: brightness(0.88) contrast(1.08); }
+  .map-user-halo { background: #007aff20; animation: none; }
+}
 .map-empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--muted); font-size: .85rem; font-weight: 600; line-height: 1.5; }
 .map-status:empty { display: none; }
 /* Plain-language / voice search on Find */

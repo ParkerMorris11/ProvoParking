@@ -79,7 +79,7 @@ function initLocation() {
     document.getElementById("location-status").classList.toggle("is-live", update.status === "live");
     if (latestPosition) {
       const point = { lat: latestPosition.latitude, lng: latestPosition.longitude };
-      for (const view of Object.values(views)) view.setUser(point, latestPosition.accuracy);
+      for (const view of Object.values(views)) view.setUser(point, latestPosition.accuracy, latestPosition.heading, latestPosition.speed);
       if (firstFix) { activeView()?.focus(point, 16); firstFix = false; }
     } else {
       if (wasLive) for (const view of Object.values(views)) view.setUser(null);
@@ -213,11 +213,11 @@ async function ensureView(next, center) {
   if (next === "2d") {
     const lib = await maps.importLibrary("maps");
     views[next] = createMap2D({ maps, lib, container, center, dark: isDark(), onSelect: selectShape });
-    views[next].setStyle(mapStyle);
   } else {
     const lib = await maps.importLibrary("maps3d");
-    views[next] = createMap3D({ lib, container, center, onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
+    views[next] = createMap3D({ lib, container, center, dark: isDark(), onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
   }
+  views[next].setStyle(mapStyle);
   return views[next];
 }
 
@@ -237,7 +237,7 @@ export async function setMode(next, failureMessage = "") {
     mode = next;
     view.show();
     view.setShapes(shapes);
-    view.setUser(latestPosition ? { lat: latestPosition.latitude, lng: latestPosition.longitude } : null, latestPosition?.accuracy);
+    view.setUser(latestPosition ? { lat: latestPosition.latitude, lng: latestPosition.longitude } : null, latestPosition?.accuracy, latestPosition?.heading, latestPosition?.speed);
     if (next === "3d") view.focus(center, 16);
     hideCard();
     setMapStatus(failureMessage);
@@ -254,19 +254,18 @@ export async function setMode(next, failureMessage = "") {
   syncStyleControl();
 }
 
-// Satellite is always labeled hybrid; 3D keeps its photorealistic hybrid imagery.
+// The same labeled satellite / road map choice applies to both views.
 function syncStyleControl() {
   const button = byId("map-style");
   if (!button) return;
-  button.setAttribute("aria-pressed", String(mode === "3d" || mapStyle === "hybrid"));
-  button.setAttribute("aria-label", mode === "3d" ? "Switch to 2D road map" : mapStyle === "hybrid" ? "Switch to road map" : "Switch to satellite with labels");
+  button.setAttribute("aria-pressed", String(mapStyle === "hybrid"));
+  button.setAttribute("aria-label", mapStyle === "hybrid" ? "Switch to road map" : "Switch to satellite with labels");
   button.title = button.getAttribute("aria-label");
 }
 
 export async function toggleMapStyle() {
-  mapStyle = mode === "3d" || mapStyle === "hybrid" ? "roadmap" : "hybrid";
-  views["2d"]?.setStyle(mapStyle);
-  if (mode === "3d") await setMode("2d");
+  mapStyle = mapStyle === "hybrid" ? "roadmap" : "hybrid";
+  for (const view of Object.values(views)) view.setStyle(mapStyle);
   syncStyleControl();
 }
 
@@ -307,7 +306,7 @@ export async function initMap() {
     await ensureView("2d", CAMPUS_CENTER);
     views["2d"].show();
     syncToggle();
-    new MutationObserver(() => views["2d"]?.setDark(isDark())).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
+    new MutationObserver(() => { for (const view of Object.values(views)) view.setDark(isDark()); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
     byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); el.focus({ preventScroll: true }); } });
     byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); el.focus({ preventScroll: true }); } });
     for (const m of ["2d", "3d"]) {

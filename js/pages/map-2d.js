@@ -22,8 +22,7 @@ export const DARK_STYLE = [
   { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#64748b" }] },
 ];
 
-const USER_COLOR = "#0062B8";
-const metersPerPixel = (zoom, lat) => 156543.03392 * Math.cos(lat * Math.PI / 180) / 2 ** zoom;
+const USER_COLOR = "#007AFF";
 
 /** `maps` is google.maps; `lib` is the result of maps.importLibrary("maps"). */
 export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom = 15, dark = false, onSelect }) {
@@ -35,12 +34,44 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   });
   let mapStyle = "roadmap", darkOn = dark;
   const applyStyle = () => map.setOptions({ mapTypeId: mapStyle, styles: mapStyle === "roadmap" && darkOn ? DARK_STYLE : null });
-  let drawn = [], accuracyRing = null, userDot = null, userPoint = null;
+  let drawn = [], accuracyRing = null, userCursor = null;
+
+  class LocationCursor extends maps.OverlayView {
+    constructor(point, heading) {
+      super();
+      this.point = point;
+      const doc = container.ownerDocument;
+      this.element = doc.createElement("div");
+      this.element.className = "map-user-cursor";
+      this.element.setAttribute("aria-hidden", "true");
+      const halo = doc.createElement("span");
+      halo.className = "map-user-halo";
+      this.cone = doc.createElement("span");
+      this.cone.className = "map-user-heading";
+      const dot = doc.createElement("span");
+      dot.className = "map-user-dot";
+      this.element.append(halo, this.cone, dot);
+      this.update(point, heading);
+    }
+    onAdd() { this.getPanes().floatPane.append(this.element); }
+    draw() {
+      const pixel = this.getProjection()?.fromLatLngToDivPixel(new maps.LatLng(this.point));
+      if (!pixel) return;
+      this.element.style.left = `${pixel.x}px`;
+      this.element.style.top = `${pixel.y}px`;
+    }
+    update(point, heading) {
+      this.point = point;
+      this.cone.hidden = !Number.isFinite(heading);
+      this.cone.style.transform = `rotate(${Number.isFinite(heading) ? heading : 0}deg)`;
+      if (this.getMap?.()) this.draw();
+    }
+    onRemove() { this.element.remove(); }
+  }
 
   const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; };
-  const clearUser = () => { accuracyRing?.setMap(null); userDot?.setMap(null); accuracyRing = userDot = userPoint = null; };
-  const sizeDot = () => userDot?.setRadius(8 * metersPerPixel(map.getZoom() ?? zoom, userPoint.lat));
-  map.addListener?.("zoom_changed", () => { if (userDot) sizeDot(); });
+  const clearUser = () => { accuracyRing?.setMap(null); userCursor?.setMap(null); accuracyRing = userCursor = null; };
+  map.addListener?.("zoom_changed", () => userCursor?.draw());
 
   return {
     mode: "2d",
@@ -55,17 +86,19 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
         drawn.push(item);
       }
     },
-    setUser(point, accuracy) {
+    setUser(point, accuracy, heading = null, speed = null) {
       if (!point) return clearUser();
-      userPoint = point;
-      if (!userDot) {
-        accuracyRing = new lib.Circle({ map, center: point, radius: accuracy, strokeColor: USER_COLOR, strokeWeight: 1, fillColor: USER_COLOR, fillOpacity: 0.07, clickable: false });
-        userDot = new lib.Circle({ map, center: point, radius: 8, strokeColor: "#ffffff", strokeWeight: 3, strokeOpacity: 1, fillColor: USER_COLOR, fillOpacity: 1, clickable: false, zIndex: 2 });
+      if (Number.isFinite(speed) && speed < 0.3) heading = null;
+      const radius = Number.isFinite(accuracy) && accuracy > 0 ? Math.min(accuracy, 1500) : 0;
+      if (!userCursor) {
+        accuracyRing = new lib.Circle({ map, center: point, radius, strokeColor: USER_COLOR, strokeOpacity: 0.35, strokeWeight: 1, fillColor: USER_COLOR, fillOpacity: 0.12, clickable: false, zIndex: 1000 });
+        userCursor = new LocationCursor(point, heading);
+        userCursor.setMap(map);
       } else {
-        accuracyRing.setCenter(point); accuracyRing.setRadius(accuracy);
-        userDot.setCenter(point);
+        accuracyRing.setCenter(point); accuracyRing.setRadius(radius);
+        userCursor.update(point, heading);
+        userCursor.draw();
       }
-      sizeDot();
     },
     focus(point, level = 17) { map.panTo(point); map.setZoom(level); },
     fitBounds(bounds, padding = 24) {

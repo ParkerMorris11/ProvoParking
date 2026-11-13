@@ -89,11 +89,14 @@ test('a location request without a callback has a bounded wait',()=>{
  t.start();watchdog();assert.notEqual(states.at(-1).status,'waiting');t.stop();
 });
 
-test('refined location is not replaced by a less accurate fallback update and both watches stop',()=>{
+test('refined location forwards heading, rejects older fallback updates, and stops both watches',()=>{
  const cb=[],cleared=[],states=[];let retry;const geo={watchPosition(ok,bad){cb.push({ok,bad});return cb.length;},clearWatch:id=>cleared.push(id)};
  const t=createLocationTracker({geolocation:geo,onChange:s=>states.push(s),now:()=>100000,scheduleRetry:fn=>(retry=fn,1),cancelRetry:()=>{}});
  t.start();cb[0].bad({code:3});retry();cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});
- cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15},timestamp:100000});
+ cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15,heading:180,speed:1.2},timestamp:100000});
+ assert.equal(states.at(-1).position.heading,180);assert.equal(states.at(-1).position.speed,1.2);
+ cb[2].ok({coords:{latitude:40.251,longitude:-111.65,accuracy:15,heading:null,speed:NaN},timestamp:100001});
+ assert.equal(states.at(-1).position.heading,null);assert.equal(states.at(-1).position.speed,null);
  cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});assert.equal(states.at(-1).position.accuracy,15);
  t.stop();assert.deepEqual(cleared,[1,3,2]);
 });
@@ -111,3 +114,15 @@ test('late refinement error after pause cannot cancel the new watch',()=>{
  t.start();cb[0].bad({code:3});retry();cb[1].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});t.pause();t.resume();cb[3].bad({code:3});retry();cb[4].ok({coords:{latitude:40.25,longitude:-111.65,accuracy:250},timestamp:100000});
  cb[2].bad({code:3});assert.equal(cleared.includes(6),false);t.stop();assert.equal(cleared.includes(6),true);
 });
+
+for (const [heading, speed, wantHeading, wantSpeed] of [[90, 1.5, 90, 1.5], [0, 0, 0, 0], [null, null, null, null], [undefined, undefined, null, null], [NaN, Infinity, null, null]]) {
+ test(`location normalizes heading ${heading} and speed ${speed}`, () => {
+  let success; const states = [];
+  const tracker = createLocationTracker({ geolocation: { watchPosition(ok) { success = ok; return 1; }, clearWatch() {} }, onChange: s => states.push(s), now: () => 100000 });
+  try {
+   tracker.start(); success({ coords: { latitude: 40.25, longitude: -111.65, accuracy: 15, heading, speed }, timestamp: 100000 });
+   assert.equal(states.at(-1).position.heading, wantHeading);
+   assert.equal(states.at(-1).position.speed, wantSpeed);
+  } finally { tracker.stop(); }
+ });
+}

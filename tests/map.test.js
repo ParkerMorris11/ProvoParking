@@ -102,7 +102,7 @@ test('bounds helpers and alpha colors', () => {
 });
 
 function fakeMaps2D() {
-  const made = { polygons: [], circles: [], maps: [] };
+  const made = { polygons: [], circles: [], maps: [], overlays: [] };
   const item = (store) => class {
     constructor(options) { this.options = options; this.listeners = {}; store.push(this); }
     addListener(name, fn) { this.listeners[name] = fn; }
@@ -112,11 +112,17 @@ function fakeMaps2D() {
   };
   const lib = {
     Map: class { constructor(el, options) { this.options = options; made.maps.push(this); this.zoom = options.zoom; }
-      addListener() {} getZoom() { return this.zoom; } setZoom(z) { this.zoom = z; } panTo(p) { this.center = p; }
+      addListener(name, fn) { (this.listeners ??= {})[name] = fn; } getZoom() { return this.zoom; } setZoom(z) { this.zoom = z; } panTo(p) { this.center = p; }
       setOptions(o) { Object.assign(this.options, o); } getCenter() { return { lat: () => 40.25, lng: () => -111.65 }; } },
     Polygon: item(made.polygons), Circle: item(made.circles),
+    OverlayView: class {
+      constructor() { made.overlays.push(this); }
+      setMap(map) { this.map = map; if (map) { this.onAdd(); this.draw(); } else this.onRemove(); }
+      getPanes() { return { floatPane: { append() {} } }; }
+      getProjection() { return { fromLatLngToDivPixel: () => ({ x: 40, y: 60 }) }; }
+    },
   };
-  return { made, lib, maps: { ControlPosition: { RIGHT_CENTER: 12 }, event: { trigger() {}, addListenerOnce() {} } } };
+  return { made, lib, maps: { OverlayView: lib.OverlayView, LatLng: class { constructor(p) { Object.assign(this, p); } }, ControlPosition: { RIGHT_CENTER: 12 }, event: { trigger() {}, addListenerOnce() {} } } };
 }
 
 test('2D view draws polygons and points, and a tap reports the shape', () => {
@@ -135,18 +141,14 @@ test('2D view draws polygons and points, and a tap reports the shape', () => {
   assert.equal(made.polygons[0].options.map, null, 'old shapes are removed from the map');
 });
 
-test('2D view is the default style, dark mode swaps the style, user dot is created once', () => {
+test('2D view starts with road map styling and supports dark mode', () => {
   const { made, lib, maps } = fakeMaps2D();
   const view = createMap2D({ maps, lib, container: {}, onSelect() {} });
   assert.equal(made.maps[0].options.styles, null);
   assert.equal(made.maps[0].options.disableDefaultUI, true);
   view.setDark(true);
   assert.ok(Array.isArray(made.maps[0].options.styles));
-  view.setUser({ lat: 40.25, lng: -111.65 }, 20);
-  view.setUser({ lat: 40.2501, lng: -111.65 }, 15);
-  assert.equal(made.circles.length, 2, 'accuracy ring + dot, reused on update');
-  view.setUser(null);
-  assert.equal(made.circles[0].options.map, null);
+
 });
 
 test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () => {
@@ -243,3 +245,178 @@ test('2D satellite retains labels, restores the dark roadmap, and uses shared zo
   view.zoomBy(-1);
   assert.equal(made.maps[0].zoom, 15);
 });
+
+function cursorDocument() {
+  return { createElement() { return { style: {}, children: [], setAttribute() {}, append(...els) { this.children.push(...els); }, remove() { this.removed = true; } }; } };
+}
+
+test('2D cursor reuses its overlay, projects updates, hides cleared headings, and removes everything', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  const container = { ownerDocument: cursorDocument() };
+  const view = createMap2D({ maps, lib, container, onSelect() {} });
+  view.setUser({ lat: 40.25, lng: -111.65 }, 20, 90);
+  assert.equal(made.circles.length, 1, 'only the geographic accuracy disc uses a Circle');
+  assert.equal(made.overlays.length, 1);
+  const cursor = made.overlays[0];
+  const cone = cursor.element.children.find(el => el.className === 'map-user-heading');
+  assert.equal(cone.hidden, false);
+  assert.equal(cone.style.transform, 'rotate(90deg)');
+  assert.equal(cursor.element.style.left, '40px');
+  view.setUser({ lat: 40.251, lng: -111.651 }, 10, null);
+  assert.equal(made.overlays.length, 1);
+  assert.equal(made.circles.length, 1);
+  assert.equal(made.circles[0].options.radius, 10);
+  assert.equal(cone.hidden, true);
+  view.setUser({ lat: 40.251, lng: -111.651 }, 10, 0);
+  assert.equal(cone.hidden, false, 'north is a valid heading');
+  view.setUser({ lat: 40.251, lng: -111.651 }, 10, NaN);
+  assert.equal(cone.hidden, true);
+  view.setUser({ lat: 40.251, lng: -111.651 }, 10, 90, 0);
+  assert.equal(cone.hidden, true, 'stationary GPS heading is suppressed');
+  view.setUser(null);
+  assert.equal(cursor.map, null);
+  assert.equal(cursor.element.removed, true);
+  assert.equal(made.circles[0].options.map, null);
+});
+
+function fakeMaps3D() {
+  const children = [], classes = new Set();
+  class El {
+    constructor(options) { Object.assign(this, options); this.options = options; this.listeners = {}; this.attributes = {}; }
+    addEventListener(name, fn) { this.listeners[name] = fn; }
+    append(el) { children.push(el); }
+    setAttribute(name, value) { this.attributes[name] = value; }
+    remove() { const i = children.indexOf(this); if (i >= 0) children.splice(i, 1); }
+  }
+  const lib = { Map3DElement: El, Polygon3DElement: El, Marker3DElement: El };
+  const container = { append(el) { this.map = el; }, classList: { toggle(name, on) { if (on) classes.add(name); else classes.delete(name); } } };
+  return { children, classes, lib, container };
+}
+
+test('3D switches native dark roadmap and night-treated hybrid without changing views', () => {
+  const f = fakeMaps3D();
+  const view = createMap3D({ ...f, dark: true, onSelect() {} });
+  const map = f.container.map;
+  assert.equal(map.colorScheme, 'DARK');
+  assert.equal(map.attributes['color-scheme'], 'DARK');
+  assert.ok(f.classes.has('map-layer-3d--night'));
+  view.setDark(false);
+  assert.equal(map.colorScheme, 'LIGHT');
+  assert.equal(f.classes.size, 0);
+  view.setStyle('roadmap'); view.setDark(true);
+  assert.equal(map.mode, 'ROADMAP');
+  assert.equal(map.colorScheme, 'DARK');
+  assert.equal(f.classes.size, 0);
+  view.setStyle('hybrid');
+  assert.equal(map.mode, 'HYBRID');
+  assert.ok(f.classes.has('map-layer-3d--night'));
+});
+
+test('3D cursor reuses ground polygons and removes the heading fan when heading clears', () => {
+  const f = fakeMaps3D();
+  const view = createMap3D({ ...f, onSelect() {} });
+  view.setUser({ lat: 40.25, lng: -111.65 }, 20, 0);
+  const original = [...f.children];
+  assert.equal(original.length, 5, 'accuracy, halo, heading fan, shadow and dot');
+  assert.ok(original.every(el => el.zIndex >= 1000), 'cursor stays above permit overlays');
+  const fan = original.find(el => el.outerCoordinates.length === 15);
+  assert.ok(fan.outerCoordinates.slice(1).every(p => p.lat > 40.25), 'north fan points north');
+  view.setUser({ lat: 40.251, lng: -111.65 }, 10, 90);
+  assert.deepEqual(f.children, original, 'updates reuse every polygon');
+  assert.ok(fan.outerCoordinates.slice(1).every(p => p.lng > -111.65), 'east fan points east');
+  view.setUser({ lat: 40.251, lng: -111.65 }, 10, null);
+  assert.equal(f.children.length, 4);
+  assert.ok(!f.children.includes(fan));
+  view.setUser({ lat: 40.251, lng: -111.65 }, 10, 90, 0);
+  assert.equal(f.children.length, 4, 'stationary GPS heading stays hidden');
+  view.setUser(null);
+  assert.equal(f.children.length, 0);
+});
+
+test('map controls retain 3D while switching basemaps and apply theme changes to both views', async () => {
+  const two = fakeMaps2D(), three = fakeMaps3D();
+  let theme = 'dark', themeChanged;
+  const nodes = new Map();
+  const doc = {
+    createElement() {
+      const classes = new Set(), attrs = {};
+      return { ownerDocument: doc, children: [], classList: { toggle(name, on) { if (on) classes.add(name); else classes.delete(name); }, contains: name => classes.has(name) },
+        append(el) { this.children.push(el); }, setAttribute(name, value) { attrs[name] = value; }, getAttribute: name => attrs[name], addEventListener() {}, remove() {} };
+    },
+    documentElement: { getAttribute: () => theme },
+    getElementById: id => nodes.get(id) ?? null,
+    querySelector: () => nodes.get('parking-map'),
+  };
+  for (const id of ['parking-map', 'map-mode-2d', 'map-mode-3d', 'map-style', 'map-status']) nodes.set(id, doc.createElement());
+  const previousFetch = globalThis.fetch;
+  globalThis.window = { APP_CONFIG: { GOOGLE_MAPS_API_KEY: 'test-key' }, google: { maps: { ...two.maps, importLibrary: async name => name === 'maps' ? two.lib : three.lib } } };
+  globalThis.document = doc;
+  globalThis.MutationObserver = class { constructor(fn) { themeChanged = fn; } observe() {} };
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [] }) });
+  try {
+    const controller = await import('../js/pages/map.js?style-controls');
+    await controller.initMap();
+    await controller.setMode('3d');
+    const layer = nodes.get('parking-map').children[1], map = layer.children[0];
+    assert.equal(map.mode, 'ROADMAP');
+    assert.equal(map.colorScheme, 'DARK');
+    await controller.toggleMapStyle();
+    assert.equal(nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
+    assert.equal(nodes.get('map-style').getAttribute('aria-pressed'), 'true');
+    assert.equal(map.mode, 'HYBRID');
+    assert.equal(two.made.maps[0].options.mapTypeId, 'hybrid');
+    assert.ok(layer.classList.contains('map-layer-3d--night'));
+    theme = 'light'; themeChanged();
+    assert.equal(map.colorScheme, 'LIGHT');
+    assert.equal(layer.classList.contains('map-layer-3d--night'), false);
+    await controller.toggleMapStyle();
+    assert.equal(map.mode, 'ROADMAP');
+    assert.equal(nodes.get('map-style').getAttribute('aria-pressed'), 'false');
+    assert.equal(two.made.maps[0].options.styles, null);
+    theme = 'dark'; themeChanged();
+    assert.equal(map.colorScheme, 'DARK');
+    assert.ok(two.made.maps[0].options.styles.length);
+    assert.equal(nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
+  } finally {
+    globalThis.fetch = previousFetch;
+    delete globalThis.window; delete globalThis.document; delete globalThis.MutationObserver;
+  }
+});
+
+test('3D night treatment strengthens permit overlays without changing their hue', () => {
+  const f = fakeMaps3D();
+  const view = createMap3D({ ...f, onSelect() {} });
+  const shape = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
+  view.setShapes([shape]);
+  const polygon = f.children[0];
+  view.setDark(true);
+  assert.equal(polygon.fillColor, withAlpha(shape.color, 0.66));
+  assert.equal(polygon.strokeColor, shape.color);
+  assert.equal(polygon.strokeWidth, 3);
+  view.setStyle('roadmap');
+  assert.equal(polygon.fillColor, withAlpha(shape.color, 0.45));
+  assert.equal(polygon.strokeWidth, 2);
+});
+
+for (const reducedMotion of [false, true]) {
+  test(`3D halo honors reduced motion (${reducedMotion}) and cancels animation on removal`, () => {
+    const f = fakeMaps3D();
+    let frame, cancelled = [];
+    f.container.ownerDocument = { defaultView: {
+      matchMedia: () => ({ matches: reducedMotion }),
+      requestAnimationFrame(fn) { frame = fn; return 1; }, cancelAnimationFrame(id) { cancelled.push(id); },
+    } };
+    const view = createMap3D({ ...f, onSelect() {} });
+    view.setUser({ lat: 40.25, lng: -111.65 }, 15);
+    assert.equal(typeof frame, reducedMotion ? 'undefined' : 'function');
+    const halo = f.children[1], original = halo.outerCoordinates;
+    if (frame) { frame(1200); assert.notDeepEqual(halo.outerCoordinates, original); }
+    const dot = f.children.at(-1), beforeZoom = dot.outerCoordinates[0].lng;
+    f.container.map.range = 600;
+    f.container.map.listeners['gmp-rangechange']();
+    assert.ok(dot.outerCoordinates[0].lng < beforeZoom, 'ground footprint shrinks when zooming in');
+    view.setUser(null);
+    assert.equal(f.children.length, 0);
+    assert.deepEqual(cancelled, reducedMotion ? [] : [1]);
+  });
+}
