@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Account timer review</title><link rel="stylesheet" href="../../css/styles.css"></head><body>
+<div id="auth-screen" hidden></div>
+<header id="app-header" class="top"><h1>Provo Parking</h1><a href="#areas">Areas</a><a href="#help">Help</a></header>
+<main id="app-main"><p id="status" role="status"></p><section id="fixture-content"><h2 tabindex="-1">Parking areas</h2><p>Account timer review with synthetic data.</p><a href="#car/1" class="primary">Park here</a></section>
+<div id="car-sheet" class="car-sheet" hidden><div id="car-backdrop" class="car-sheet-backdrop"></div><section class="car-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="h-car">
+<button id="car-close" type="button" class="car-sheet-close" aria-label="Close parking timer">×</button><h2 id="h-car" tabindex="-1">Parking timer</h2><p id="car-action-status" class="hint" role="status" hidden></p>
+<div id="car-guest" hidden></div><div id="car-active" hidden></div>
+<form id="car-form"><label for="car-area">Where are you parking?</label><select id="car-area" required></select><label for="car-destination">Destination</label><select id="car-destination" required></select>
+<label for="car-minutes">Duration</label><select id="car-minutes"><option value="30">30 minutes</option><option value="120">2 hours</option></select>
+<label for="car-reminder">Reminder</label><select id="car-reminder"><option value="10">10 minutes</option></select><label for="car-note">Car note</label><input id="car-note" maxlength="200"><p id="car-warning" class="hint warn" role="status" hidden></p><button type="submit" class="primary">Start timer</button></form>
+</section></div>
+<button type="button" id="car-fab" class="car-fab" aria-label="Parking timer"><span id="car-fab-time" hidden></span>Timer</button></main><footer id="app-footer">Review fixture</footer>
+<script type="module">
+import{state}from"../../js/state.js";
+import{initCar,renderCar,openCarSheet,closeCarSheet,refreshSavedTimer}from"../../js/pages/car.js";
+import{initCarFab}from"../../js/components/car-fab.js";
+import{acceptTimerSnapshot}from"../../js/data/sessions.js";
+const key="fixture.accountTimer";
+const read=()=>JSON.parse(localStorage.getItem(key)||"null");
+const snapshot=()=>({session:read(),server_now:new Date().toISOString()});
+state.user={userId:1,displayName:"Test driver"};state.authId="fixture";state.authVersion=1;
+state.areas=[{area_id:1,area_name:"BYU Lot 1A",operator:"BYU",latitude:40.25,longitude:-111.65,is_sample_data:false}];
+state.destinations=[{destination_id:1,name:"Test building",building_code:"TEST"}];state.find={permitId:1,destinationId:1,live:true};
+state.rulesByArea=new Map([[1,[{days_of_week:"All",start_time:"00:00",end_time:"23:59",permit_id:2}]]]);
+state.db={rpc:async(name,args)=>{
+ if(name==="parking_timer_start"){
+  if(read())return{error:{code:"23505"}};
+  const started=Date.now();
+  localStorage.setItem(key,JSON.stringify({session_id:started,user_id:1,area_id:args.p_area_id,started_at:new Date(started).toISOString(),leave_by:new Date(started+args.p_minutes*60000).toISOString(),reminder_minutes_before:args.p_reminder,car_note:args.p_note,destination_id:1,permit_id_at_start:args.p_permit_id}));
+ }else if(name==="parking_timer_end"&&read()?.session_id===args.p_session_id)localStorage.removeItem(key);
+ return{data:snapshot(),error:null};
+}};
+initCar({requireAccount:()=>true});initCarFab({go:hash=>location.hash=hash});
+function route(){if(location.hash.startsWith("#car")){renderCar(location.hash.split("/")[1]);openCarSheet();}else{closeCarSheet();document.querySelector("#fixture-content h2").textContent=location.hash==="#help"?"Help":"Parking areas";}}
+window.addEventListener("hashchange",route);
+acceptTimerSnapshot(snapshot());route();await refreshSavedTimer();
+</script></body></html>
