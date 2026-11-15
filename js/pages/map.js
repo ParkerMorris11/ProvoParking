@@ -1,4 +1,4 @@
-// The Areas map: Google Maps 2D (default) or Photorealistic 3D, with the same lots in both.
+// The Areas map: Google Maps Photorealistic 3D (default) or 2D, with the same lots in both.
 // Pure Google Maps, no other map library. The key is read from config.js (see lib/google-maps.js).
 // This file decides WHAT to draw (eligible BYU sections + optional Provo city lots) and what a tap does;
 // map-2d.js / map-3d.js only draw. Eligibility itself stays in domain/eligibility.js via parking-results.js.
@@ -15,7 +15,7 @@ import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.
 import { createMap2D } from "./map-2d.js";
 import { createMap3D } from "./map-3d.js";
 
-let maps, started = false, mode = "2d", centeredDestinationId;
+let maps, started = false, mode = "3d", centeredDestinationId;
 let mapStyle = "roadmap";
 const views = {};           // "2d" / "3d" -> adapter, created the first time each is shown
 const layers = {};          // "2d" / "3d" -> the <div> inside #parking-map that holds it
@@ -233,7 +233,7 @@ export async function setMode(next, failureMessage = "") {
   const center = activeView()?.getView() ?? CAMPUS_CENTER;
   try {
     const view = await ensureView(next, center);
-    activeView()?.hide();
+    if (mode !== next) views[mode]?.hide();
     mode = next;
     view.show();
     view.setShapes(shapes);
@@ -246,8 +246,11 @@ export async function setMode(next, failureMessage = "") {
     layers[next]?.remove();
     delete views[next];
     delete layers[next];
-    mode = "2d";
-    views["2d"]?.show();
+    // If 3D fails on first load, 2D may not exist yet — create it here.
+    if (next === "3d") {
+      await setMode("2d", failureMessage || "3D view unavailable on this device. Showing the 2D map.");
+      return;
+    }
     setMapStatus(failureMessage || "3D view unavailable on this device. Showing the 2D map.");
   }
   syncToggle();
@@ -302,9 +305,6 @@ export async function initMap() {
     maps = await loadGoogleMaps({ key });
     onMapsAuthFailure(() => { renderMapMessage(el, "Google rejected the map key. Check its allowed sites and that Maps JavaScript API is enabled."); setMapStatus(""); });
     el.textContent = "";
-    mode = "2d";
-    await ensureView("2d", CAMPUS_CENTER);
-    views["2d"].show();
     syncToggle();
     new MutationObserver(() => { for (const view of Object.values(views)) view.setDark(isDark()); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
     byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); el.focus({ preventScroll: true }); } });
@@ -321,19 +321,29 @@ export async function initMap() {
       reset.disabled = false;
       reset.addEventListener("click", () => activeView()?.focus(CAMPUS_CENTER, 15));
     }
-    centerOnDestination();
-    refreshMap();
+    // Start 3D in the background so a slow maps3d/WebGL load does not delay
+    // lot boundaries, the city layer, or the Find/list UI (initMap is already
+    // fire-and-forget from the shell). Fall back to 2D if 3D cannot start.
+    const defaultView = setMode("3d");
     void initCityLayer(cityHost);
+    let boundaryError = false;
     try {
       const response = await fetch("data/byu-campus-parking.json");
       if (!response.ok) throw new Error(`Boundary request failed (${response.status})`);
       const geometry = await response.json();
       if (geometry.type !== "FeatureCollection" || !Array.isArray(geometry.features)) throw new Error("Invalid boundary snapshot");
       features = geometry.features;
-      refreshMapEligibility();
-      initLocation();
     } catch (error) {
       console.warn("[map] boundary snapshot unavailable", error);
+      boundaryError = true;
+    }
+    await defaultView;
+    centerOnDestination();
+    refreshMap();
+    if (features.length) {
+      refreshMapEligibility();
+      initLocation();
+    } else if (boundaryError) {
       setMapStatus("Lot boundaries unavailable. The parking list is still available.");
     }
   } catch (error) {
