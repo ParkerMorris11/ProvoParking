@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Review the non-overlapping daily parking schedule for BYU Lot 1A.">
+<title>BYU Lot 1A parking rules preview</title><link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../css/styles.css"><link rel="stylesheet" href="../../css/area-detail.css">
+</head>
+<body>
+<header class="top"><h1>Provo Parking</h1></header>
+<main><p class="hint">Review fixture · Lot 1A weekday source rows, no account or network data.</p>
+<div id="area-detail"></div></main>
+<script type="module">
+import { state } from "../../js/state.js";
+import { renderAreaDetail } from "../../js/pages/area-detail.js";
+import { lot1A, permits } from "../fixtures/lot-rules.js";
+const query=new URLSearchParams(location.search);
+document.documentElement.dataset.theme=query.get("theme")==="dark"?"dark":"light";
+state.areas=[{area_id:1,area_name:"BYU Lot 1A",lot_code:"1A",operator:"BYU",is_sample_data:false,latitude:40.251922,longitude:-111.648828,source_feature_id:147}];
+state.permits=permits;state.rulesByArea=new Map([[1,lot1A]]);state.favoriteIds=new Set();state.towById=new Map();
+state.find={permitId:Number(query.get("permit")||2),day:1,time:query.get("time")||"10:00",live:false};
+renderAreaDetail(1);
+</script></body></html>

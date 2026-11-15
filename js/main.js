@@ -18,7 +18,6 @@ import { initCarFab, renderCarFab } from "./components/car-fab.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
-import { renderAreas } from "./pages/areas.js";
 import { initFullscreenMap } from "./pages/fullscreen-map.js";
 import { initHelpModal } from "./pages/help-modal.js";
 
@@ -38,8 +37,8 @@ const recall = (key) => { try { return localStorage.getItem(key); } catch { retu
 
 let signingOut = false;
 const parkingClock = createParkingClock({
-  enabled: () => Boolean(state.db && state.find.live && (state.currentView === "areas" || document.body.classList.contains("has-fs-home")) && !document.hidden && $("auth-screen").hidden),
-  refresh: renderAreas,
+  enabled: () => Boolean(state.db && state.find.live && (["areas", "area"].includes(state.currentView) || document.body.classList.contains("has-fs-home")) && !document.hidden && $("auth-screen").hidden),
+  refresh: renderViews,
 });
 document.addEventListener("visibilitychange", () => parkingClock.update());
 window.addEventListener("focus", () => parkingClock.update());
