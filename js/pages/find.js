@@ -80,6 +80,7 @@ function initPlainLanguage({ choosePermit }) {
       mic.setAttribute("aria-label", next === "listening" ? "Stop listening" : "Speak your trip");
       if (next === "listening") say("Listening… tap the microphone again when you're done.");
       else if (next === "processing") say("Reading that…");
+      else if (next === "idle" && status.textContent.startsWith("Listening")) say("I didn't catch anything. Try again, or type it.", true);
     },
   });
   mic.hidden = speech.mode === "none";

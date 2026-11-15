@@ -69,9 +69,17 @@ export function createSpeech({ win = globalThis.window, onTranscript = () => {},
       onTranscript(text.trim(), final);
     };
     recognition.onerror = (event) => { onError(speechErrorText(event.error)); setState("idle"); };
-    recognition.onend = () => { recognition = null; if (listening) setState("idle"); };
+    recognition.onend = () => { clearTimeout(timer); recognition = null; if (listening) setState("idle"); };
     setState("listening");
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      recognition = null;
+      setState("idle");
+      return onError(speechErrorText());
+    }
+    // Some browsers (e.g. Chromium builds without Google's speech service) never fire result, error, or end.
+    timer = setTimeout(() => stop(), maxMs);
   }
 
   async function startRecorder() {
@@ -109,7 +117,12 @@ export function createSpeech({ win = globalThis.window, onTranscript = () => {},
 
   function stop() {
     clearTimeout(timer);
-    if (recognition) recognition.stop();
+    if (recognition) {
+      const active = recognition;
+      try { active.stop(); } catch { /* already stopped */ }
+      // If the browser never answers stop() with "end", give the button back anyway.
+      setTimeout(() => { if (recognition === active) { recognition = null; if (listening) setState("idle"); } }, 1500);
+    }
     else if (recorder && recorder.state !== "inactive") recorder.stop();
     else { releaseStream(); if (listening) setState("idle"); }
   }
