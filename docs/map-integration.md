@@ -1,6 +1,6 @@
 # BYU map integration — PR #11
 
-> **Sprint 3 update:** the map is now pure Google Maps (2D default, 3D optional). Everything below about the tile library, popups and wheel zoom describes the original PR #11 version. See the README section "Google Maps 2D/3D map" for the current design.
+> **Sprint 3 update:** the map is now pure Google Maps (3D default, with a 2D fallback when WebGL is unavailable). Everything below about the tile library, popups and wheel zoom describes the original PR #11 version. See the README section "Google Maps 2D/3D map" for the current design.
 
 The Areas screen includes a map with the 189 BYU boundary features supplied in PR #11. Sample database location circles have been removed at Parker's request. Tap a boundary for its recorded permit category and description. The separate parking list retains the existing database permit/day/time checks and detail links.
 

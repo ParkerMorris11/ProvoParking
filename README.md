@@ -33,7 +33,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 |---|---|---|---|
 | 0 | **Sign up / Log in** | Create an account (email + password, then name and permits) or log in; *Keep me signed in*, *Forgot password*, *Continue as guest* | Supabase Auth, `app_user`, `user_permit`, `permit` |
 | 1 | **Find** | Pick your permit, arrival day, and arrival time (starts on your account's permit), or say/type your trip in plain language and review the filled-in form | `permit`, `user_permit`, `destination`, `parse-find` Edge Function |
-| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, the Google map (2D by default, 3D optional) and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
+| 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, the Google map (3D by default, with a 2D fallback) and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
 | 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
@@ -82,7 +82,7 @@ The layout is a single centered column, so on a desktop browser it looks like th
 
 
 ### Dark mode
-The site follows the phone or laptop's light/dark setting. The round moon/sun button in the header (and in the corner of the sign-in screen) switches it, and the choice is saved on that device (`localStorage` key `pp-theme`). Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The map's street tiles are darkened with a CSS filter; lot outlines keep their colors.
+The site starts in dark mode on a first visit. The round moon/sun button in the header (and in the corner of the sign-in screen) switches it, and an explicit choice is saved on that device (`localStorage` key `pp-theme`) and used on later visits. Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The 3D map uses Google's dark color scheme in dark theme, and 3D satellite imagery gets a gentle night tint; lot outlines keep their colors.
 
 <img src="docs/screens/dark-mode-signin.png" alt="Sign-in screen, light and dark side by side" width="640">
 
@@ -305,11 +305,11 @@ The Areas map is pure Google Maps (the earlier OpenStreetMap-tile map library is
 |---|---|
 | Loader and key reading (`window.APP_CONFIG.GOOGLE_MAPS_API_KEY`) | `js/lib/google-maps.js` |
 | Lot colors and GeoJSON → `{lat, lng}` shapes | `js/domain/map-geometry.js` |
-| 2D view (default; dark road style follows the site's dark mode) | `js/pages/map-2d.js` |
-| 3D Photorealistic view (`gmp-map-3d`, extruded lots) | `js/pages/map-3d.js` |
+| 2D view (fallback when 3D is unavailable; dark road style follows the site's dark mode) | `js/pages/map-2d.js` |
+| 3D Photorealistic view (default; `gmp-map-3d`, extruded lots, dark color scheme in dark theme) | `js/pages/map-3d.js` |
 | Which lots to draw, taps, location, nearby list | `js/pages/map.js`, `js/pages/city-layer.js` |
 
-On the map itself: full-bleed map, a **2D | 3D** switch, the locate button and the permit chip. **2D is the default** (lighter and better for Lighthouse Accessibility). Tapping a BYU lot opens the existing **Area details** screen; tapping a lot shared by several areas, or a Provo city lot, opens a small card (city lots never start a timer). Eligibility still comes from Supabase `parking_rule` rows through `js/domain/eligibility.js` and `js/domain/parking-results.js`; favorites and the car timer are unchanged. The lot list stays beside or below the map, so every lot is reachable by keyboard and screen reader. If no key is configured, the map area shows a short message and the list still works.
+On the map itself: full-bleed map, a **2D | 3D** switch, the locate button and the permit chip. **3D is the default**, in dark mode on a first visit; the parking list and Find form do not wait for the 3D library to load. If 3D or WebGL is not available on the device, the map falls back to 2D and shows "3D view unavailable on this device. Showing the 2D map." Tapping a BYU lot opens the existing **Area details** screen; tapping a lot shared by several areas, or a Provo city lot, opens a small card (city lots never start a timer). Eligibility still comes from Supabase `parking_rule` rows through `js/domain/eligibility.js` and `js/domain/parking-results.js`; favorites and the car timer are unchanged. The lot list stays beside or below the map, so every lot is reachable by keyboard and screen reader. If no key is configured, the map area shows a short message and the list still works.
 
 Lot outlines come from `data/byu-campus-parking.json` and `data/provo-city-parking.json` (already in this repo; the same snapshots ProvoParking3D uses).
 
