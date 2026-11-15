@@ -3,6 +3,8 @@
   /* BYU chrome: Navy #002E5D, Royal #0062B8. Permit map colors stay in js/domain/map-geometry.js. */
   --bg: #f3f6f9; --card: #ffffff; --text: #002E5D; --ink-2: #123a66; --muted: #4a6480; --soft: #56708a;
   --brand: #0062B8; --brand-ink: #002E5D; --brand-tint: #e4eef7; --brand-wash: #f0f5fa;
+  /* Solid fills behind white text. Dark mode lightens --brand for links; these stay royal so buttons meet 4.5:1. */
+  --brand-fill: #0062B8; --brand-fill-hover: #002E5D;
   --heart: #c8102e; --heart-tint: #fde8eb; --border: #d5deea; --field: #c5d0de; --ok: #1b6e3a; --low: #8a4b00;
   --focus: #0062B8; --brand-hover: #002E5D; --shadow: 0 8px 26px #002E5D14; --shadow-sm: 0 2px 8px #002E5D12;
   --label: #3e5a78; --border-strong: #b3c3d6; --hover: #e8eef5; --surface-2: #f4f7fb;
@@ -11,7 +13,7 @@
   --warn-tint: #fff3dc; --warn-line: #f3dcb0; --warn-ink: #5c3600; --err-line: #f2b8c1; --err-ink: #8a0a1f;
   color-scheme: light;
   --radius: 15px; --radius-lg: 22px;
-  --fav: var(--brand); --fav-tint: var(--brand-tint); /* favorites (heart + tab count) use the site blue; --heart red stays for errors */
+  --fav: var(--brand-fill); --fav-tint: var(--brand-tint); /* favorites (heart + tab count) use the site blue; --heart red stays for errors */
   /* One content column for every page: header, tabs, and main all line up. */
   --page-max: 1192px; --gutter: 24px;
   --page-edge: max(var(--gutter), calc((100% - var(--page-max)) / 2)); /* side padding for full-width bars */
@@ -117,8 +119,8 @@ select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:fo
 .hint a { color: var(--brand-ink); }
 .hint.warn { color: var(--low); font-weight: 600; }
 .primary, .secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border-radius: 12px; font: inherit; font-size: 1rem; font-weight: 650; cursor: pointer; text-decoration: none; text-align: center; transition: background .15s, border-color .15s; }
-.primary { background: var(--brand); color: #fff; border: 1px solid var(--brand); margin-top: 6px; }
-.primary:hover { background: var(--brand-hover); border-color: var(--brand-hover); }
+.primary { background: var(--brand-fill); color: #fff; border: 1px solid var(--brand-fill); margin-top: 6px; }
+.primary:hover { background: var(--brand-fill-hover); border-color: var(--brand-fill-hover); }
 .secondary { background: var(--card); color: var(--brand-ink); border: 1px solid var(--field); }
 .secondary:hover { border-color: var(--brand); background: var(--brand-wash); }
 .primary:disabled, .secondary:disabled { opacity: .6; cursor: wait; }
@@ -248,14 +250,14 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .nl-mic[hidden] { display: none; }
 .nl-mic svg { width: 22px; height: 22px; }
 .nl-mic:hover { border-color: var(--brand); background: var(--brand-wash); }
-.nl-mic[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+.nl-mic[aria-pressed="true"] { background: var(--brand-fill); border-color: var(--brand-fill); color: #fff; }
 .nl-mic:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .nl-status:empty { display: none; }
 @media (max-width: 480px) { .nl-row { flex-wrap: wrap; } .nl-row input[type="text"] { flex-basis: calc(100% - 56px); } .nl-row .secondary { flex: 1 1 100%; } }
 /* 2D | 3D switch, floating on the map */
 .map-mode { position: absolute; z-index: 2; top: 12px; right: 12px; display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); box-shadow: 0 4px 16px #0f1e3726; }
 .map-mode button { min-width: 48px; min-height: 40px; padding: 0 12px; border: 0; border-radius: 999px; background: none; color: var(--ink-2); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
-.map-mode button[aria-pressed="true"] { background: var(--brand); color: #fff; }
+.map-mode button[aria-pressed="true"] { background: var(--brand-fill); color: #fff; }
 .map-mode button:disabled { opacity: .55; cursor: default; }
 .map-mode button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 /* Selected-lot card (replaces the old map popup) */
@@ -329,7 +331,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .map-stage:has(.parking-map[hidden]) .map-status { position: static; margin: 14px; max-width: none; box-shadow: none; }
 /* Explicit, foreground-only location sharing and nearby suggestions. */
 .map-tools { display: flex; gap: 7px; align-items: center; }
-.location-button { min-height: 38px; padding: 0 12px; border: 1px solid var(--brand); border-radius: 9px; background: var(--brand); color: #fff; font: inherit; font-size: .75rem; font-weight: 650; cursor: pointer; }
+.location-button { min-height: 38px; padding: 0 12px; border: 1px solid var(--brand-fill); border-radius: 9px; background: var(--brand-fill); color: #fff; font: inherit; font-size: .75rem; font-weight: 650; cursor: pointer; }
 .location-button[aria-pressed="true"] { background: var(--brand-wash); color: var(--brand-ink); }
 .location-button:disabled { opacity: .5; cursor: default; }
 .location-button:focus-visible, .nearby-card button:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
@@ -380,7 +382,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .auth .brand-mark { width: 34px; height: 34px; color: var(--brand); flex: none; }
 .auth .auth-card { max-width: 440px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 32px 22px; }
 .auth .auth-eyebrow { margin: 0; color: var(--soft); font-size: 1rem; }
-.auth h2 { margin: 4px 0 28px; font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
+.auth h1 { margin: 4px 0 28px; font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -.01em; text-wrap: balance; }
 .auth .auth-msg { margin: -12px 0 20px; padding: 10px 12px; border-radius: 10px; background: var(--brand-wash); color: var(--brand-ink); border: 1px solid var(--border-strong); font-size: .92rem; }
 .auth .auth-msg.error { background: var(--heart-tint); color: var(--err-ink); border-color: var(--err-line); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -402,8 +404,8 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .auth .auth-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: -4px 0 28px; }
 .auth .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: .95rem; }
 .auth .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--brand); }
-.auth .auth-submit { width: 100%; min-height: 52px; margin-top: 6px; border: 0; border-radius: 8px; background: var(--brand); color: #fff; font: inherit; font-size: 1.05rem; font-weight: 500; cursor: pointer; }
-.auth .auth-submit:hover { background: var(--brand-hover); }
+.auth .auth-submit { width: 100%; min-height: 52px; margin-top: 6px; border: 0; border-radius: 8px; background: var(--brand-fill); color: #fff; font: inherit; font-size: 1.05rem; font-weight: 500; cursor: pointer; }
+.auth .auth-submit:hover { background: var(--brand-fill-hover); }
 .auth .auth-submit:disabled { opacity: .7; cursor: wait; }
 .auth .auth-submit:focus-visible, .auth .auth-link:focus-visible, .auth .pw-toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .auth .auth-switch { text-align: center; margin: 20px 0 0; color: var(--soft); font-size: .95rem; }
@@ -428,7 +430,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .auth .opt-name { font-weight: 500; }
 .auth .opt-desc { font-size: .82rem; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .auth .combo-empty { padding: 12px 10px; color: var(--soft); font-size: .92rem; }
-.auth .code-badge { flex: none; display: inline-grid; place-items: center; min-width: 2.4em; height: 1.6em; margin-top: 1px; padding: 0 6px; border-radius: 6px; background: var(--brand); color: #fff; font-size: .78rem; font-weight: 600; letter-spacing: .02em; }
+.auth .code-badge { flex: none; display: inline-grid; place-items: center; min-width: 2.4em; height: 1.6em; margin-top: 1px; padding: 0 6px; border-radius: 6px; background: var(--brand-fill); color: #fff; font-size: .78rem; font-weight: 600; letter-spacing: .02em; }
 .auth .chips { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .auth .chips:empty { display: none; }
 .auth .chip { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 4px 4px 6px; border: 1px solid var(--border-strong); border-radius: 999px; background: var(--tint); font-size: .9rem; }
@@ -439,7 +441,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 @media (min-width: 760px) {
   .auth { padding: 40px 24px 64px; }
   .auth .auth-card { max-width: 520px; padding: 56px 64px 48px; }
-  .auth h2 { font-size: 2.4rem; margin-bottom: 36px; }
+  .auth h1 { font-size: 2.4rem; margin-bottom: 36px; }
 }
 @media (min-width: 1000px) {
   .auth { position: relative; padding-top: 100px; }
@@ -513,8 +515,8 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 @media (max-width: 640px) { .city-lots { padding: 0 14px 16px; } }
 
 /* ---- Floating car button + parking timer sheet ---- */
-.car-fab { position: fixed; z-index: 40; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 56px; height: 56px; padding: 0; border: 0; border-radius: 999px; background: var(--brand); color: #fff; font: inherit; cursor: pointer; box-shadow: 0 6px 18px #183b6040, 0 2px 6px #183b6030; transition: background .15s, transform .15s, padding .2s; }
-.car-fab:hover { background: var(--brand-ink); transform: translateY(-1px); }
+.car-fab { position: fixed; z-index: 40; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 56px; height: 56px; padding: 0; border: 0; border-radius: 999px; background: var(--brand-fill); color: #fff; font: inherit; cursor: pointer; box-shadow: 0 6px 18px #183b6040, 0 2px 6px #183b6030; transition: background .15s, transform .15s, padding .2s; }
+.car-fab:hover { background: var(--brand-fill-hover); transform: translateY(-1px); }
 .car-fab:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .car-fab-icon { width: 30px; height: 30px; flex: none; }
 .car-fab-time { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .01em; line-height: 1; }

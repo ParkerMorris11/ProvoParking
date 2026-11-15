@@ -44,9 +44,9 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
 .map-search-btn[hidden] { display: none; }
 .map-search-btn svg { width: 22px; height: 22px; }
 .map-search-btn:hover { background: var(--hover, #e8edf5); }
-.map-search-go { background: var(--brand, #0062B8); color: #fff; }
-.map-search-go:hover { background: var(--brand-hover, #002E5D); }
-.map-search-mic[aria-pressed="true"] { background: var(--brand, #0062B8); color: #fff; }
+.map-search-go { background: var(--brand-fill, #0062B8); color: #fff; }
+.map-search-go:hover { background: var(--brand-fill-hover, #002E5D); }
+.map-search-mic[aria-pressed="true"] { background: var(--brand-fill, #0062B8); color: #fff; }
 .map-search-btn:focus-visible { outline: 3px solid var(--focus, #0062B8); outline-offset: 1px; }
 .map-search-status { max-width: min(460px, 100%); margin: 0; padding: 6px 12px; border-radius: 14px; color: var(--ink-2, #243b58); font-size: .78rem; font-weight: 600; line-height: 1.4; background: var(--glass, var(--card, #fff)); -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); border: 1px solid var(--glass-border, var(--border, #dbe2eb)); box-shadow: var(--glass-shadow, 0 4px 16px #0f1e3726); }
 .map-search-status[hidden] { display: none; }
@@ -68,7 +68,7 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
 
 /* Permit chip (top left): permit + time, tap to change */
 .permit-chip { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; max-width: calc(100% - 130px); padding: 0 12px 0 6px; color: var(--text, #002E5D); border-radius: 999px; font-weight: 650; font-size: .92rem; text-decoration: none; background: var(--glass, var(--card, #fff)); -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); border: 1px solid var(--glass-border, var(--border, #dbe2eb)); box-shadow: var(--glass-shadow, 0 4px 16px #0f1e3726); }
-.permit-chip .chip-code { display: inline-grid; place-items: center; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 999px; background: var(--brand, #0062B8); color: #fff; font-size: .8rem; font-weight: 750; }
+.permit-chip .chip-code { display: inline-grid; place-items: center; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 999px; background: var(--brand-fill, #0062B8); color: #fff; font-size: .8rem; font-weight: 750; }
 .permit-chip .chip-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .permit-chip svg { width: 16px; height: 16px; color: var(--muted, #52647a); flex: none; }
 .permit-chip:hover { border-color: var(--brand, #0062B8); }
@@ -80,7 +80,7 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
   display: inline-grid; place-items: center; width: 52px; height: 52px; min-height: 0; padding: 0; border: 1px solid var(--border, #dbe2eb); border-radius: 50%;
   background: var(--glass, var(--card, #fff)); -webkit-backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); backdrop-filter: var(--glass-filter, blur(18px) saturate(1.7)); border-color: var(--glass-border, var(--border, #dbe2eb)); box-shadow: var(--glass-shadow, 0 4px 16px #0f1e3733); font-size: 0; color: transparent; cursor: pointer; }
 .fs-home .location-button.map-fab::before { content: ""; width: 24px; height: 24px; background: var(--ink-2, #243b58); -webkit-mask: var(--locate-icon) center / contain no-repeat; mask: var(--locate-icon) center / contain no-repeat; }
-.fs-home .location-button.map-fab[aria-pressed="true"] { background: var(--brand, #0062B8); border-color: var(--brand, #0062B8); }
+.fs-home .location-button.map-fab[aria-pressed="true"] { background: var(--brand-fill, #0062B8); border-color: var(--brand-fill, #0062B8); }
 .fs-home .location-button.map-fab[aria-pressed="true"]::before { background: #fff; }
 .fs-home .location-button.map-fab:disabled { opacity: .6; cursor: default; }
 .fs-home .location-button.map-fab:focus-visible { outline: 3px solid var(--focus, #0062B8); outline-offset: 3px; }
@@ -172,7 +172,7 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .map-controls > button:hover { background: var(--hover); }
 .fs-shell .map-controls button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-ink); }
 .fs-shell .map-controls .location-button.map-fab { position: static; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; box-shadow: none; background: transparent; font-size: 0; color: transparent; }
-.fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand); }
+.fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand-fill); }
 .fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .fs-shell .map-mode button { width: 44px; min-height: 44px; border-radius: 10px; }
 .fs-shell :is(button, a, select, input):focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
