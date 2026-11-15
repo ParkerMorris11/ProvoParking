@@ -1,5 +1,21 @@
 # Admin dashboard and automatic OKR tracking
 
+## Shared goal editing
+
+The dashboard's **Edit goals** action lets authorized admins change both objective titles, all four key-result titles, and their numeric targets. Changes persist in the database and appear for other admins on refresh. The underlying measures, units, all-time reporting window, and comparison directions stay fixed and are shown in the editor. Changing a title does not create a new metric or reset its history.
+
+Apply `supabase/migrations/20261111213837_admin_okr_goals.sql` **after** `20261105040000_admin_okr_tracking.sql`, using the team's migration workflow. It adds one private configuration row and two authenticated RPCs. Defaults match the existing goals; rerunning the migration preserves saved edits. This PR does not apply migrations or deploy to production. If the new RPC is unavailable, the dashboard still displays metrics with a visible default/last-loaded-target notice and disables editing.
+
+Only members of the existing private admin allowlist can load or save goals. Ordinary users and guests cannot call the RPCs, and browser roles have no direct table access. Saves validate titles and target ranges on the server and use a revision check to reject concurrent overwrites. If another admin saves first, cancel the editor, refresh, and review their changes before editing again. Cancel and Escape discard unsaved form changes.
+
+**Light** and **Dark** at the top share the app's saved appearance preference. Question marks show short explanations on hover or keyboard focus; click/tap opens a dialog with the full measurement details and why it matters. Escape dismisses hover explanations. Distances remain straight-line estimates and elapsed parking time remains a proxy based on a linked visit and timer start.
+
+Validation: `npm test`; database assertions in `tests/fixtures/admin-goals-assertions.sql` (run by `tests/admin-goals-db.test.js` with a disposable PostgreSQL URL); local browser checks at 1440px and 390px, both themes, WCAG AA axe checks, save/reload against an isolated PostgreSQL engine, conflict handling, and missing-migration behavior. Screenshots use synthetic metrics and a test admin, not production records.
+
+![Light desktop dashboard](screens/admin-goals-desktop-light.png)
+![Dark desktop dashboard](screens/admin-goals-desktop-dark.png)
+![Dark mobile dashboard](screens/admin-goals-mobile-dark.png)
+
 **Visit tracking reconciled (2026-11-05).** This PR originally created its own `app_visit(user_id, open_token)` table and a second client hook. Production already runs the `visit_metrics` implementation (`app_visit(id, secret_hash, owner_id, opened_at)` plus `visit_metrics_private.visit_link`). The admin migration now reuses that data for KR 2b and no longer creates, alters or grants on `app_visit`; the duplicate `js/data/visits.js` hook was removed. The migration was renamed to `20261105040000_admin_okr_tracking.sql` so file order matches production order. Not yet applied to production.
 
 ### Migration order (as applied to production, checked 2026-11-05)

@@ -2,6 +2,8 @@
 
 Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Mapped parking facilities across Provo city limits is shown alongside campus lots as unverified city/OSM records.
 
+The admin dashboard supports shared, editable objective titles, key-result titles, and numeric targets, with Light/Dark options and explanations for each objective and metric. Deploying saved goal editing requires the additive `20261111213837_admin_okr_goals.sql` migration after the existing admin tracking migration; see [admin setup and goal editing](docs/admin-okr.md#shared-goal-editing).
+
 ## Sprint 2 status (November 5, 2026)
 
 | Area | What is live on `main` | Details |
