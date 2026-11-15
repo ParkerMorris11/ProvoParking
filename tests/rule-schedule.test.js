@@ -90,8 +90,8 @@ test("only the top status changes with the user's permit; the daily rules are id
   const a=elements.get("area-detail").innerHTML;
   state.find.permitId=2;renderAreaDetail(1);
   const y=elements.get("area-detail").innerHTML;
-  assert.match(a,/You can park at this time/);
-  assert.match(y,/You cannot park at this time/);
+  assert.match(a,/Permit matches listed rule/);
+  assert.match(y,/Not covered by your permit/);
   const schedule=html=>html.split('<div id="rules-day-schedule">')[1].split('</section>')[0];
   assert.equal(schedule(a),schedule(y));
   assert.match(a,/label for="rules-day"/);
