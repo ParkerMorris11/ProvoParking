@@ -333,53 +333,107 @@ test('3D cursor reuses ground polygons and removes the heading fan when heading 
   assert.equal(f.children.length, 0);
 });
 
-test('map controls retain 3D while switching basemaps and apply theme changes to both views', async () => {
-  const two = fakeMaps2D(), three = fakeMaps3D();
-  let theme = 'dark', themeChanged;
+function installMapHarness({ two, three, theme = 'dark', importLibrary, fetchImpl } = {}) {
   const nodes = new Map();
+  let themeChanged, currentTheme = theme;
   const doc = {
     createElement() {
       const classes = new Set(), attrs = {};
-      return { ownerDocument: doc, children: [], classList: { toggle(name, on) { if (on) classes.add(name); else classes.delete(name); }, contains: name => classes.has(name) },
-        append(el) { this.children.push(el); }, setAttribute(name, value) { attrs[name] = value; }, getAttribute: name => attrs[name], addEventListener() {}, remove() {} };
+      return { ownerDocument: doc, children: [], parent: null, classList: { toggle(name, on) { if (on) classes.add(name); else classes.delete(name); }, contains: name => classes.has(name) },
+        append(el) { el.parent = this; this.children.push(el); }, setAttribute(name, value) { attrs[name] = value; }, getAttribute: name => attrs[name], addEventListener() {},
+        remove() { const i = this.parent?.children.indexOf(this) ?? -1; if (i >= 0) this.parent.children.splice(i, 1); this.parent = null; } };
     },
-    documentElement: { getAttribute: () => theme },
+    documentElement: { getAttribute: () => currentTheme },
     getElementById: id => nodes.get(id) ?? null,
     querySelector: () => nodes.get('parking-map'),
   };
   for (const id of ['parking-map', 'map-mode-2d', 'map-mode-3d', 'map-style', 'map-status']) nodes.set(id, doc.createElement());
   const previousFetch = globalThis.fetch;
-  globalThis.window = { APP_CONFIG: { GOOGLE_MAPS_API_KEY: 'test-key' }, google: { maps: { ...two.maps, importLibrary: async name => name === 'maps' ? two.lib : three.lib } } };
+  const maps = two?.maps ?? {};
+  globalThis.window = { APP_CONFIG: { GOOGLE_MAPS_API_KEY: 'test-key' }, google: { maps: { ...maps, importLibrary: importLibrary ?? (async name => name === 'maps' ? two.lib : three.lib) } } };
   globalThis.document = doc;
   globalThis.MutationObserver = class { constructor(fn) { themeChanged = fn; } observe() {} };
-  globalThis.fetch = async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [] }) });
+  globalThis.fetch = fetchImpl ?? (async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [] }) }));
+  return {
+    nodes,
+    setTheme(next) { currentTheme = next; themeChanged(); },
+    async restore() {
+      globalThis.fetch = previousFetch;
+      delete globalThis.window; delete globalThis.document; delete globalThis.MutationObserver;
+    },
+  };
+}
+
+test('map starts in dark 3D and falls back to 2D only when 3D cannot load', async () => {
+  const two = fakeMaps2D(), three = fakeMaps3D();
+  const harness = installMapHarness({ two, three });
+  try {
+    const controller = await import('../js/pages/map.js?default-3d');
+    await controller.initMap();
+    const layer = harness.nodes.get('parking-map').children[0], map = layer.children[0];
+    assert.equal(harness.nodes.get('parking-map').children.length, 1, '2D is not created until needed');
+    assert.equal(harness.nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
+    assert.equal(harness.nodes.get('map-mode-2d').getAttribute('aria-pressed'), 'false');
+    assert.equal(map.mode, 'ROADMAP');
+    assert.equal(map.colorScheme, 'DARK');
+  } finally {
+    await harness.restore();
+  }
+
+  const fallbackTwo = fakeMaps2D();
+  let imported = [];
+  const fallback = installMapHarness({
+    two: fallbackTwo,
+    importLibrary: async (name) => {
+      imported.push(name);
+      if (name === 'maps3d') throw new Error('WebGL unavailable');
+      return fallbackTwo.lib;
+    },
+  });
+  try {
+    const controller = await import('../js/pages/map.js?fallback-3d');
+    await controller.initMap();
+    assert.deepEqual(imported, ['maps3d', 'maps']);
+    assert.equal(fallback.nodes.get('map-mode-2d').getAttribute('aria-pressed'), 'true');
+    assert.equal(fallback.nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'false');
+    assert.equal(fallback.nodes.get('parking-map').children.length, 1);
+    assert.equal(fallbackTwo.made.maps.length, 1);
+    assert.equal(fallback.nodes.get('map-status').textContent, '3D view unavailable on this device. Showing the 2D map.');
+  } finally {
+    await fallback.restore();
+  }
+});
+
+test('map controls retain 3D while switching basemaps and apply theme changes to both views', async () => {
+  const two = fakeMaps2D(), three = fakeMaps3D();
+  const harness = installMapHarness({ two, three });
   try {
     const controller = await import('../js/pages/map.js?style-controls');
     await controller.initMap();
-    await controller.setMode('3d');
-    const layer = nodes.get('parking-map').children[1], map = layer.children[0];
+    const layer = harness.nodes.get('parking-map').children[0], map = layer.children[0];
     assert.equal(map.mode, 'ROADMAP');
     assert.equal(map.colorScheme, 'DARK');
     await controller.toggleMapStyle();
-    assert.equal(nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
-    assert.equal(nodes.get('map-style').getAttribute('aria-pressed'), 'true');
+    assert.equal(harness.nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
+    assert.equal(harness.nodes.get('map-style').getAttribute('aria-pressed'), 'true');
     assert.equal(map.mode, 'HYBRID');
-    assert.equal(two.made.maps[0].options.mapTypeId, 'hybrid');
     assert.ok(layer.classList.contains('map-layer-3d--night'));
-    theme = 'light'; themeChanged();
+    harness.setTheme('light');
     assert.equal(map.colorScheme, 'LIGHT');
     assert.equal(layer.classList.contains('map-layer-3d--night'), false);
     await controller.toggleMapStyle();
     assert.equal(map.mode, 'ROADMAP');
-    assert.equal(nodes.get('map-style').getAttribute('aria-pressed'), 'false');
+    assert.equal(harness.nodes.get('map-style').getAttribute('aria-pressed'), 'false');
+    await controller.setMode('2d');
+    assert.equal(two.made.maps[0].options.mapTypeId, 'roadmap');
     assert.equal(two.made.maps[0].options.styles, null);
-    theme = 'dark'; themeChanged();
+    harness.setTheme('dark');
     assert.equal(map.colorScheme, 'DARK');
     assert.ok(two.made.maps[0].options.styles.length);
-    assert.equal(nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
+    await controller.setMode('3d');
+    assert.equal(harness.nodes.get('map-mode-3d').getAttribute('aria-pressed'), 'true');
   } finally {
-    globalThis.fetch = previousFetch;
-    delete globalThis.window; delete globalThis.document; delete globalThis.MutationObserver;
+    await harness.restore();
   }
 });
 
