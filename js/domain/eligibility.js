@@ -19,7 +19,7 @@ function minutesOf(value) {
   return hours * 60 + minutes;
 }
 
-function hasValidSchedule(rule) {
+export function hasValidSchedule(rule) {
   if (!rule || !dayRanges(rule.days_of_week)) return false;
   if (!Number.isFinite(minutesOf(rule.start_time)) || !Number.isFinite(minutesOf(rule.end_time))) return false;
   const noBlock = rule.blocked_start == null && rule.blocked_end == null;
@@ -56,6 +56,10 @@ export function evaluate(rules, permitId, dayIdx, hhmm) {
   }
   const active = (rules || []).filter((r) => hasValidSchedule(r) && ruleAppliesOnDay(r, dayIdx) && ruleCoversTime(r, minutes));
   if (!active.length) return { kind: "unknown", icon: "?", text: "No rules on file for that time" };
+
+  // A permit-free closure applies to every ordinary driver and wins over permission rows.
+  const closure = active.find(r => r.permit_id == null && ruleBlocksTime(r, minutes));
+  if (closure) return { kind: "blocked", icon: "✕", text: `No parking ${fmtTime(closure.blocked_start)}–${fmtTime(closure.blocked_end)}`, rule: closure };
 
   const mine = active.filter((r) => r.permit_id == null || r.permit_id === permitId);
   if (!mine.length) {

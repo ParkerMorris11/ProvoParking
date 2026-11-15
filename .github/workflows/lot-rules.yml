@@ -1,0 +1,44 @@
+name: Lot details browser and Lighthouse checks
+on:
+  pull_request:
+    paths:
+      - 'js/domain/eligibility.js'
+      - 'js/domain/rule-schedule.js'
+      - 'js/components/rule-schedule.js'
+      - 'js/pages/area-detail.js'
+      - 'css/area-detail.css'
+      - 'css/styles.css'
+      - 'tests/manual/lot-rules.html'
+      - 'tests/fixtures/lot-rules.js'
+      - 'scripts/audit-lot-rules.mjs'
+      - '.github/workflows/lot-rules.yml'
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install isolated audit tools
+        run: npm install --prefix "$RUNNER_TEMP/parking-audit" --no-save lighthouse@12.8.2 playwright@1.56.1
+      - name: Check desktop, phone, themes and Lighthouse
+        env:
+          PARKING_AUDIT_TOOLS: ${{ runner.temp }}/parking-audit
+        run: |
+          export CHROME_PATH="$(command -v google-chrome)"
+          python3 -m http.server 8765 --bind 127.0.0.1 > "$RUNNER_TEMP/parking-preview.log" 2>&1 &
+          for attempt in 1 2 3 4 5; do
+            if curl --silent --fail http://127.0.0.1:8765/tests/manual/lot-rules.html > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/audit-lot-rules.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lot-rules-browser-and-lighthouse
+          path: artifacts/lot-rules/
+          if-no-files-found: warn
