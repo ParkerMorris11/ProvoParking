@@ -43,10 +43,14 @@ export function chipText(find, permits) {
   const valid = Number.isInteger(selection.day) && selection.day >= 0 && selection.time;
   const when = selection.live ? "Now" : valid ? `${DAY_NAMES[selection.day].slice(0, 3)} ${fmtTime(selection.time)}` : "Choose time";
   const spoken = selection.live ? "right now" : valid ? `${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)}` : "no time chosen";
+  const code = permit ? permit.permit_code : "P";
+  const text = permit ? `${code} · ${when}` : `Choose permit · ${when}`;
   return {
-    code: permit ? permit.permit_code : "P",
-    text: permit ? `${permit.permit_code} · ${when}` : `Choose permit · ${when}`,
-    label: `${permit ? permit.permit_name : "No permit chosen"}, ${spoken}. Change permit or time`,
+    code,
+    text,
+    // Accessible name must include every visible word, including the chip-code letter
+    // (it stays on screen even with aria-hidden, which Lighthouse still flags).
+    label: `${code} ${text}. ${permit ? permit.permit_name : "No permit chosen"}, ${spoken}. Change permit or time`,
   };
 }
 
@@ -224,7 +228,7 @@ function build() {
   // Map area: the stage moves to the top of the screen; chip + location button float on it.
   const mapWrap = el("div", { class: "fs-map" });
   chip = el("a", { href: "#find", class: "permit-chip", id: "permit-chip", "aria-label": "Change permit or time" },
-    `<span class="chip-code" aria-hidden="true">P</span><span class="chip-text">Choose permit</span>` +
+    `<span class="chip-code" aria-hidden="true">P</span> <span class="chip-text">Choose permit</span>` +
     `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
   locate.classList.add("map-fab");
   locate.setAttribute("aria-label", "Use my location");

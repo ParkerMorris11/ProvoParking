@@ -12,20 +12,21 @@ test('permit chip shows the permit code and "Now" when parking right now', () =>
   const chip = chipText({ permitId: 1, live: true }, permits);
   assert.equal(chip.code, 'Y');
   assert.equal(chip.text, 'Y · Now');
-  assert.match(chip.label, /^Y Undergraduate, right now\. Change permit or time$/);
+  assert.match(chip.label, /^Y Y · Now\. Y Undergraduate, right now\. Change permit or time$/);
 });
 
 test('permit chip shows the planned day and time', () => {
   const chip = chipText({ permitId: 2, live: false, day: 6, time: '10:00' }, permits);
   assert.equal(chip.text, 'G · Sat 10:00 AM');
-  assert.match(chip.label, /Sat at 10:00 AM/);
+  assert.match(chip.label, /^G G · Sat 10:00 AM\. .*Sat at 10:00 AM/);
+  assert.match(chip.label, /Change permit or time/);
 });
 
 test('permit chip asks for a permit when none is chosen (guests and new accounts)', () => {
   const chip = chipText({ permitId: null, live: true }, permits);
   assert.equal(chip.code, 'P');
   assert.equal(chip.text, 'Choose permit · Now');
-  assert.match(chip.label, /^No permit chosen/);
+  assert.match(chip.label, /^P Choose permit · Now\. No permit chosen, right now\. Change permit or time$/);
 });
 
 test('permit chip never throws on a half-filled planned time', () => {
