@@ -34,6 +34,9 @@ export function normalizeParsed(result, { permits = [], destinations = [] } = {}
   };
 }
 
+/** Shown when the sentence named nothing the form can hold (e.g. "free parking downtown for 2 hours"). */
+export const OUT_OF_SCOPE = "I can fill in a BYU permit, a campus building, and an arrival day and time, but not price, neighborhood, or how long you'll stay. Try something like “Y permit near the Tanner Building Monday at 10 am”.";
+
 export class ParseFindError extends Error {
   constructor(code, message) { super(message); this.code = code; }
 }
@@ -99,7 +102,9 @@ export function applyParsedToForm(parsed, els, { permits = [], destinations = []
   }
 
   const needsReview = parsed.confidence < LOW_CONFIDENCE;
-  if (needsReview) warnings.push("I wasn't sure about this, so check each field.");
+  const matchedNothing = permitId == null && !parsed.use_saved_permit && parsed.destination_id == null && parsed.live;
+  if (needsReview && matchedNothing) warnings.push(OUT_OF_SCOPE);
+  else if (needsReview) warnings.push("I wasn't sure about this, so check each field.");
   const summary = said.length ? `Filled in: ${said.join(", ")}.` : "I couldn't find anything to fill in.";
   return { summary, warnings, needsReview };
 }

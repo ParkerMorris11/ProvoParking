@@ -93,6 +93,13 @@ test('low confidence asks the person to check every field', () => {
   assert.match(result.warnings.join(' '), /check each field/);
 });
 
+test('a sentence the form cannot hold says what plain-language search can do', () => {
+  const result = applyParsedToForm(parsed({ confidence: 0.2 }), form(), lists);
+  assert.equal(result.needsReview, true);
+  assert.match(result.warnings.join(' '), /BYU permit, a campus building, and an arrival day and time/);
+  assert.doesNotMatch(result.warnings.join(' '), /check each field/);
+});
+
 test('a day without a time warns instead of inventing one', () => {
   const els = form();
   const result = applyParsedToForm(parsed({ live: false, day: 5, time: null }), els, lists);

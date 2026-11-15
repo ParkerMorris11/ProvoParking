@@ -111,3 +111,26 @@ test('recorder fallback reports a blocked microphone', async () => {
 test('blobToBase64 round-trips', async () => {
   assert.equal(await blobToBase64(new Blob([new Uint8Array([0, 1, 2, 250, 255])])), Buffer.from([0, 1, 2, 250, 255]).toString('base64'));
 });
+
+test('speech recognition that never ends is stopped by the timeout, and a stuck stop() still frees the button', async () => {
+  let instance;
+  class Recognition { constructor() { instance = this; } start() {} stop() { this.stopCalls = (this.stopCalls || 0) + 1; } }
+  const states = [];
+  const speech = createSpeech({ win: { webkitSpeechRecognition: Recognition, navigator: { userAgent: DESKTOP } }, onState: (s) => states.push(s), maxMs: 5 });
+  speech.start();
+  assert.equal(speech.listening, true);
+  await new Promise((r) => setTimeout(r, 20));
+  assert.equal(instance.stopCalls, 1, 'timeout asked the browser to stop');
+  await new Promise((r) => setTimeout(r, 1600));
+  assert.equal(speech.listening, false, 'idle even though the browser never fired end');
+  assert.deepEqual(states, ['listening', 'idle']);
+});
+
+test('speech recognition that throws on start reports an error instead of hanging', () => {
+  class Recognition { start() { throw new Error('InvalidStateError'); } stop() {} }
+  const errors = [];
+  const speech = createSpeech({ win: { webkitSpeechRecognition: Recognition, navigator: { userAgent: DESKTOP } }, onError: (m) => errors.push(m) });
+  speech.start();
+  assert.equal(speech.listening, false);
+  assert.match(errors[0], /Type instead/);
+});
