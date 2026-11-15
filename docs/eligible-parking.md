@@ -27,7 +27,7 @@ No database migration or new credentials are needed. This change reads the exist
 
 `npm run check` covers permit privileges, after-hours thresholds, overnight bans, weekends, missing/invalid rules, limited stays, current/planned time, Provo midnight/DST, map matching, empty states and the refresh clock. The existing PostgreSQL integration suite also tests the filter and map matching against rules read back from the actual verified-lot migration.
 
-Browser verification used the real Leaflet 1.9.4 map library and rule rows from an isolated PostgreSQL fixture. It checked the automatic 16:00 transition, 19:00 opening, overnight removal, permit changes, nearby filtering, keyboard focus and phone/desktop layouts. A device set to Los Angeles still displayed the correct Provo time. No production deployment or data changes were performed.
+Browser verification used the map library of that time (replaced by Google Maps in Sprint 3) and rule rows from an isolated PostgreSQL fixture. It checked the automatic 16:00 transition, 19:00 opening, overnight removal, permit changes, nearby filtering, keyboard focus and phone/desktop layouts. A device set to Los Angeles still displayed the correct Provo time. No production deployment or data changes were performed.
 
 Manual review:
 

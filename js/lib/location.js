@@ -1,5 +1,10 @@
 import { validLocation } from "../domain/nearby.js";
 
+const direction = coords => ({
+  heading: Number.isFinite(coords.heading) ? coords.heading : null,
+  speed: Number.isFinite(coords.speed) ? coords.speed : null,
+});
+
 // Consent is requested only by start(). Coordinates never leave this controller through storage.
 export function createLocationTracker({ geolocation, onChange, now = Date.now, staleAfterMs = 90000, scheduleRetry = (fn) => setTimeout(fn, 2000), cancelRetry = clearTimeout, scheduleWatchdog = (fn) => setTimeout(fn, 25000), cancelWatchdog = clearTimeout }) {
   let watchId = null, generation = 0, active = false, enabled = false, staleTimer, retryTimer = null, retries = 0, fallback = false, hasFix = false, watchdog = null, refineWatch = null, refining = false, refineActive = false, lastFix = null;
@@ -61,7 +66,7 @@ export function createLocationTracker({ geolocation, onChange, now = Date.now, s
         clearTimeout(staleTimer);
         staleTimer = setTimeout(() => fail("Location is out of date. Use your location again for fresh suggestions."), Math.max(0, staleAfterMs - Math.max(0, now() - fix.timestamp)));
         staleTimer.unref?.();
-        onChange({ status: "live", position: { latitude, longitude, accuracy, timestamp: fix.timestamp }, message: `${accuracy > 200 ? "Approximate location" : "Location live"} · accuracy ±${Math.round(accuracy)} m · updated ${new Date(fix.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` });
+        onChange({ status: "live", position: { latitude, longitude, accuracy, timestamp: fix.timestamp, ...direction(fix.coords) }, message: `${accuracy > 200 ? "Approximate location" : "Location live"} · accuracy ±${Math.round(accuracy)} m · updated ${new Date(fix.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` });
         if (fallback && !refining) {
           refining = true;
           refineActive = true;
@@ -75,7 +80,7 @@ export function createLocationTracker({ geolocation, onChange, now = Date.now, s
               clearTimeout(staleTimer);
               staleTimer = setTimeout(() => fail("Location is out of date. Use your location again for fresh suggestions."), Math.max(0, staleAfterMs - Math.max(0, now() - refined.timestamp)));
               staleTimer.unref?.();
-              onChange({ status: "live", position: { latitude: point.latitude, longitude: point.longitude, accuracy: point.accuracy, timestamp: refined.timestamp }, message: `${point.accuracy > 200 ? "Approximate location" : "Location live"} · accuracy ±${Math.round(point.accuracy)} m · updated ${new Date(refined.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` });
+              onChange({ status: "live", position: { latitude: point.latitude, longitude: point.longitude, accuracy: point.accuracy, timestamp: refined.timestamp, ...direction(point) }, message: `${point.accuracy > 200 ? "Approximate location" : "Location live"} · accuracy ±${Math.round(point.accuracy)} m · updated ${new Date(refined.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` });
             }, () => { if (!active || token !== generation) return; refineActive = false; if (refineWatch !== null) geolocation.clearWatch(refineWatch); refineWatch = null; }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
             if (active && token === generation && refineActive) refineWatch = refinementId; else geolocation.clearWatch(refinementId);
           } catch { /* Keep the approximate watch and its last fix. */ }

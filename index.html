@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-theme-active="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Provo Parking: find BYU and Provo parking areas that fit your permit, read the rules, start a parking timer, and save favorites.">
   <title>Provo Parking</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="icon" type="image/png" href="assets/provo-parking-favicon.png">
+  <link rel="apple-touch-icon" href="assets/provo-parking-icon.png">
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/theme.js"></script>
 </head>
@@ -16,22 +17,19 @@
   <p id="loading" class="app-loading" role="status">Loading…</p>
 
   <!-- Sign up / log in: shown first until someone signs in or continues as a guest -->
-  <section id="auth-screen" class="auth" aria-labelledby="auth-title" hidden>
-    <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="false">
+  <main id="auth-screen" class="auth" aria-labelledby="auth-title" hidden>
+    <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="true">
       <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
       <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <div class="auth-brand">
-      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-        <rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/>
-        <path d="M12 23V9h5.2a4.4 4.4 0 0 1 0 8.8H12" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+<img class="brand-mark" src="assets/provo-parking-icon.png" alt="" width="28" height="28">
       <span>Provo Parking</span>
     </div>
 
     <div class="auth-card">
       <p class="auth-eyebrow" id="auth-eyebrow">Please enter your details</p>
-      <h2 id="auth-title">Welcome back</h2>
+      <h1 id="auth-title">Welcome back</h1>
       <p id="auth-msg" class="auth-msg" role="status" aria-live="polite" hidden></p>
 
       <!-- Sign up: one screen. "Create account" makes the account right away, so problems show here. -->
@@ -136,26 +134,25 @@
         <button type="submit" class="auth-submit" id="np-submit">Save new password</button>
       </form>
     </div>
-  </section>
+  </main>
 
   <header class="top" id="app-header" hidden>
-    <h1><a href="#areas" class="home-link"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="2" y="2" width="28" height="28" rx="8" fill="currentColor"/><path d="M12 23V9h5.2a4.4 4.4 0 0 1 0 8.8H12" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Provo Parking</a></h1>
+    <h1><a href="#areas" class="home-link"><img class="brand-mark" src="assets/provo-parking-icon.png" alt="" width="28" height="28">Provo Parking</a></h1>
     <nav class="tabs" id="app-nav" aria-label="Screens" hidden>
       <button type="button" class="menu-toggle" id="menu-toggle" aria-expanded="false" aria-controls="tab-list" aria-label="Menu">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
       <div class="tab-list" id="tab-list">
-        <button type="button" class="tab" id="tab-find" data-view="find">Find</button>
-        <button type="button" class="tab" id="tab-areas" data-view="areas">Areas</button>
-        <button type="button" class="tab" id="tab-lots" data-view="lots">All Lots</button>
-        <button type="button" class="tab" id="tab-favorites" data-view="favorites">
-          Favorites <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
+        <button type="button" class="tab" id="tab-find" data-view="find"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span class="tab-label">Find</span></button>
+        <button type="button" class="tab" id="tab-areas" data-view="areas"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.4"/></svg><span class="tab-label">Areas</span></button>
+        <button type="button" class="tab" id="tab-lots" data-view="lots"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"/></svg><span class="tab-label">All Lots</span></button>
+        <button type="button" class="tab" id="tab-favorites" data-view="favorites"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2Z"/></svg><span class="tab-label">Favorites</span> <span class="badge" id="fav-count" aria-label="favorites saved">0</span>
         </button>
-        <button type="button" class="tab" id="tab-help" data-view="help">Help</button>
+        <button type="button" class="tab" id="tab-help" data-view="help"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.9-1.1 1.6M12 16.6v.1"/></svg><span class="tab-label">Help</span></button>
       </div>
     </nav>
     <div class="account-bar">
-      <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="false">
+      <button type="button" class="theme-toggle" aria-label="Dark mode" aria-pressed="true">
         <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
         <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -170,6 +167,19 @@
     <!-- Screen 1: Find — pick permit + arrival time -->
     <section id="view-find" aria-labelledby="h-find" hidden>
       <h2 id="h-find" tabindex="-1">Find parking</h2>
+      <!-- Plain-language / voice search: fills the form below for review. It never submits for you. -->
+      <form id="nl-form" class="panel nl-find" aria-labelledby="nl-label">
+        <label id="nl-label" for="nl-text">Tell us about your trip</label>
+        <div class="nl-row">
+          <input type="text" id="nl-text" maxlength="500" autocomplete="off" aria-describedby="nl-hint" placeholder="Hey, I have class at 3 pm at the JKB with my current permit...">
+          <button type="button" id="nl-mic" class="nl-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button type="submit" id="nl-go" class="secondary">Fill in form</button>
+        </div>
+        <p id="nl-hint" class="hint">Optional. Say or type your permit, building and time. You can review and change everything below before searching.</p>
+        <p id="nl-status" class="hint nl-status" role="status" aria-live="polite"></p>
+      </form>
       <form id="find-form" class="panel">
         <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
@@ -211,6 +221,11 @@
           <p id="location-toolbar-status" class="map-note" role="status" aria-live="polite">Location is off.</p>
           <div class="map-stage">
             <div id="parking-map" class="parking-map" tabindex="0" role="region" aria-label="BYU and Provo parking map" aria-describedby="map-note"></div>
+            <div class="map-mode" role="group" aria-label="Map view">
+              <button type="button" id="map-mode-2d" aria-pressed="false" disabled>2D</button>
+              <button type="button" id="map-mode-3d" aria-pressed="true" disabled>3D</button>
+            </div>
+            <div id="map-card" class="map-card" role="region" aria-label="Selected parking lot" tabindex="-1" hidden></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
@@ -355,6 +370,31 @@
       </div>
     </section>
 
+    <!-- Quick guide: opened from the "?" button on the map. The full guide is the Help tab. -->
+    <dialog id="help-modal" class="help-modal" aria-labelledby="help-modal-title">
+      <form method="dialog" class="help-modal-head">
+        <h2 id="help-modal-title" tabindex="-1">Quick guide</h2>
+        <button type="submit" class="help-modal-close" id="help-modal-close" aria-label="Close quick guide"><span aria-hidden="true">×</span></button>
+      </form>
+      <div class="help-modal-body">
+        <section aria-labelledby="hm-colors">
+          <h3 id="hm-colors">Permit colors</h3>
+          <p>Each outline on the map is a lot section. Its color is the permit category allowed there, not whether a space is open. The permit chip on the map filters the lots for your permit and time.</p>
+          <ul id="help-legend" class="map-legend" aria-label="Permit colors"></ul>
+        </section>
+        <section aria-labelledby="hm-3d">
+          <h3 id="hm-3d">2D and 3D</h3>
+          <p>The map starts in <strong>3D</strong> and follows the app theme, including a native dark road map in dark mode. Use the <strong>2D / 3D</strong> switch to change views. 2D offers a dark road map or satellite imagery with street and place labels. Use the map-style button to switch. 3D also offers a photorealistic satellite view of campus with buildings and labels. The style button works in both views. Dark theme gently tints 3D satellite imagery to match the app. Drag to pan, pinch or scroll to zoom. If 3D is not available on your device, the app shows the 2D map.</p>
+        </section>
+        <section aria-labelledby="hm-live">
+          <h3 id="hm-live">Live location and directions</h3>
+          <p>Tap the round <strong>location</strong> button to show a blue dot with your accuracy circle on either map and sort lots nearest first. It stays on while you use the app map and is never saved.</p>
+          <p>On any lot, <strong>Get Directions</strong> opens driving directions to that lot in Google Maps or Apple Maps, starting from where you are.</p>
+        </section>
+        <p class="hint">Always check posted signs. <a href="#help" id="help-modal-more">Open the full Help page</a></p>
+      </div>
+    </dialog>
+
     <div id="car-sheet" class="car-sheet" hidden>
       <div class="car-sheet-backdrop" id="car-backdrop"></div>
       <!-- Parking timer sheet: opened by the floating car button (#car-fab) -->
@@ -427,7 +467,6 @@
 
   <script src="config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

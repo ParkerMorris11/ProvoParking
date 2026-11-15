@@ -1,6 +1,6 @@
 # Plan: a real, detailed parking map
 
-Status: proposal for the team (2026-10-07). Nothing here is built yet.
+Status: proposal for the team (2026-10-07). **Decision (Sprint 3): Option A, Google Maps, is built** (2D default plus 3D); the key is the repository secret `GOOGLE_MAPS_API_KEY`, written into `config.js` at deploy. Option B was not used.
 
 ## Goal
 Replace the drawn sample map with a real map of BYU and Provo. Each parking lot or street segment is drawn as a colored shape with a text label ("✓ Legal now", "! 2-hour limit", "✕ Permit required"). The shapes come from our Supabase database and update when the user changes time, permit, or filters.
@@ -23,10 +23,10 @@ Replace the drawn sample map with a real map of BYU and Provo. Each parking lot 
 - Restrict it to HTTP referrers `https://parkermorris11.github.io/ProvoParking/*` and `http://localhost:*/*`.
 - Restrict it to the Maps JavaScript API only.
 - Set a budget alert and a daily quota cap in Google Cloud.
-- Store it like the Supabase key: a GitHub secret (`GOOGLE_MAPS_KEY`) written into `config.js` at deploy, and in the local `config.js` that is never committed.
+- Store it like the Supabase key: a GitHub secret (`GOOGLE_MAPS_API_KEY`) written into `config.js` at deploy, and in the local `config.js` that is never committed.
 
-## Option B: Leaflet + OpenStreetMap
-Same features, **no billing account and no key**. Free open-source map library ([Leaflet](https://leafletjs.com/)) with OpenStreetMap tiles (OSM's tile usage policy applies: low traffic, show attribution). Looks less like Google Maps, but nothing to pay or secure. Directions still use the free Google Maps link.
+## Option B (not chosen): open-source map library + OpenStreetMap tiles
+Same features, **no billing account and no key**. Free open-source map library with OpenStreetMap tiles (OSM's tile usage policy applies: low traffic, show attribution). Looks less like Google Maps, but nothing to pay or secure. Directions still use the free Google Maps link.
 
 **Pick B if nobody wants to put a card on Google Cloud.** The data model and the rest of the plan are the same.
 
@@ -42,7 +42,7 @@ Same features, **no billing account and no key**. Free open-source map library (
 Maps are hard for screen readers. Keep a **list view** of the same lots under/next to the map (the current card list), so every lot and its status is reachable by keyboard and screen reader. Labels always use text + icon, never color alone.
 
 ## Suggested Sprint cards (Fibonacci points)
-1. Pick the map provider and create/restrict the key (or choose Leaflet) — 1
+1. Pick the map provider and create/restrict the key (or choose the open-source option) — 1
 2. Add `boundary` column + the 8 sample areas to Supabase — 2
 3. Trace real shapes for 3–4 lots in geojson.io and verify against the BYU map — 3
 4. Show the base map centered on BYU with location fallback — 3

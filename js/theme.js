@@ -3,23 +3,22 @@
 //
 // How it decides:
 //   1. A choice saved by the header toggle ("light" or "dark") wins.
-//   2. Otherwise the site follows the phone/laptop setting (prefers-color-scheme).
-// <html data-theme> holds the saved choice (absent = follow the device).
+//   2. Otherwise the app starts dark.
+// <html data-theme> holds the saved choice or the dark default.
 // <html data-theme-active> always holds what is showing right now, so the toggle shows the right icon.
 (function () {
   var KEY = 'pp-theme';
   var root = document.documentElement;
-  var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   function saved() {
     try { var v = localStorage.getItem(KEY); return v === 'dark' || v === 'light' ? v : null; }
     catch (e) { return null; }
   }
-  function active() { return saved() || (media && media.matches ? 'dark' : 'light'); }
+  function active() { return saved() || 'dark'; }
 
   function apply() {
     var choice = saved();
-    if (choice) root.setAttribute('data-theme', choice); else root.removeAttribute('data-theme');
+    root.setAttribute('data-theme', choice || 'dark');
     var now = active();
     root.setAttribute('data-theme-active', now);
     var buttons = document.querySelectorAll('.theme-toggle');
@@ -37,7 +36,6 @@
   }
 
   apply();
-  if (media && media.addEventListener) media.addEventListener('change', apply);
   document.addEventListener('click', function (event) {
     var button = event.target.closest && event.target.closest('.theme-toggle');
     if (button) toggle();

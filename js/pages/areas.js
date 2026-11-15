@@ -8,7 +8,7 @@ import { areaPoint, arrangeAreas } from "../domain/area-list.js";
 import { refreshMapEligibility, currentPosition, showAreaOnMap } from "./map.js";
 
 export const PAGE_SIZE = 12;
-let renderedList, renderedHtml, expanded = false, toolsReady = false;
+let renderedList, renderedHtml, expanded = false, toolsReady = false, autoSorted = false;
 
 function listOptions() {
   return {
@@ -41,7 +41,14 @@ function initTools() {
     const area = state.areas.find((a) => a.area_id === Number(button.dataset.mapArea));
     if (area) showAreaOnMap(area);
   });
-  document.addEventListener("map:location", () => { if (state.currentView === "areas" && sort.value === "distance") renderAreas(); });
+  document.addEventListener("map:location", () => {
+    // The first live fix switches the default order to "Nearest to me"; stopping tracking switches it back.
+    // A sort the person chose themselves is left alone.
+    if (currentPosition() && !autoSorted && sort.value === "name") { sort.value = "distance"; autoSorted = true; expanded = false; }
+    else if (!currentPosition() && autoSorted) { autoSorted = false; if (sort.value === "distance") sort.value = "name"; }
+    if (state.currentView === "areas") renderAreas();
+  });
+  sort.addEventListener("change", () => { autoSorted = false; });
 }
 
 export function renderAreas() {

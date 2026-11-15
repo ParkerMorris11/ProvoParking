@@ -10,6 +10,8 @@ import { renderAllLots } from "./pages/all-lots.js";
 import { renderFavorites } from "./pages/favorites.js";
 import { renderCar, stopTimer, openCarSheet, closeCarSheet } from "./pages/car.js";
 
+import { syncFullscreenRoute } from "./pages/fullscreen-map.js";
+
 import { initMap, pauseMapLocation } from "./pages/map.js";
 
 export const VIEWS = ["find", "areas", "area", "lots", "favorites", "help"];
@@ -36,7 +38,8 @@ export function showView() {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
   renderViews();
-  if (state.currentView === "areas") void initMap(); else pauseMapLocation();
+  const mapHome = syncFullscreenRoute(state.currentView);
+  if (mapHome || state.currentView === "areas") void initMap(); else pauseMapLocation();
   if (state.currentView === "lots") renderAllLots();
   if (carSheet) {
     renderCar(routeId);

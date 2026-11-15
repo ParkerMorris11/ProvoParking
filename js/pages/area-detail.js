@@ -2,7 +2,7 @@
 import { ruleBlocksTime } from "../domain/eligibility.js";
 import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
-import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl } from "../lib/format.js";
+import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
 import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
 import { parkingSelection } from "../domain/parking-results.js";
 
@@ -46,7 +46,8 @@ export function renderAreaDetail(areaId) {
   }
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
-  const directions = directionsUrl(area);
+  const directions = directionsUrl(area, "driving");
+  const appleDirections = appleDirectionsUrl(area, "driving");
   const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
   const groups = groupRules(rulesFor(area.area_id));
@@ -71,6 +72,6 @@ export function renderAreaDetail(areaId) {
 
     <div class="actions">
       ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here — set up timer</a>` : ""}
-      ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Directions to approximate section"}</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
+      ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Driving directions (sample location)" : "Driving directions · Google Maps"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener">Apple Maps</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
     </div>`;
 }
