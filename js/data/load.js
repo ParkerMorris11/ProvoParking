@@ -2,6 +2,11 @@
 // Reference data (areas, permits, rules, tow companies) is public. Favorites and the active
 // My car session load only for a signed-in user, and row security returns only their rows.
 import { state } from "../state.js";
+import { syncParkingClock } from "../lib/server-clock.js";
+
+// PP has only a legacy sample street, with no verified residential permit zones on the map.
+// Hide it from both pickers without deleting permits, rules, or existing account links.
+const selectablePermits = (permits) => permits.filter((p) => p.permit_code !== "PP");
 
 export async function loadData() {
   const db = state.db;
@@ -14,14 +19,14 @@ export async function loadData() {
     db.from("permit").select("permit_id, permit_code, permit_name, issuer, description, cost_note, source_url, last_verified_on").order("permit_code"),
     db.from("parking_rule").select("rule_id, area_id, permit_id, days_of_week, start_time, end_time, max_stay_minutes, blocked_start, blocked_end, source_url, last_verified_on, rule_note"),
     db.from("tow_company").select("tow_company_id, company_name, phone, is_sample_data"),
-    userId ? db.from("parking_session").select("*").eq("user_id", userId).eq("status", "active").order("started_at", { ascending: false }).limit(1) : none,
+    userId ? db.rpc("parking_timer_snapshot") : none,
     db.from("destination").select("destination_id, building_code, name, latitude, longitude").order("name"),
   ]);
   if (version !== state.authVersion) return false;
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes, destRes]) if (res.error) throw res.error;
 
   state.areas = areasRes.data;
-  state.permits = permitRes.data;
+  state.permits = selectablePermits(permitRes.data);
   state.destinations = destRes.data;
   state.favoriteIds = new Set(favRes.data.map((f) => f.area_id));
   state.towById = new Map(towRes.data.map((t) => [t.tow_company_id, t]));
@@ -30,7 +35,8 @@ export async function loadData() {
     if (!state.rulesByArea.has(r.area_id)) state.rulesByArea.set(r.area_id, []);
     state.rulesByArea.get(r.area_id).push(r);
   }
-  state.activeSession = sessRes.data[0] || null;
+  state.activeSession = userId ? sessRes.data?.session || null : null;
+  if (userId && sessRes.data?.server_now) syncParkingClock(sessRes.data.server_now);
   return true;
 }
 
@@ -40,5 +46,5 @@ export async function loadPermitChoices() {
     .select("permit_id, permit_code, permit_name, issuer, description")
     .order("permit_id"); // table order: Y and G first
   if (error) throw error;
-  return data;
+  return selectablePermits(data);
 }

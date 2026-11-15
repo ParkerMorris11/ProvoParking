@@ -22,31 +22,22 @@ test('OKR thresholds use raw values and distinguish no data from zero', () => {
   assert.equal(metricPresentation(METRICS[3], 15.001).kind, 'pending');
   assert.equal(metricPresentation(METRICS[3], 15.001).value, '> 15');
 });
-test('a timer saves its destination, writes only parking_session, and never supplies metric timestamps', async () => {
-  const saved = { ...state };
-  const writes = [], linked = [];
-  state.user = { userId: 199 }; state.authId = 'owner-a';
-  // The existing visit_metrics tracker is the only KR 2b hook.
-  state.visitTracker = { captureAccount: owner => ({ id: 'visit', ownerId: owner }), accountStarted: (row, owner, visit) => { linked.push({ row, owner, visit }); return Promise.resolve(); } };
-  state.db = { from(table) { return { insert(row) {
-    writes.push({ table, row });
-    return { select: () => ({ single: async () => ({ data: { ...row, session_id: writes.length }, error: null }) }) };
-  } }; } };
-  try {
-    const input = { areaId: 5, minutes: 120, reminderMinutes: 10, destinationId: 2 };
-    await startSession(input); await startSession(input);
-    assert.deepEqual(writes.map(w => w.table), ['parking_session', 'parking_session']);
-    for (const write of writes) {
-      assert.equal(write.row.user_id, 199);
-      assert.equal(write.row.destination_id, 2);
-      assert.equal('started_at' in write.row || 'opened_at' in write.row, false);
-    }
-    assert.deepEqual(linked.map(l => [l.row.session_id, l.owner, l.visit.id]), [[1, 'owner-a', 'visit'], [2, 'owner-a', 'visit']]);
-    const count = writes.length;
-    await assert.rejects(startSession({ ...input, destinationId: null }), /Choose a destination/);
-    assert.equal(writes.length, count); assert.equal(linked.length, 2);
-  } finally { Object.assign(state, saved); }
+test('a timer sends only preferences to the account RPC and links only confirmed starts',async()=>{
+ const saved={...state},calls=[],linked=[];
+ state.user={userId:199};state.authId='owner-a';
+ state.visitTracker={captureAccount:()=>({id:'visit'}),accountStarted:row=>{linked.push(row);return Promise.resolve();}};
+ state.db={rpc:async(name,args)=>{calls.push({name,args});return {data:{session:{session_id:44},server_now:new Date().toISOString()},error:null};}};
+ try{
+  await startSession({areaId:5,minutes:120,reminderMinutes:10,destinationId:2,permitId:1});
+  assert.equal(calls[0].name,'parking_timer_start');
+  assert.equal(calls[0].args.p_destination_id,2);
+  assert.equal('started_at' in calls[0].args || 'leave_by' in calls[0].args || 'user_id' in calls[0].args,false);
+  assert.deepEqual(linked,[{session_id:44}]);
+  await assert.rejects(startSession({areaId:5,minutes:120,reminderMinutes:10,destinationId:null}),/Choose a destination/);
+  assert.equal(calls.length,1);
+ }finally{Object.assign(state,saved);}
 });
+
 test('the removed open_token visit hook is not called by the app', async () => {
   for (const path of ['js/main.js', 'js/data/sessions.js']) {
     const source = await readFile(new URL(`../${path}`, import.meta.url), 'utf8');

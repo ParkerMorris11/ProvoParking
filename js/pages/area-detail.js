@@ -1,40 +1,25 @@
-// Page: Area details — plain-language rules, sources, tow contact, Park here.
-import { ruleBlocksTime } from "../domain/eligibility.js";
+// Page: Area details — parking status, 24-hour rules timeline, sources, tow contact, Park here.
 import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
-import { DAY_NAMES, escapeHtml, fmtTime, fmtDuration, toMinutes, timeAgo, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
+import { DAY_NAMES, escapeHtml, fmtTime, timeAgo, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
 import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
 import { parkingSelection } from "../domain/parking-results.js";
+import { ruleScheduleHtml } from "../components/rule-schedule.js";
 
-function groupRules(rules) {
-  const groups = new Map();
-  for (const r of rules) {
-    const key = [r.days_of_week, r.start_time, r.end_time, r.max_stay_minutes, r.blocked_start, r.blocked_end, r.permit_id == null].join("|");
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(r);
+let dayChoice = { areaId: null, day: null };
+const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function sourcesHtml(rules) {
+  const sources = new Map();
+  for (const rule of rules) {
+    if (!/^https?:\/\//i.test(rule.source_url || "")) continue;
+    const key = `${rule.source_url}|${rule.last_verified_on}`;
+    if (!sources.has(key)) sources.set(key, rule);
   }
-  return [...groups.values()];
-}
-
-function ruleGroupHtml(group) {
-  const r = group[0];
-  const open = r.permit_id == null;
-  const codes = group.map((g) => state.permits.find((p) => p.permit_id === g.permit_id)?.permit_code).filter(Boolean);
-  const days = /^all$/i.test(r.days_of_week.trim()) ? "Every day" : r.days_of_week;
-  const hours = toMinutes(r.start_time) === 0 && toMinutes(r.end_time) >= 1439 ? "all day" : `${fmtTime(r.start_time)}–${fmtTime(r.end_time)}`;
-  const fullyBlocked = open && ruleBlocksTime(r, toMinutes(r.start_time)) && ruleBlocksTime(r, toMinutes(r.end_time));
-  const bullets = [];
-  bullets.push(fullyBlocked ? "No parking for any permit during this interval." : open ? "No permit restriction listed for ordinary stalls; check signs." : `Listed permits: ${codes.map(escapeHtml).join(", ")}; registration and posted restrictions apply.`);
-  // A fully blocked interval already says "no parking"; repeating its hours would say it twice.
-  if (r.blocked_start && r.blocked_end && !fullyBlocked) bullets.push(`No parking ${fmtTime(r.blocked_start)}–${fmtTime(r.blocked_end)}.`);
-  if (!fullyBlocked) bullets.push(r.max_stay_minutes ? `Time limit: ${fmtDuration(r.max_stay_minutes)}.` : "Time limit unknown unless posted.");
-  if (group.length === 1 && r.rule_note) bullets.push(escapeHtml(r.rule_note));
-  return `
-    <li class="rule">
-      <p class="rule-when">${escapeHtml(days)}, ${escapeHtml(hours)}</p>
-      <ul>${bullets.map((b) => `<li>${b}</li>`).join("")}</ul>
-      <p class="hint"><a href="${escapeHtml(r.source_url)}" target="_blank" rel="noopener">Source</a> · checked ${escapeHtml(r.last_verified_on)}</p>
-    </li>`;
+  return sources.size ? `<ul class="detail-sources">${[...sources.values()].map((r) => {
+    const label = r.source_url.includes("security.byu.edu") ? "BYU parking regulations" : r.source_url.includes("arcgis.com") ? "Official lot map record" : "Parking rule source";
+    return `<li><a href="${escapeHtml(r.source_url)}" target="_blank" rel="noopener">${label} <span aria-hidden="true">↗</span><span class="sr-text"> (opens in a new tab)</span></a><span>Recorded check: ${escapeHtml(r.last_verified_on || "not recorded")}</span></li>`;
+  }).join("")}</ul>` : '<p class="hint">No source links on file.</p>';
 }
 
 export function renderAreaDetail(areaId) {
@@ -50,7 +35,13 @@ export function renderAreaDetail(areaId) {
   const appleDirections = appleDirectionsUrl(area, "driving");
   const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
-  const groups = groupRules(rulesFor(area.area_id));
+  const rules = rulesFor(area.area_id);
+  if (dayChoice.areaId !== areaId) dayChoice = { areaId, day: null };
+  const day = dayChoice.day ?? selection.day;
+  const controls = [...(box.querySelectorAll?.("a,button,select,summary") || [])];
+  const focusIndex = controls.indexOf(document.activeElement);
+  const disclosures = [...(box.querySelectorAll?.("details") || [])].map((el) => el.open);
+  const byu = area.operator === "BYU" && !area.is_sample_data;
   box.innerHTML = `
     <div class="detail-head">
       <div>
@@ -63,9 +54,19 @@ export function renderAreaDetail(areaId) {
       <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
     <p class="avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
 
-    <h3>Rules</h3>
-    ${!area.is_sample_data ? `<p class="hint">Verified from BYU sources on November 4, 2026. Ordinary stalls, regular fall/winter weekly schedule. Vehicle must be registered and active. Posted signs, event closures, holidays, finals and breaks may change these rules. Coordinates mark an approximate location, not a verified entrance or stall. <a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus map</a>.</p>` : ""}
-    ${groups.length ? `<ul class="rules">${groups.map(ruleGroupHtml).join("")}</ul>` : `<p class="empty">No rules on file for this area yet.</p>`}
+    <section class="detail-schedule" aria-labelledby="detail-schedule-title">
+      <div class="schedule-heading"><div><p class="detail-eyebrow">Ordinary parking stalls</p><h3 id="detail-schedule-title">24-hour parking rules</h3></div>
+        <div class="schedule-day-control"><label for="rules-day">Day</label><select id="rules-day">${fullDays.map((name, i) => `<option value="${i}"${i === day ? " selected" : ""}>${name}</option>`).join("")}</select></div>
+      </div>
+      <p class="schedule-intro">Same schedule for every driver. Permit requirements are listed below.</p>
+      <div id="rules-day-schedule">${ruleScheduleHtml(rules, day, state.permits)}</div>
+      ${byu ? '<p class="schedule-footnote">Regular fall/winter week. Unverified periods are not permission to park. Specialty stalls, events, holidays, finals and breaks may have different rules. Vehicle must be registered and active.</p>' : '<p class="schedule-footnote">Based on the rules recorded for this area. Check posted signs.</p>'}
+    </section>
+
+    <details class="detail-source-disclosure"><summary>Sources and verification</summary>
+      ${sourcesHtml(rules)}
+      ${byu ? '<p><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus parking map</a></p>' : ""}
+    </details>
 
     <h3>If you are towed</h3>
     <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p>
@@ -74,4 +75,11 @@ export function renderAreaDetail(areaId) {
       ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here — set up timer</a>` : ""}
       ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Driving directions (sample location)" : "Driving directions · Google Maps"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener">Apple Maps</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
     </div>`;
+  $("rules-day").addEventListener("change", (event) => {
+    dayChoice.day = Number(event.target.value);
+    renderAreaDetail(areaId);
+    $("rules-day").focus({ preventScroll: true });
+  });
+  [...(box.querySelectorAll?.("details") || [])].forEach((el, index) => { el.open = disclosures[index] ?? false; });
+  if (focusIndex >= 0) box.querySelectorAll("a,button,select,summary")[focusIndex]?.focus({ preventScroll: true });
 }

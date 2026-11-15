@@ -2,6 +2,8 @@
 
 Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Mapped parking facilities across Provo city limits is shown alongside campus lots as unverified city/OSM records.
 
+The admin dashboard supports shared, editable objective titles, key-result titles, and numeric targets, with the shared theme toggle and explanations for each objective and metric. Deploying saved goal editing requires the additive `20261111213837_admin_okr_goals.sql` migration after the existing admin tracking migration; see [admin setup and goal editing](docs/admin-okr.md#shared-goal-editing).
+
 ## Sprint 2 status (November 5, 2026)
 
 | Area | What is live on `main` | Details |
@@ -16,6 +18,45 @@ Provo Parking helps BYU drivers see where their permit lets them park right now,
 | Still to do | Rule-change extraction (processes 5.0/6.0 below), Lighthouse re-check of the Google map and Help content | Trello Product Backlog |
 
 P7 database persistence for parking sessions: [parking session persistence](docs/parking-session-persistence.md).
+
+
+## Account timer behavior
+
+The authoritative timer is the existing `public.parking_session` row. Starting one saves its lot, destination building, selected permit, note, duration, reminder and server-stamped start/end times.
+
+- The database enforces **one active session per user**, including concurrent starts from different tabs/devices.
+- Closing the popup, changing pages, closing the browser or reopening the app does not reset or end the timer.
+- Remaining time is recomputed from its saved deadline. Both the floating countdown and popup use a monotonic clock anchored to a server response.
+- The saved session refreshes on tab focus, visibility restoration, page restoration and reconnection, and every 30 seconds while the app is visible. Other tabs receive a lightweight refresh signal after changes.
+- If a timer expires, it stays active and displays the overage until the user chooses **I left — end timer**. Expiration alone does not mean the car moved.
+- A competing start restores the existing saved session rather than replacing it.
+- The popup traps keyboard focus only while open, restores focus on close, and leaves normal page navigation available afterward.
+- Rules are checked across the planned stay, including midnight, weekday transitions and Provo daylight-saving changes. Notices cover no-parking periods, permit mismatches, unknown coverage and recorded time limits. Notices also appear on the running timer.
+- A notice does not prove real-world eligibility or automatically shorten/end the timer. Posted signs, temporary closures and actual vehicle registration still govern.
+- **Reminders are foreground UI notices.** Closing the app does not schedule a push notification or phone alarm. The saved countdown resumes correctly when reopened.
+
+The destination remains required for the existing course/admin distance metric. The separate P5/P6 local timer pages (`parking-setup.html` and `parking-timer.html`) remain available for the course contract; they do not sync with the account timer.
+
+## Database setup and timer rollout
+
+Use the existing team Supabase project. **Do not rerun the sample schema/seed on production.**
+
+Before deploying this timer update, apply the following in order, after confirming earlier admin migrations are present:
+
+1. `supabase/migrations/20261105040000_admin_okr_tracking.sql` if it is not already applied
+2. `supabase/migrations/20261111213837_admin_okr_goals.sql`
+3. `supabase/migrations/20261113002000_single_account_timer.sql`
+
+The timer migration adds the recorded permit, a partial unique index for active sessions, server-owned timing, and authenticated security-invoker timer RPCs. Existing per-user row security remains in place.
+
+If an account already has multiple active sessions, the migration keeps the newest active and marks older ones ended. No session rows, favorites or notes are deleted. Review this reconciliation before rollout. The migration is repeatable and runs in a transaction; database tests cover repeated application, cross-account access and concurrent starts.
+
+Deploy the app after the migration. Missing RPCs are an installation error, not a reason to fall back to a second timer store. These migrations are prepared in the repo; they have not been applied to the live project by this branch.
+
+## Loading asset
+
+The sign-in loading screen uses a 224 × 301 transparent Y-pin PNG displayed at approximately 112 × 151 CSS pixels. Its optimized size is **44,339 bytes**, down from 900,514 bytes (about 95% smaller), with no runtime image-generation or new dependency.
+
 
 IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, James Richardson.
 
@@ -36,7 +77,7 @@ Students who drive to BYU often circle lots that are full or that their permit d
 | 2 | **Areas** | Only verified lots allowed for your selected permit and parking time; cards, the Google map (3D by default, with a 2D fallback) and nearby suggestions share the same filter. Defaults to current Provo time with automatic updates; explicit planned arrivals remain available. | `parking_area`, `parking_rule`, `favorite_area` |
 | 3 | **Area details** (tap *Rules & details*) | Plain-language rules grouped by schedule, with source link and last-verified date, tow contact, walking-directions link, and a *Park here* button | `parking_rule`, `permit`, `tow_company` |
 | 4 | **Favorites** | Areas you saved with the heart, each with a **Get Directions** button that opens driving directions in Google Maps | `favorite_area` |
-| 5 | **My car** | Start a parking timer, see a countdown and a reminder banner, save where the car is, end the timer | `parking_session` |
+| 5 | **My car** | Start one account parking timer (floating car button), see a countdown, rule-stay warnings, and a reminder banner, save where the car is, end the timer | `parking_session` |
 | + | **Help** (extra tab) | BYU permit table (who each permit is for and which lots it is valid in, checked against the July 23, 2026 regulations), how to read results, Provo rules, what to do about a citation, with source links; static | none |
 
 **Favorite directions:** Get Directions opens Google Maps in a new tab (or its installed mobile app), with driving directions to that saved lot ready for the user to choose Start. Google Maps uses the device's current location when available; otherwise, it asks for a starting point. This uses the existing [Google Maps URLs integration](https://developers.google.com/maps/documentation/urls/get-started), so no Google API key or new setup is needed. Coordinates identify lot centers, not entrances; sample locations are labeled, and lots without valid coordinates show a directions-unavailable message.
