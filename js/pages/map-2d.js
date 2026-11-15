@@ -1,7 +1,9 @@
 // Google Maps 2D view. Same adapter shape as map-3d.js so map.js can swap between them:
 //   setShapes(shapes), setUser(point, accuracy), focus(point, zoom), fitBounds(bounds), getView(),
 //   setDark(on), show(), hide(). Shapes come from domain/map-geometry.js.
-import { CAMPUS_CENTER } from "../domain/map-geometry.js";
+import { CAMPUS_CENTER, shapeStyle } from "../domain/map-geometry.js";
+
+const LABEL_ZOOM = 17; // lot numbers appear once the map is close enough to read them
 
 // Dark road map, ported from ProvoParking3D's Map2DView.
 export const DARK_STYLE = [
@@ -69,6 +71,35 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
     onRemove() { this.element.remove(); }
   }
 
+  // Lot numbers ("20Y") for the lots on screen, in ONE overlay element (not one marker per lot),
+  // and only from LABEL_ZOOM in, so a phone never lays out hundreds of labels at once.
+  class LotLabels extends maps.OverlayView {
+    constructor() {
+      super();
+      this.shapes = [];
+      this.element = container.ownerDocument?.createElement?.("div") ?? null;
+      if (this.element) { this.element.className = "map-lot-labels"; this.element.setAttribute("aria-hidden", "true"); }
+    }
+    onAdd() { if (this.element) this.getPanes().overlayLayer?.append?.(this.element); }
+    draw() {
+      if (!this.element) return;
+      const projection = this.getProjection?.(), bounds = map.getBounds?.();
+      if (!projection || !bounds || (map.getZoom?.() ?? 0) < LABEL_ZOOM) { this.element.innerHTML = ""; return; }
+      const html = [];
+      for (const shape of this.shapes) {
+        if (!shape.label || !shape.center || !bounds.contains?.(shape.center)) continue;
+        const pixel = projection.fromLatLngToDivPixel(new maps.LatLng(shape.center));
+        if (!pixel) continue;
+        const text = String(shape.label).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+        html.push(`<span class="map-lot-label${shape.matched === false ? " is-muted" : ""}" style="left:${Math.round(pixel.x)}px;top:${Math.round(pixel.y)}px">${text}</span>`);
+      }
+      this.element.innerHTML = html.join("");
+    }
+    onRemove() { this.element?.remove(); }
+  }
+  let labels = null;
+  map.addListener?.("idle", () => labels?.draw());
+
   const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; };
   const clearUser = () => { accuracyRing?.setMap(null); userCursor?.setMap(null); accuracyRing = userCursor = null; };
   map.addListener?.("zoom_changed", () => userCursor?.draw());
@@ -78,13 +109,17 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
     setShapes(shapes) {
       clear();
       for (const shape of shapes) {
-        const style = { strokeColor: shape.color, strokeOpacity: 1, strokeWeight: 2.4, fillColor: shape.color, map };
+        const muted = shape.matched === false;
+        const look = shapeStyle(shape);
+        const style = { strokeColor: shape.color, strokeOpacity: look.strokeOpacity, strokeWeight: muted ? 1 : 2.4, fillColor: shape.color, zIndex: muted ? 1 : 2, map };
         const item = shape.kind === "polygon"
-          ? new lib.Polygon({ ...style, paths: shape.rings, fillOpacity: 0.24 })
-          : new lib.Circle({ ...style, center: shape.center, radius: 24, fillOpacity: 0.35 });
+          ? new lib.Polygon({ ...style, paths: shape.rings, fillOpacity: muted ? 0.08 : 0.3 })
+          : new lib.Circle({ ...style, center: shape.center, radius: 24, fillOpacity: muted ? 0.15 : 0.35 });
         item.addListener("click", () => onSelect(shape));
         drawn.push(item);
       }
+      if (!labels && shapes.some(shape => shape.label)) { labels = new LotLabels(); labels.setMap(map); }
+      if (labels) { labels.shapes = shapes; labels.draw(); }
     },
     setUser(point, accuracy, heading = null, speed = null) {
       if (!point) return clearUser();

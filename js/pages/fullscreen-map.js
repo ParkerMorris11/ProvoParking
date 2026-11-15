@@ -54,7 +54,17 @@ export function chipText(find, permits) {
   };
 }
 
-export function sheetTitle(count, hasPermit) {
+/**
+ * The drawer's one-line title on the map screen. Never a bare "0": with no permit it asks for one,
+ * and with a permit but nothing matching it says why (BYU lists no weekend permit rules, so on
+ * Saturday and Sunday nothing is confirmed and every lot stays on the map, muted).
+ */
+export function sheetTitle(count, hasPermit, selection = {}) {
+  if (!count && !hasPermit) return "Choose your permit to see where you can park";
+  if (!count) {
+    const weekend = selection.day === 0 || selection.day === 6;
+    return weekend ? "Weekend: no BYU permit rules listed. Check signs" : "No lots match your permit right now";
+  }
   const noun = count === 1 ? "area matches" : "areas match";
   return `${count} ${noun} ${hasPermit ? "your permit" : "for everyone"}`;
 }
@@ -68,7 +78,7 @@ function updateChrome() {
     chip.setAttribute("aria-label", info.label);
     const selection = parkingSelection(state.find);
     const count = eligibleAreas(state.areas || [], state.rulesByArea || new Map(), selection).length;
-    sheet.querySelector(".sheet-title").textContent = state.currentView === "areas" ? sheetTitle(count, Boolean(state.find.permitId)) : (ROUTE_TITLES[state.currentView] || "Explore Provo");
+    sheet.querySelector(".sheet-title").textContent = state.currentView === "areas" ? sheetTitle(count, Boolean(state.find.permitId), selection) : (ROUTE_TITLES[state.currentView] || "Explore Provo");
   } catch (err) {
     console.error("[fullscreen-map] could not update the permit chip", err);
   }
@@ -139,7 +149,7 @@ function buildSearch() {
   if (!nlForm || !nlText) return null;
   const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking in plain language" },
     `<button type="button" class="map-search-btn" data-sidebar-toggle aria-expanded="false" aria-controls="home-sheet" aria-label="Open navigation and parking drawer">${SEARCH_ICON}</button>` +
-    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
+    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Where are you headed?">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
   const account = el("button", { type: "button", class: "map-search-btn map-account", "aria-label": "Guide and account" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>');

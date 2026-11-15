@@ -9,7 +9,7 @@ import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint } from "../domain/area-list.js";
-import { PERMIT_CATEGORIES, CAMPUS_CENTER, byuShape, cityShape } from "../domain/map-geometry.js";
+import { PERMIT_CATEGORIES, CAMPUS_CENTER, allByuShapes, cityShape, campusBounds } from "../domain/map-geometry.js";
 import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-maps.js";
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
@@ -20,7 +20,7 @@ let mapStyle = "roadmap";
 const views = {};           // "2d" / "3d" -> adapter, created the first time each is shown
 const layers = {};          // "2d" / "3d" -> the <div> inside #parking-map that holds it
 let features = [], tracker, latestPosition = null, nearby = [];
-let visibleFeatures = [], cityFacilities = [], cityVisible = false, shapes = [];
+let visibleFeatures = [], cityFacilities = [], cityVisible = false, shapes = [], userMovedCamera = false;
 
 const byId = (id) => document.getElementById(id);
 const isDark = () => document.documentElement?.getAttribute("data-theme-active") === "dark";
@@ -80,7 +80,7 @@ function initLocation() {
     if (latestPosition) {
       const point = { lat: latestPosition.latitude, lng: latestPosition.longitude };
       for (const view of Object.values(views)) view.setUser(point, latestPosition.accuracy, latestPosition.heading, latestPosition.speed);
-      if (firstFix) { activeView()?.focus(point, 16); firstFix = false; }
+      if (firstFix) { userMovedCamera = true; activeView()?.focus(point, 16); firstFix = false; }
     } else {
       if (wasLive) for (const view of Object.values(views)) view.setUser(null);
       firstFix = true;
@@ -161,7 +161,7 @@ function selectShape(shape) {
 export function showAreaOnMap(area) {
   const view = activeView();
   if (!view || !area) return false;
-  const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
+  const feature = features.find((f) => f.properties?.OBJECTID === area.source_feature_id);
   const shape = feature && shapes.find((s) => s.source.feature === feature);
   if (!shape) return false;
   const el = byId("parking-map");
@@ -186,9 +186,12 @@ function setMapStatus(message) {
 }
 
 // ---- Drawing -----------------------------------------------------------------------------------
+// Every mapped lot is drawn. Sections matching the chosen permit and time are highlighted (visibleFeatures);
+// the rest stay on the map, muted, and still open their details when tapped.
 function drawShapes() {
+  const matchedIds = new Set(visibleFeatures.map((f) => f.properties?.OBJECTID));
   shapes = [
-    ...visibleFeatures.map(byuShape),
+    ...allByuShapes(features, matchedIds),
     ...(cityVisible ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
   activeView()?.setShapes(shapes);
@@ -274,12 +277,29 @@ export async function toggleMapStyle() {
 
 export function zoomMap(delta) { activeView()?.zoomBy(delta); }
 
+// Space the floating controls take on a phone (search + drawer at the bottom, timer pill at the top),
+// so "fit campus" frames the lots in the part of the map people can actually see.
+function framePadding() {
+  const phone = window.matchMedia?.("(max-width: 600px)").matches;
+  return phone ? { top: 72, right: 64, bottom: 170, left: 16 } : { top: 24, right: 80, bottom: 96, left: 24 };
+}
+
+/** The default view: all BYU campus lots in frame. Skipped once the person has moved the map themselves. */
+export function frameCampus({ force = false } = {}) {
+  if (!force && userMovedCamera) return;
+  const bounds = campusBounds(features);
+  const view = activeView();
+  if (!view) return;
+  if (bounds) view.fitBounds(bounds, framePadding()); else view.focus(CAMPUS_CENTER, 15);
+}
+
 function centerOnDestination() {
   const id = state.find.destinationId;
   if (!id || id === centeredDestinationId) return;
   const point = areaPoint(state.destinations.find(d => d.destination_id === id));
   if (!point) return;
   centeredDestinationId = id;
+  userMovedCamera = true;
   activeView()?.focus({ lat: point.latitude, lng: point.longitude }, 16);
 }
 
@@ -319,7 +339,7 @@ export async function initMap() {
     const reset = document.getElementById("map-reset");
     if (reset) {
       reset.disabled = false;
-      reset.addEventListener("click", () => activeView()?.focus(CAMPUS_CENTER, 15));
+      reset.addEventListener("click", () => frameCampus({ force: true }));
     }
     // Start 3D in the background so a slow maps3d/WebGL load does not delay
     // lot boundaries, the city layer, or the Find/list UI (initMap is already
@@ -338,6 +358,8 @@ export async function initMap() {
       boundaryError = true;
     }
     await defaultView;
+    drawShapes(); // every lot right away; eligibility only changes which ones are highlighted
+    if (!state.find.destinationId) frameCampus();
     centerOnDestination();
     refreshMap();
     if (features.length) {
@@ -358,6 +380,13 @@ export function refreshMap() {
   if (activeView()) setTimeout(() => activeView()?.resize(), 0);
 }
 
+/** Screen-reader / desktop status line for the map. All lots are always drawn, so it says what is highlighted. */
+export function mapStatusText(matched, total) {
+  if (!total) return "";
+  if (!matched) return `All ${total} BYU lot sections shown. None match your permit and time right now.`;
+  return `${matched} of ${total} BYU lot sections match your permit and time (highlighted).`;
+}
+
 export function refreshMapEligibility(selection = parkingSelection(state.find), areas = eligibleAreas(state.areas, state.rulesByArea, selection)) {
   if (!maps || !features.length && !visibleFeatures.length) return;
   const next = eligibleMapFeatures(features, areas);
@@ -365,6 +394,6 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
     visibleFeatures = next;
     drawShapes();
   }
-  setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`);
+  setMapStatus(mapStatusText(visibleFeatures.length, features.length));
   renderNearby();
 }

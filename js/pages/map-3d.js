@@ -1,9 +1,14 @@
 // Google Maps Photorealistic 3D view (<gmp-map-3d>), same adapter shape as map-2d.js.
 // Lots are extruded polygons; tapping one fires `gmp-click`. Needs v=beta with the maps3d library.
-import { CAMPUS_CENTER, withAlpha } from "../domain/map-geometry.js";
+import { CAMPUS_CENTER, withAlpha, shapeStyle } from "../domain/map-geometry.js";
 
 const ALTITUDE = 1415;
-const DEFAULT_CAMERA = { tilt: 65, heading: 335, range: 1200 };
+// North-up and a moderate tilt, so the middle of the screen is campus itself. The old 65° tilt facing
+// north-north-west put the horizon (north Provo / Orem) in view while campus hid under the drawer.
+const DEFAULT_CAMERA = { tilt: 45, heading: 0, range: 2400 };
+// Provo city records (400+ outlines) are added to the 3D scene only once the camera is this close,
+// so the default campus view keeps a light element count on phones. BYU sections are always drawn.
+const CITY_RANGE = 2000;
 // Zoom level 17 in 2D is about 850 m of camera range; each level doubles or halves it.
 const USER_COLOR = "#007AFF";
 // A circle of `radius` meters around `point`, as a ring of lat/lng vertices for a ground-clamped polygon.
@@ -80,12 +85,19 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     container.classList?.toggle("map-layer-3d--night", night());
     // The tile filter also affects WebGL overlays, so give permits more opacity and a crisp edge.
     for (const { el, shape } of drawn) if (shape.kind === "polygon") {
-      el.fillColor = withAlpha(shape.color, night() ? 0.66 : 0.45);
-      el.strokeWidth = night() ? 3 : 2;
+      const look = shapeStyle(shape, { night: night() });
+      el.fillColor = withAlpha(shape.color, look.fillOpacity);
+      el.strokeColor = look.strokeOpacity < 1 ? withAlpha(shape.color, look.strokeOpacity) : shape.color;
+      el.strokeWidth = look.strokeWeight;
     }
     drawUser();
   };
-  map.addEventListener("gmp-rangechange", () => drawUser());
+  let pending = [], cityOn = false;
+  const nearEnough = () => (map.range ?? DEFAULT_CAMERA.range) <= CITY_RANGE;
+  map.addEventListener("gmp-rangechange", () => {
+    drawUser();
+    if (nearEnough() !== cityOn) { cityOn = !cityOn; place(); }
+  });
   applyStyle();
 
   const clear = () => { for (const { el } of drawn) el.remove(); drawn = []; };
@@ -95,23 +107,30 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     else Object.assign(map, endCamera);
   };
 
+  function place() {
+    clear();
+    for (const shape of pending) {
+      if (shape.source?.type === "city" && !cityOn) continue;
+      const muted = shape.matched === false;
+      const look = shapeStyle(shape, { night: night() });
+      const el = shape.kind === "polygon"
+        ? new Polygon({
+          // Matching lots stand up off the ground; the rest lie flat so the highlight reads at a glance.
+          outerCoordinates: shape.rings[0].map(p => ({ ...p, altitude: shape.source.type === "city" ? 20 : muted ? 2 : 10 })),
+          altitudeMode: "RELATIVE_TO_GROUND", extruded: !muted, drawsOccludedSegments: !muted,
+          fillColor: withAlpha(shape.color, look.fillOpacity), strokeColor: muted ? withAlpha(shape.color, look.strokeOpacity) : shape.color, strokeWidth: look.strokeWeight,
+        })
+        : new Marker({ position: shape.center, altitudeMode: "CLAMP_TO_GROUND", label: "P", title: "Provo parking" });
+      el.addEventListener("gmp-click", () => onSelect(shape));
+      map.append(el);
+      drawn.push({ el, shape });
+    }
+  }
+  cityOn = nearEnough();
+
   return {
     mode: "3d",
-    setShapes(shapes) {
-      clear();
-      for (const shape of shapes) {
-        const el = shape.kind === "polygon"
-          ? new Polygon({
-            outerCoordinates: shape.rings[0].map(p => ({ ...p, altitude: shape.source.type === "city" ? 20 : 10 })),
-            altitudeMode: "RELATIVE_TO_GROUND", extruded: true, drawsOccludedSegments: true,
-            fillColor: withAlpha(shape.color, night() ? 0.66 : 0.45), strokeColor: shape.color, strokeWidth: night() ? 3 : 2,
-          })
-          : new Marker({ position: shape.center, altitudeMode: "CLAMP_TO_GROUND", label: "P", title: "Provo parking" });
-        el.addEventListener("gmp-click", () => onSelect(shape));
-        map.append(el);
-        drawn.push({ el, shape });
-      }
-    },
+    setShapes(shapes) { pending = shapes; place(); },
     setUser(point, accuracy, heading = null, speed = null) {
       if (!point) return clearUser();
       userPoint = point;
@@ -122,7 +141,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level) }); },
     fitBounds(bounds) {
       const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
-      fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 2)) });
+      fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 1.3)) });
     },
     getView() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng }; },
     zoomBy(delta) { map.range = Math.min(20000, Math.max(150, (map.range ?? DEFAULT_CAMERA.range) / 2 ** delta)); },

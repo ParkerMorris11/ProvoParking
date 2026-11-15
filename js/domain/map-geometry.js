@@ -1,5 +1,6 @@
 // Pure map helpers shared by the 2D and 3D views: lot colors and GeoJSON -> {lat, lng} shapes. No DOM.
-export const CAMPUS_CENTER = { lat: 40.2518, lng: -111.6493 };
+// Between the Wilkinson Center and the JSB: the middle of the main campus lots, not the north end.
+export const CAMPUS_CENTER = { lat: 40.2497, lng: -111.6493 };
 export const DOWNTOWN_CENTER = { lat: 40.2338, lng: -111.6595 };
 export const CITY_COLOR = "#7a4fb5";
 
@@ -45,8 +46,11 @@ export function boundsFromCorners(corners) {
   return [south, west, north, east].every(Number.isFinite) ? { south, west, north, east } : null;
 }
 
-/** A BYU boundary feature as a drawable shape. Returns null when it has no usable outline. */
-export function byuShape(feature) {
+/**
+ * A BYU boundary feature as a drawable shape. Returns null when it has no usable outline.
+ * `matched` = this section fits the chosen permit and time; the map highlights it and mutes the rest.
+ */
+export function byuShape(feature, { matched = true } = {}) {
   const rings = outerRings(feature?.geometry);
   if (!rings.length) return null;
   const bounds = boundsOf(rings.flat());
@@ -54,8 +58,42 @@ export function byuShape(feature) {
     key: `byu-${feature.properties?.OBJECTID ?? feature.id}`,
     kind: "polygon", rings, bounds, center: boundsCenter(bounds),
     color: permitCategory(feature.properties?.permit_typ).color,
+    label: feature.properties?.Lot_Type || feature.properties?.Lot || "",
+    matched: Boolean(matched),
     source: { type: "byu", feature },
   };
+}
+
+/**
+ * Every mapped BYU section, so the map always shows all lots. Sections whose OBJECTID is in
+ * `matchedIds` are highlighted; the rest are drawn muted. Muted lots come first so the
+ * highlighted ones are drawn on top of any overlap.
+ */
+export function allByuShapes(features, matchedIds = new Set()) {
+  const shapes = (features || []).map(feature => byuShape(feature, { matched: matchedIds.has(feature?.properties?.OBJECTID) })).filter(Boolean);
+  return [...shapes.filter(s => !s.matched), ...shapes.filter(s => s.matched)];
+}
+
+/** Fill / outline for a lot: matching lots are bright, the rest stay visible but quiet. */
+export function shapeStyle(shape, { night = false } = {}) {
+  if (shape?.matched === false) return { fillOpacity: night ? 0.16 : 0.1, strokeOpacity: 0.55, strokeWeight: 1 };
+  return { fillOpacity: night ? 0.66 : 0.45, strokeOpacity: 1, strokeWeight: night ? 3 : 2 };
+}
+
+const CAMPUS_RADIUS_KM = 2.5;
+const kmBetween = (a, b) => Math.hypot((a.lat - b.lat) * 111.32, (a.lng - b.lng) * 111.32 * Math.cos(a.lat * Math.PI / 180));
+
+/**
+ * Bounds of the BYU sections around campus (the default camera frames these), or null without outlines.
+ * Far-off sections (more than 2.5 km from campus) are left out so one outlier does not zoom the map out.
+ */
+export function campusBounds(features, center = CAMPUS_CENTER) {
+  const points = (features || []).flatMap(feature => {
+    const ring = outerRings(feature?.geometry).flat();
+    const middle = boundsCenter(boundsOf(ring));
+    return middle && kmBetween(middle, center) <= CAMPUS_RADIUS_KM ? ring : [];
+  });
+  return boundsOf(points);
 }
 
 /** A Provo city/OSM facility (polygon or point) as a drawable shape. */

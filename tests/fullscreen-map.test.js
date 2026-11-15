@@ -37,7 +37,19 @@ test('permit chip never throws on a half-filled planned time', () => {
 test('list title counts areas with the right wording', () => {
   assert.equal(sheetTitle(33, true), '33 areas match your permit');
   assert.equal(sheetTitle(1, true), '1 area matches your permit');
-  assert.equal(sheetTitle(0, false), '0 areas match for everyone');
+  assert.equal(sheetTitle(4, false), '4 areas match for everyone');
+});
+
+test('list title never shows a bare 0: it asks for a permit or explains the empty result', () => {
+  assert.equal(sheetTitle(0, false), 'Choose your permit to see where you can park');
+  assert.equal(sheetTitle(0, false, { day: 0 }), 'Choose your permit to see where you can park');
+  // BYU lists no weekend permit rules, so Saturday/Sunday matches nothing (the bug in the screenshot).
+  assert.equal(sheetTitle(0, true, { day: 0, time: '15:00' }), 'Weekend: no BYU permit rules listed. Check signs');
+  assert.equal(sheetTitle(0, true, { day: 6, time: '10:00' }), 'Weekend: no BYU permit rules listed. Check signs');
+  assert.equal(sheetTitle(0, true, { day: 2, time: '03:00' }), 'No lots match your permit right now');
+  for (const [count, permit, day] of [[0, true, 0], [0, false, 3], [0, true, 3]]) {
+    assert.doesNotMatch(sheetTitle(count, permit, { day }), /^0 /);
+  }
 });
 
 test('runtime layout preserves the original forms, results and map landmarks', async () => {

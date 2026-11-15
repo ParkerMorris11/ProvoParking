@@ -16,6 +16,24 @@ export function fmtHourMinute(msLeft) {
   return over && minutes > 0 ? `-${text}` : text;
 }
 
+/**
+ * What the floating pill shows. While time is left: h:mm. Once leave_by has passed by a full minute
+ * the pill says "Time's up" instead of counting a negative number forever (a timer left running for
+ * days used to read "-146:28"). The exact overage stays in the accessible label and the timer sheet.
+ */
+export function fabText(msLeft) {
+  return msLeft <= -60000 ? "Time's up" : fmtHourMinute(Math.max(0, msLeft));
+}
+
+/** Spoken label for the pill. `msLeft` is negative once leave_by has passed. */
+export function fabLabel(msLeft) {
+  if (msLeft < 0) {
+    const minutes = Math.max(1, Math.floor(-msLeft / 60000));
+    return `Parking timer: time is up, ended ${fmtDuration(minutes)} ago. Open to end the timer.`;
+  }
+  return `Parking timer: ${fmtDuration(Math.max(1, Math.ceil(msLeft / 60000)))} left. Open details.`;
+}
+
 let lastKey = "";
 
 export function renderCarFab() {
@@ -34,10 +52,11 @@ export function renderCarFab() {
     return;
   }
   const msLeft = new Date(session.leave_by).getTime() - parkingNow();
-  const text = fmtHourMinute(msLeft);
+  const text = fabText(msLeft);
   const over = msLeft < 0;
   const soon = !over && msLeft <= session.reminder_minutes_before * 60000;
-  const key = `${text}|${over}|${soon}`;
+  // Over-time labels change every minute even though the pill text stays "Time's up".
+  const key = `${text}|${over}|${soon}|${over ? Math.floor(-msLeft / 60000) : ""}`;
   if (key === lastKey) return; // nothing visible changed since the last second
   lastKey = key;
   fab.classList.add("running");
@@ -45,10 +64,7 @@ export function renderCarFab() {
   fab.classList.toggle("over", over);
   time.hidden = false;
   time.textContent = text;
-  const minutes = Math.max(1, over ? Math.floor(-msLeft / 60000) : Math.ceil(msLeft / 60000));
-  fab.setAttribute("aria-label", over
-    ? `Parking timer: time is up, over by ${fmtDuration(minutes)}. Open details.`
-    : `Parking timer: ${fmtDuration(minutes)} left. Open details.`);
+  fab.setAttribute("aria-label", fabLabel(msLeft));
 }
 
 export function initCarFab({ go }) {
