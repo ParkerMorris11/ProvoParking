@@ -31,9 +31,11 @@ export function showView() {
   const carSheet = name === "car";
   // The sheet opens over whatever page is already showing (or the default page on a direct link).
   const viewName = carSheet ? (state.currentView || (state.find.permitId ? "areas" : "find")) : name;
+  const previousView = state.currentView;
   state.currentView = VIEWS.includes(viewName) ? viewName : "find";
+  if (state.currentView === "area" && previousView !== "area") setAreaBack(previousView);
   for (const v of VIEWS) $(`view-${v}`).hidden = v !== state.currentView;
-  const tabFor = state.currentView === "area" ? "areas" : state.currentView;
+  const tabFor = state.currentView === "area" ? areaFrom : state.currentView;
   document.querySelectorAll(".tab").forEach((t) => {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
@@ -50,6 +52,23 @@ export function showView() {
   if (closeCarSheet()) return; // just closed the timer sheet: stay on the page, focus goes back to the car button
   document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   window.scrollTo(0, 0);
+}
+
+// The details page's back link returns to the screen the user opened it from
+// (Favorites, Areas or All lots). A direct link, or any other screen, goes back to Areas.
+export const BACK_TARGETS = { favorites: "Back to favorites", areas: "Back to areas", lots: "Back to all lots" };
+export function backTarget(fromView) {
+  const view = BACK_TARGETS[fromView] ? fromView : "areas";
+  return { href: `#${view}`, label: BACK_TARGETS[view] };
+}
+let areaFrom = "areas"; // the tab highlighted while the details page is open
+function setAreaBack(fromView) {
+  const { href, label } = backTarget(fromView);
+  areaFrom = href.slice(1);
+  const link = $("area-back");
+  if (!link) return;
+  link.setAttribute("href", href);
+  link.textContent = `← ${label}`;
 }
 
 export function go(hash) {
