@@ -648,7 +648,7 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; color: inherit; text-decoration: none; }
 .fav-main:hover { background: var(--hover); }
 .fav-main:focus-visible, .fav-go-btn:focus-visible, .fav-menu a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-weight: 800; color: var(--card); background: var(--muted); } /* --card text: white on dark pins in light mode, navy on pastel pins in dark mode */
+.fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-size: 1.15rem; line-height: 1; color: var(--card); background: var(--muted); } /* --card text: white on dark pins in light mode, navy on pastel pins in dark mode */
 .fav-pin.ok { background: var(--ok); } .fav-pin.limit { background: var(--low); }
 .fav-pin.no-permit, .fav-pin.blocked { background: var(--heart); }
 .fav-text { min-width: 0; display: grid; gap: 1px; }
@@ -690,4 +690,4 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 @keyframes undo-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .undo-bar { animation: none; } }
 @media (max-width: 600px) { .undo-bar { left: 16px; right: 84px; transform: none; width: auto; max-width: none; justify-content: space-between; bottom: calc(var(--bottom-nav, 64px) + 12px); } @keyframes undo-in { from { opacity: 0; } } }
-@media (max-width: 480px) { .fav-row { gap: 4px; padding-right: 8px; } .fav-main { gap: 10px; } .fav-pin { width: 34px; height: 34px; font-size: .9rem; } .fav-go-btn { width: 44px; height: 44px; } .fav-more-btn { width: 40px; } }
+@media (max-width: 480px) { .fav-row { gap: 4px; padding-right: 8px; } .fav-main { gap: 10px; } .fav-pin { width: 34px; height: 34px; font-size: 1rem; } .fav-go-btn { width: 44px; height: 44px; } .fav-more-btn { width: 40px; } }
