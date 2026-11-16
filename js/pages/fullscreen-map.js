@@ -21,6 +21,44 @@ function el(tag, attrs = {}, html = "") {
   return node;
 }
 
+// ---- Settings gear (map rail) -------------------------------------------------------------------
+// One gear holds the less-used things: the quick guide, the Guide & account page, sign in / log out,
+// and the admin dashboard (admin.html has its own admin sign-in, so the link alone grants nothing).
+// The person button in the search bar stays as the always-visible way to sign up.
+function buildSettingsMenu() {
+  const button = el("button", { type: "button", class: "map-help", id: "map-settings", "aria-expanded": "false", "aria-controls": "map-settings-menu", "aria-label": "Settings", title: "Settings" },
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>');
+  const menu = el("div", { class: "map-settings-menu", id: "map-settings-menu", role: "group", "aria-label": "Settings" },
+    '<p class="map-settings-who" id="map-settings-who"></p>' +
+    '<button type="button" class="map-settings-item" id="map-settings-account"></button>' +
+    '<button type="button" class="map-settings-item" data-help-open data-help-return="map-settings" aria-haspopup="dialog">Quick guide</button>' +
+    '<a class="map-settings-item" href="#help">Help &amp; account page</a>' +
+    '<a class="map-settings-item" href="admin.html">Admin dashboard <span class="map-settings-note">team only</span></a>');
+  menu.hidden = true;
+  const setOpen = (open, { focusButton = false } = {}) => {
+    menu.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      // Account state comes from the existing account bar, so it is always the same as the Guide page.
+      const name = document.getElementById("account-name")?.textContent.trim();
+      const action = document.getElementById("account-action")?.textContent.trim() || "Sign up";
+      menu.querySelector("#map-settings-who").textContent = name || "Browsing as guest";
+      menu.querySelector("#map-settings-account").textContent = action === "Sign up" ? "Sign up or log in" : action;
+      menu.querySelector(".map-settings-item")?.focus();
+    } else if (focusButton) button.focus();
+  };
+  button.addEventListener("click", () => setOpen(menu.hidden));
+  menu.addEventListener("click", (e) => {
+    const item = e.target.closest(".map-settings-item");
+    if (!item) return;
+    if (item.id === "map-settings-account") document.getElementById("account-action")?.click();
+    setOpen(false);
+  });
+  menu.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false, { focusButton: true }); } });
+  document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && !button.contains(e.target)) setOpen(false); });
+  return { button, menu };
+}
+
 // ---- Sheet position -------------------------------------------------------------------------
 export function setSheet(next) {
   if (!sheet || !STATES.includes(next)) return;
@@ -244,8 +282,7 @@ function build() {
   if (search) top.append(search.bar);
   if (search) top.append(search.status);
   row.append(buildPermitPopover());
-  const help = el("button", { type: "button", class: "map-help", id: "map-help", "data-help-open": "", "aria-haspopup": "dialog", "aria-label": "Quick guide: permit colors, 2D/3D, location", title: "Quick guide" },
-    `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.9-1.1 1.6M12 16.6v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
+  const settings = buildSettingsMenu();
   const controls = el("div", { class: "map-controls", role: "group", "aria-label": "Map controls" });
   const style = el("button", { type: "button", id: "map-style", "aria-pressed": "false", "aria-label": "Switch to satellite with labels", title: "Switch to satellite with labels" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>');
   style.addEventListener("click", () => void toggleMapStyle());
@@ -261,7 +298,7 @@ function build() {
   const theme = el("button", { type: "button", class: "theme-toggle", id: "map-theme", "aria-label": "Dark mode", "aria-pressed": darkNow ? "true" : "false", title: darkNow ? "Switch to light mode" : "Switch to dark mode" },
     '<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>' +
     '<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
-  controls.append(theme, help);
+  controls.append(theme, settings.button, settings.menu);
   stage.append(top, controls);
   mapWrap.append(stage);
 

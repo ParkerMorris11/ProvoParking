@@ -175,6 +175,14 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand-fill); }
 .fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .fs-shell .map-mode button { width: 44px; min-height: 44px; border-radius: 10px; }
+/* Settings gear menu: opens to the left of the rail, bottom-aligned with it. */
+.fs-shell .map-settings-menu { position: absolute; right: calc(100% + 8px); bottom: 0; z-index: 1; display: flex; flex-direction: column; gap: 2px; width: 230px; padding: 8px; border-radius: 16px; background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); color: var(--text); }
+.fs-shell .map-settings-menu[hidden] { display: none; }
+.fs-shell .map-settings-who { margin: 2px 8px 6px; font-size: .75rem; color: var(--ink-2, var(--text)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fs-shell .map-settings-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: inherit; font-size: .9rem; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
+.fs-shell .map-settings-item:hover { background: var(--hover); }
+.fs-shell .map-settings-note { font-size: .7rem; font-weight: 500; color: var(--ink-2, var(--text)); }
+.fs-shell .map-controls > .map-help[aria-expanded="true"] { background: var(--brand-tint); color: var(--brand-ink); }
 /* Dark mode button in the rail: the sun/moon icon shows the state, so no "pressed" fill. */
 .fs-shell .map-controls > .theme-toggle, .fs-shell .map-controls > .theme-toggle[aria-pressed="true"] { display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text); }
 .fs-shell .map-controls > .theme-toggle:hover { background: var(--hover); }
