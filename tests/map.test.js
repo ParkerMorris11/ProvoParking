@@ -522,3 +522,41 @@ for (const reducedMotion of [false, true]) {
     assert.deepEqual(cancelled, reducedMotion ? [] : [1]);
   });
 }
+
+test('a favorite can be shown on the map even when the permit filter hides it, or by its point', async () => {
+  const two = fakeMaps2D(), three = fakeMaps3D();
+  const lot = { type: 'Feature', properties: { OBJECTID: 7, permit_typ: 'G', Map_Catego: 'Graduate' }, geometry: { type: 'Polygon', coordinates: [square] } };
+  const harness = installMapHarness({ two, three, fetchImpl: async () => ({ ok: true, json: async () => ({ type: 'FeatureCollection', features: [lot] }) }) });
+  const card = { hidden: true, innerHTML: '', focus() {}, addEventListener() {} };
+  harness.nodes.set('map-card', card);
+  const { state } = await import('../js/state.js');
+  const prev = { ...state };
+  // The signed-in permit (Y) does not match this G lot, so the map would normally not draw it.
+  Object.assign(state, { areas: [{ area_id: 70, area_name: 'Lot 20G', source_feature_id: 7 }], rulesByArea: new Map(), currentView: 'favorites' });
+  try {
+    const controller = await import('../js/pages/map.js?show-favorite');
+    await controller.initMap();
+    assert.equal(controller.showAreaOnMap({ area_id: 70, area_name: 'Lot 20G', source_feature_id: 7 }), true);
+    assert.equal(card.hidden, false);
+    assert.match(card.innerHTML, /href="#area\/70"/);
+    controller.hideCard();
+    assert.equal(card.hidden, true);
+
+    assert.equal(controller.showAreaOnMap({ area_id: 9, area_name: 'Center St Garage', operator: 'Provo City', latitude: 40.2339, longitude: -111.6585 }), true, 'a lot with only a location is centered on its point');
+    assert.match(card.innerHTML, /Center St Garage/);
+    assert.match(card.innerHTML, /href="#area\/9"/);
+    assert.equal(controller.showAreaOnMap({ area_id: 10, area_name: 'Nowhere' }), false, 'no shape and no point: caller falls back to details');
+  } finally {
+    Object.assign(state, prev);
+    await harness.restore();
+  }
+});
+
+test('favorite card for a point-only lot escapes text and links to details and the timer', async () => {
+  const { pointCardHtml } = await import('../js/pages/map.js');
+  const html = pointCardHtml({ area_id: 5, area_name: 'A <b>lot</b>', operator: 'Provo & Co' });
+  assert.match(html, /A &lt;b&gt;lot&lt;\/b&gt;/);
+  assert.match(html, /Provo &amp; Co/);
+  assert.match(html, /href="#area\/5"/);
+  assert.match(html, /href="#car\/5"/);
+});

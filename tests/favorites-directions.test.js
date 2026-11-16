@@ -35,7 +35,7 @@ test('missing and invalid destinations never produce misleading directions links
   assert.ok(directionsUrl({ latitude: 0, longitude: 0 }, 'driving'));
 });
 
-test('favorites render a simple row with one directions menu per saved lot and update after removal', async () => {
+test('favorites render a simple row with a map button and Go link per saved lot and update after removal', async () => {
   const fields = { 'fav-list': {}, 'fav-empty': {}, 'fav-count': {}, status: { classList: { toggle() {} } } };
   const previousDocument = globalThis.document;
   const previousState = { ...state };
@@ -53,7 +53,7 @@ test('favorites render a simple row with one directions menu per saved lot and u
     assert.doesNotMatch(html, /maps\.apple\.com/);
     for (const lot of lots.slice(0, 2)) {
       assert.ok(html.includes(directionsUrl(lot, 'driving').replaceAll('&', '&amp;')));
-      assert.ok(html.includes(`href="#area/${lot.area_id}"`));
+      assert.ok(html.includes(`data-map-area="${lot.area_id}"`), 'tapping a favorite shows it on the map');
     }
     assert.match(html, /Visitor &lt;lot&gt; &quot;B&quot;/);
     assert.match(html, /target="_blank" rel="noopener noreferrer"/);
