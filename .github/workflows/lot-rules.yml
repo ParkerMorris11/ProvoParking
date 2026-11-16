@@ -11,6 +11,7 @@ on:
       - 'tests/manual/lot-rules.html'
       - 'tests/fixtures/lot-rules.js'
       - 'scripts/audit-lot-rules.mjs'
+      - 'scripts/serve-gzip.py'
       - '.github/workflows/lot-rules.yml'
 permissions:
   contents: read
@@ -30,7 +31,7 @@ jobs:
           PARKING_AUDIT_TOOLS: ${{ runner.temp }}/parking-audit
         run: |
           export CHROME_PATH="$(command -v google-chrome)"
-          python3 -m http.server 8765 --bind 127.0.0.1 > "$RUNNER_TEMP/parking-preview.log" 2>&1 &
+          python3 scripts/serve-gzip.py 8765 > "$RUNNER_TEMP/parking-preview.log" 2>&1 &
           for attempt in 1 2 3 4 5; do
             if curl --silent --fail http://127.0.0.1:8765/tests/manual/lot-rules.html > /dev/null; then break; fi
             sleep 1
