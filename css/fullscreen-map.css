@@ -338,3 +338,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 }
 .fs-shell .home-sheet { background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .fs-shell .map-search-results { background: var(--glass-strong); color: var(--text); border-color: var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
+
+/* Balance the search row above the rounded bottom edge on phones. */
+@media (max-width: 600px) {
+  .fs-shell { --peek: 96px; }
+  .fs-shell .home-sheet[data-state="peek"] .sheet-head { padding-bottom: 24px; }
+}
