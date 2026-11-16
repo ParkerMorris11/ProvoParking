@@ -73,6 +73,17 @@ export async function savePermits(userId, permitIds) {
   return data;
 }
 
+// Makes `permitId` the account's permit: adds it, then removes the others. The app uses one permit at a
+// time (the chip, Find and every eligibility check), so the account keeps the one the person last chose
+// and it comes back on the next visit or device. Row security limits both calls to the caller's own rows.
+export async function setAccountPermit(userId, permitId) {
+  const add = await state.db.from("user_permit")
+    .upsert([{ user_id: userId, permit_id: permitId }], { onConflict: "user_id,permit_id", ignoreDuplicates: true });
+  if (add.error) throw add.error;
+  const { error } = await state.db.from("user_permit").delete().eq("user_id", userId).neq("permit_id", permitId);
+  if (error) throw error;
+}
+
 export async function logOut() {
   const { error } = await state.db.auth.signOut();
   if (error) throw error;
