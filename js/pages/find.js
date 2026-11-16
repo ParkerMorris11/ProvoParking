@@ -100,6 +100,10 @@ export function applyPermitChoice(permitId, refresh = () => {}) {
   if (!state.permits.some((p) => p.permit_id === id)) return false;
   state.find.permitId = id;
   savePermit(id);
+  // Keep the Find form in step when the permit is picked elsewhere (the map's permit chip), so
+  // "Show parking areas" doesn't ask for a permit the person already chose.
+  const select = typeof document !== "undefined" ? document.getElementById("permit-select") : null;
+  if (select && select.value !== String(id)) { select.value = String(id); renderPermitInfo(); }
   refresh();
   return true;
 }

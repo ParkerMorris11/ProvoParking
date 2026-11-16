@@ -4,6 +4,12 @@ import { RequestError, validateRequest, denverNow, buildPrompt, readModelJson, s
 const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 const DEFAULT_MODEL = "gemini-flash-latest";
 
+// Gemini's free tier answers 429 (rate limit) or 503 (busy) on bursts. Testing on 2026-11-16 saw this on about
+// a third of quick searches, and a retry a few seconds later always worked, so retry those before giving up.
+export const RETRY_STATUSES = new Set([429, 500, 503]);
+export const RETRY_DELAYS_MS = [800, 2000];
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const json = (status, body, headers) => new Response(JSON.stringify(body), { status, headers: { ...headers, "Content-Type": "application/json" } });
 
 /** Looks up the labels for the permit/destination IDs the page sent (reference tables are public to read). */
@@ -28,7 +34,7 @@ async function loadLabels({ ids, table, idColumn, select, label, env, fetchImpl,
  * env: { GEMINI_API_KEY, GEMINI_MODEL?, SUPABASE_URL?, SUPABASE_ANON_KEY?, ALLOWED_ORIGINS? }
  * Success body is exactly { permit_id, use_saved_permit, destination_id, live, day, time, confidence }.
  */
-export async function handleRequest(request, { env, fetchImpl = fetch, now = new Date() }) {
+export async function handleRequest(request, { env, fetchImpl = fetch, now = new Date(), sleep = wait }) {
   const extraOrigins = (env.ALLOWED_ORIGINS || "").split(",").map((s) => s.trim()).filter(Boolean);
   const origin = request.headers.get("Origin");
   const cors = corsHeaders(origin, extraOrigins);
@@ -51,17 +57,25 @@ export async function handleRequest(request, { env, fetchImpl = fetch, now = new
     parts.push({ text: buildPrompt({ text: input.text, permits, destinations, now: today }) });
 
     const model = encodeURIComponent(env.GEMINI_MODEL || DEFAULT_MODEL);
+    const modelBody = JSON.stringify({
+      contents: [{ role: "user", parts }],
+      generationConfig: { temperature: 0, responseMimeType: "application/json", responseSchema: RESPONSE_SCHEMA },
+    });
     let response;
-    try {
-      response = await fetchImpl(`${GEMINI_BASE}/${model}:generateContent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts }],
-          generationConfig: { temperature: 0, responseMimeType: "application/json", responseSchema: RESPONSE_SCHEMA },
-        }),
-      });
-    } catch { throw new RequestError(502, "model_unavailable", "Could not reach the model"); }
+    for (let attempt = 0; ; attempt++) {
+      try {
+        response = await fetchImpl(`${GEMINI_BASE}/${model}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+          body: modelBody,
+        });
+      } catch {
+        if (attempt < RETRY_DELAYS_MS.length) { await sleep(RETRY_DELAYS_MS[attempt]); continue; }
+        throw new RequestError(502, "model_unavailable", "Could not reach the model");
+      }
+      if (response.ok || !RETRY_STATUSES.has(response.status) || attempt >= RETRY_DELAYS_MS.length) break;
+      await sleep(RETRY_DELAYS_MS[attempt]);
+    }
     if (!response.ok) throw new RequestError(502, "model_unavailable", `Model returned ${response.status}`);
     const parsed = readModelJson(await response.json().catch(() => null));
     if (!parsed) throw new RequestError(502, "bad_model_output", "The model returned nothing usable");

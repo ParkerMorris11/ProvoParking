@@ -145,10 +145,11 @@ test('errors: not configured, bad JSON, bad request, model down, junk model outp
   const badJson = new Request('https://x/f', { method: 'POST', body: '{nope', headers: { Origin: 'http://localhost:8000' } });
   assert.equal((await handleRequest(badJson, { env: ENV, fetchImpl: fakeFetch().impl })).status, 400);
   assert.equal((await handleRequest(post({ permit_ids: [], destination_ids: [] }), { env: ENV, fetchImpl: fakeFetch().impl })).status, 400);
+  const noWait = async () => {};
   const down = fakeFetch({ gemini: new Response('x', { status: 429 }) });
-  assert.equal((await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: down.impl })).status, 502);
+  assert.equal((await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: down.impl, sleep: noWait })).status, 502);
   const unreachable = fakeFetch({ gemini: new Error('offline') });
-  assert.equal((await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: unreachable.impl })).status, 502);
+  assert.equal((await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: unreachable.impl, sleep: noWait })).status, 502);
   const junk = fakeFetch({ gemini: Response.json({ candidates: [] }) });
   const res = await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: junk.impl });
   assert.equal(res.status, 502);
@@ -162,4 +163,26 @@ test('index.ts reads the Gemini key from Deno.env and serves the handler', async
   assert.match(source, /Deno\.env\.get\("GEMINI_API_KEY"\)/);
   assert.match(source, /Deno\.serve/);
   assert.doesNotMatch(source, /AIza[0-9A-Za-z_-]{20,}/);
+});
+
+test('a rate-limited model (429) is retried with a pause and the answer comes through', async () => {
+  const answers = [new Response('slow down', { status: 429 }), new Response('busy', { status: 503 }), geminiSays({ permit_id: 1, use_saved_permit: false, destination_id: null, live: true, day: null, time: null, confidence: 0.8 })];
+  let geminiCalls = 0; const pauses = [];
+  const impl = async (url) => {
+    if (String(url).includes('generativelanguage')) return answers[geminiCalls++];
+    return new Response('no', { status: 500 });
+  };
+  const res = await handleRequest(post({ text: 'Y permit', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: impl, sleep: async (ms) => { pauses.push(ms); } });
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).permit_id, 1);
+  assert.equal(geminiCalls, 3);
+  assert.deepEqual(pauses, [800, 2000]);
+});
+
+test('a 400 from the model is not retried', async () => {
+  let geminiCalls = 0;
+  const impl = async (url) => String(url).includes('generativelanguage') ? (geminiCalls++, new Response('bad', { status: 400 })) : new Response('no', { status: 500 });
+  const res = await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: impl, sleep: async () => assert.fail('no retry') });
+  assert.equal(res.status, 502);
+  assert.equal(geminiCalls, 1);
 });

@@ -80,11 +80,23 @@ test('"my permit" with no saved permit leaves the select alone and tells the per
   assert.match(result.warnings.join(' '), /choose one/);
 });
 
-test('fields the sentence did not mention are left as they were', () => {
+test('a new search clears the last building and time but keeps the chosen permit, and says so', () => {
+  // Repro from the 2026-11-16 test run: "Y permit, Tanner at 9am Monday" then "free parking near the stadium Saturday".
+  const els = form();
+  els.permit.value = '1'; els.destination.value = '11'; els.time.value = '09:00';
+  const result = applyParsedToForm(parsed({ live: false, day: 6, time: null }), els, { ...lists });
+  assert.equal(els.destination.value, '', 'Tanner does not linger');
+  assert.equal(els.time.value, '', '9:00 does not linger');
+  assert.equal(els.day.value, '6');
+  assert.equal(els.permit.value, '1');
+  assert.match(result.summary, /Kept your Y permit/);
+});
+
+test('a building named in the new search replaces the old one', () => {
   const els = form();
   els.destination.value = '11';
-  applyParsedToForm(parsed({ permit_id: 1 }), els, { ...lists });
-  assert.equal(els.destination.value, '11');
+  applyParsedToForm(parsed({ destination_id: 10 }), els, { ...lists });
+  assert.equal(els.destination.value, '10');
 });
 
 test('low confidence asks the person to check every field', () => {
@@ -125,4 +137,27 @@ test('requestParseFind turns function errors into friendly messages', async () =
   const generic = { functions: { invoke: async () => ({ data: null, error: new Error('boom') }) } };
   await assert.rejects(requestParseFind(generic, { text: 'x' }, lists), /use the form below/);
   await assert.rejects(requestParseFind(null, { text: 'x' }, lists), /connection/);
+});
+
+test('requestParseFind retries once when the model is busy, then succeeds', async () => {
+  let calls = 0, slept = 0;
+  const busy = { context: { json: async () => ({ error: 'model_unavailable' }) } };
+  const db = { functions: { invoke: async () => (++calls === 1 ? { data: null, error: busy } : { data: { permit_id: 1, use_saved_permit: false, destination_id: null, live: true, day: null, time: null, confidence: 0.8 }, error: null }) } };
+  const out = await requestParseFind(db, { text: 'Y permit' }, lists, { sleep: async () => { slept++; } });
+  assert.equal(calls, 2);
+  assert.equal(slept, 1);
+  assert.equal(out.permit_id, 1);
+});
+
+test('requestParseFind gives up after one retry and does not retry errors that will not change', async () => {
+  let calls = 0;
+  const busy = { context: { json: async () => ({ error: 'model_unavailable' }) } };
+  const db = { functions: { invoke: async () => { calls++; return { data: null, error: busy }; } } };
+  await assert.rejects(requestParseFind(db, { text: 'x' }, lists, { sleep: async () => {} }), /Try again/);
+  assert.equal(calls, 2);
+  calls = 0;
+  const notSetUp = { context: { json: async () => ({ error: 'not_configured' }) } };
+  const db2 = { functions: { invoke: async () => { calls++; return { data: null, error: notSetUp }; } } };
+  await assert.rejects(requestParseFind(db2, { text: 'x' }, lists, { sleep: async () => {} }), /isn't set up/);
+  assert.equal(calls, 1);
 });

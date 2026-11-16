@@ -292,6 +292,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 }
 @media (max-width: 600px) {
   .fs-shell .home-sheet[data-state="full"] { --sheet-y: 0px; }
+  /* At half height the bottom 46% of the sheet sits below the screen, so pad the scroll area by that much:
+     otherwise the end of a long screen (Find's arrival time and "Show parking areas") can't be scrolled into view. */
+  .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46vh + 28px); padding-bottom: calc(46dvh + 28px); }
   .fs-shell.sidebar-open .map-rail, .fs-shell.sidebar-open .map-tile { opacity: 0; pointer-events: none; transition: opacity .2s; }
   .has-fs-home:has(.sidebar-open) .car-fab { visibility: hidden; }
   .fs-shell.sidebar-open .map-status { display: none; }
