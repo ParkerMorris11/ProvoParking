@@ -100,11 +100,15 @@ export function renderFavorites() {
 
 // ---------- Undo bar ----------
 function hideUndo() {
-  if (!undo) return;
-  clearTimeout(undo.timer);
+  clearTimeout(undo?.timer);
   undo = null;
   const bar = $("undo-bar");
-  if (bar) bar.hidden = true;
+  if (bar) { bar.hidden = true; $("undo-text").textContent = ""; }
+}
+
+export function resetFavoriteEditor() {
+  renamingId = null;
+  hideUndo();
 }
 
 export function showUndo(area, nickname, { renderViews }) {
@@ -113,11 +117,11 @@ export function showUndo(area, nickname, { renderViews }) {
   if (!bar) return;
   $("undo-text").textContent = `Removed ${nickname || area.area_name}`;
   bar.hidden = false;
-  undo = { areaId: area.area_id, nickname, renderViews, timer: setTimeout(hideUndo, UNDO_MS) };
+  undo = { areaId: area.area_id, nickname, renderViews, version: state.authVersion, timer: setTimeout(hideUndo, UNDO_MS) };
 }
 
 async function undoRemove() {
-  if (!undo) return;
+  if (!undo || !state.user || undo.version !== state.authVersion) { hideUndo(); return; }
   const { areaId, nickname, renderViews } = undo;
   const version = state.authVersion;
   const area = state.areas.find((a) => a.area_id === areaId);

@@ -499,9 +499,10 @@ On Areas, click **Use my location** and allow location access. The blue dot and 
 Nothing below happens automatically; the Edge Function is not deployed by this branch.
 1. Get a Gemini API key (Google AI Studio).
 2. `supabase secrets set GEMINI_API_KEY=<key>` (optional: `GEMINI_MODEL`, default `gemini-flash-latest`; `ALLOWED_ORIGINS` for extra sites).
-3. `supabase functions deploy parse-find`. The default JWT check stays on; the app calls it with the signed-in or anonymous Supabase key.
-4. Until it is deployed, the text box says plain-language search isn't set up yet and the normal form works as before.
-5. Test locally with `supabase functions serve parse-find --env-file <file with GEMINI_API_KEY>` and a `config.js` pointing at that project. iOS Safari audio (MediaRecorder `audio/mp4`) needs a real-device check.
+3. Apply `20261116210000_bound_guest_writes_and_model_usage.sql` before deploying `parse-find`. The function uses its built-in, server-only `SUPABASE_SERVICE_ROLE_KEY` to reserve each Gemini attempt, including retries. Preserve the deployed gateway authentication settings and existing signed-in/guest client access. The current production function has gateway JWT verification disabled. If the quota service is unavailable, AI Find stops and the manual form still works.
+4. The default budgets are 500 Gemini attempts per UTC day for the project and 20 per ten minutes per gateway client address (IPv6 /64; missing addresses share one budget). Verify the hosting gateway supplies the client address and set a provider-side spending limit appropriate to the project.
+5. Until it is deployed, the text box says plain-language search isn't set up yet and the normal form works as before.
+6. Test locally with `supabase functions serve parse-find --env-file <file with GEMINI_API_KEY>` and a `config.js` pointing at that project. iOS Safari audio (MediaRecorder `audio/mp4`) needs a real-device check.
 
 ### Supabase settings for smooth sign-in (project owner)
 1. **Authentication > Sign In / Providers:** turn **Confirm email** off, so an email sign-up can use the app immediately (the free email service also sends only 2 emails per hour).

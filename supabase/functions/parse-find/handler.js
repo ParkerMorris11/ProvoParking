@@ -30,8 +30,28 @@ async function loadLabels({ ids, table, idColumn, select, label, env, fetchImpl,
   return ids.map((id) => ({ id, label: sent.get(id) ?? `id ${id}` }));
 }
 
+/** Reserve one provider attempt against the shared database budget. Fail closed without the budget. */
+async function reserveModelAttempt(request, env, fetchImpl) {
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!env.SUPABASE_URL || !key) throw new RequestError(503, "quota_unavailable", "Search is temporarily unavailable");
+  let allowed;
+  try {
+    const response = await fetchImpl(`${env.SUPABASE_URL.replace(/\/+$/, "")}/rest/v1/rpc/consume_parse_find_budget`, {
+      method: "POST",
+      headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      // Gateway-provided address is a fairness hint. The project-wide limit applies regardless.
+      body: JSON.stringify({ p_address: request.headers.get("cf-connecting-ip")?.slice(0, 64) ?? null }),
+      redirect: "error",
+      signal: AbortSignal.timeout(4000),
+    });
+    if (response.ok) allowed = await response.json();
+  } catch { /* The provider must not be contacted when quota state is unknown. */ }
+  if (allowed === false) throw new RequestError(429, "quota_exhausted", "Search limit reached");
+  if (allowed !== true) throw new RequestError(503, "quota_unavailable", "Search is temporarily unavailable");
+}
+
 /**
- * env: { GEMINI_API_KEY, GEMINI_MODEL?, SUPABASE_URL?, SUPABASE_ANON_KEY?, ALLOWED_ORIGINS? }
+ * env: { GEMINI_API_KEY, GEMINI_MODEL?, SUPABASE_URL?, SUPABASE_ANON_KEY?, SUPABASE_SERVICE_ROLE_KEY?, ALLOWED_ORIGINS? }
  * Success body is exactly { permit_id, use_saved_permit, destination_id, live, day, time, confidence }.
  */
 export async function handleRequest(request, { env, fetchImpl = fetch, now = new Date(), sleep = wait }) {
@@ -47,6 +67,7 @@ export async function handleRequest(request, { env, fetchImpl = fetch, now = new
     let body;
     try { body = await request.json(); } catch { throw new RequestError(400, "bad_request", "Body must be JSON"); }
     const input = validateRequest(body);
+    await reserveModelAttempt(request, env, fetchImpl);
     const [permits, destinations] = await Promise.all([
       loadLabels({ ids: input.permit_ids, table: "permit", idColumn: "permit_id", select: "permit_id,permit_code,permit_name", label: (r) => `${r.permit_code} - ${r.permit_name}`, env, fetchImpl, fallback: input.permit_labels }),
       loadLabels({ ids: input.destination_ids, table: "destination", idColumn: "destination_id", select: "destination_id,building_code,name", label: (r) => `${r.name} (${r.building_code})`, env, fetchImpl, fallback: input.destination_labels }),
@@ -63,6 +84,7 @@ export async function handleRequest(request, { env, fetchImpl = fetch, now = new
     });
     let response;
     for (let attempt = 0; ; attempt++) {
+      if (attempt > 0) await reserveModelAttempt(request, env, fetchImpl);
       try {
         response = await fetchImpl(`${GEMINI_BASE}/${model}:generateContent`, {
           method: "POST",

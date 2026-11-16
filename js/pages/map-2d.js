@@ -106,6 +106,7 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
         userCursor.draw();
       }
     },
+    resetCamera() { map.setCenter(CAMPUS_CENTER); map.setZoom(15); },
     focus(point, level = 17) { map.panTo(point); map.setZoom(level); },
     fitBounds(bounds, padding = 24) {
       map.fitBounds(bounds, padding);

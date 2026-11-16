@@ -7,7 +7,7 @@ import { sanitizeParse, validateRequest, readModelJson, buildPrompt, corsHeaders
 const now = { day: 2, time: '09:30' };
 const ids = { permitIds: [1, 2], destinationIds: [10, 11], now };
 const AUDIO = 'A'.repeat(200);
-const ENV = { GEMINI_API_KEY: 'test-gemini', SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'anon' };
+const ENV = { GEMINI_API_KEY: 'test-gemini', SUPABASE_SERVICE_ROLE_KEY: 'test-service', SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'anon' };
 
 test('sanitizeParse keeps valid IDs and drops anything the page did not offer', () => {
   const out = sanitizeParse({ permit_id: 2, use_saved_permit: true, destination_id: 10, live: false, day: 4, time: '15:00', confidence: 0.9 }, ids);
@@ -83,6 +83,7 @@ function fakeFetch({ gemini, labels = true } = {}) {
   const impl = async (url, init) => {
     calls.push({ url: String(url), init });
     if (String(url).includes('generativelanguage.googleapis.com')) return gemini instanceof Error ? Promise.reject(gemini) : gemini ?? new Response('{}', { status: 500 });
+    if (String(url).endsWith('/rpc/consume_parse_find_budget')) return Response.json(true);
     if (String(url).includes('/rest/v1/permit')) return labels ? Response.json([{ permit_id: 1, permit_code: 'Y', permit_name: 'Undergraduate' }]) : new Response('no', { status: 500 });
     if (String(url).includes('/rest/v1/destination')) return labels ? Response.json([{ destination_id: 10, building_code: 'JKB', name: 'Jesse Knight Building' }]) : new Response('no', { status: 500 });
     throw new Error(`unexpected ${url}`);
@@ -170,7 +171,7 @@ test('a rate-limited model (429) is retried with a pause and the answer comes th
   let geminiCalls = 0; const pauses = [];
   const impl = async (url) => {
     if (String(url).includes('generativelanguage')) return answers[geminiCalls++];
-    return new Response('no', { status: 500 });
+    return String(url).endsWith('/rpc/consume_parse_find_budget') ? Response.json(true) : new Response('no', { status: 500 });
   };
   const res = await handleRequest(post({ text: 'Y permit', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: impl, sleep: async (ms) => { pauses.push(ms); } });
   assert.equal(res.status, 200);
@@ -181,8 +182,35 @@ test('a rate-limited model (429) is retried with a pause and the answer comes th
 
 test('a 400 from the model is not retried', async () => {
   let geminiCalls = 0;
-  const impl = async (url) => String(url).includes('generativelanguage') ? (geminiCalls++, new Response('bad', { status: 400 })) : new Response('no', { status: 500 });
+  const impl = async (url) => String(url).includes('generativelanguage') ? (geminiCalls++, new Response('bad', { status: 400 })) : String(url).endsWith('/rpc/consume_parse_find_budget') ? Response.json(true) : new Response('no', { status: 500 });
   const res = await handleRequest(post({ text: 'x', permit_ids: [1], destination_ids: [] }), { env: ENV, fetchImpl: impl, sleep: async () => assert.fail('no retry') });
   assert.equal(res.status, 502);
   assert.equal(geminiCalls, 1);
+});
+
+test('an exhausted or unavailable budget stops work before label lookups or Gemini', async () => {
+  for (const [budgetReply, status] of [[() => Response.json(false), 429], [() => new Response(null, { status: 503 }), 503]]) {
+    const res = await handleRequest(post({ text: 'Y permit', permit_ids: [1], destination_ids: [] }), {
+      env: ENV, fetchImpl: async (url, init) => {
+        assert.match(String(url), /consume_parse_find_budget$/);
+        assert.equal(init.headers.apikey, 'test-service');
+        return budgetReply();
+      },
+    });
+    assert.equal(res.status, status);
+  }
+});
+
+test('a transient model error cannot start a retry after its budget is exhausted', async () => {
+  let debits = 0, calls = 0;
+  const res = await handleRequest(post({ text: 'Y permit', permit_ids: [], destination_ids: [] }), {
+    env: ENV, sleep: async () => {}, fetchImpl: async (url) => {
+      if (String(url).endsWith('/rpc/consume_parse_find_budget')) return Response.json(++debits === 1);
+      calls++;
+      return new Response(null, { status: 503 });
+    },
+  });
+  assert.equal(res.status, 429);
+  assert.equal(debits, 2);
+  assert.equal(calls, 1);
 });

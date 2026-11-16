@@ -13,14 +13,15 @@ import { createAuthStorage } from "./lib/auth-storage.js";
 import { loadData } from "./data/load.js";
 import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
-import { renderFind, initFind, applyPermitChoice } from "./pages/find.js";
-import { toggleFavorite, initFavorites } from "./pages/favorites.js";
+import { renderFind, initFind, applyPermitChoice, resetFindSearch } from "./pages/find.js";
+import { toggleFavorite, initFavorites, resetFavoriteEditor } from "./pages/favorites.js";
 import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
 import { initCarFab, renderCarFab } from "./components/car-fab.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
-import { initFullscreenMap } from "./pages/fullscreen-map.js";
+import { initFullscreenMap, resetMapSearch } from "./pages/fullscreen-map.js";
+import { resetPersonalMap } from "./pages/map.js";
 import { initHelpModal } from "./pages/help-modal.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
@@ -61,7 +62,7 @@ function renderAccountBar() {
 }
 
 function choosePermit() {
-  const saved = loadSavedPermit();
+  const saved = loadSavedPermit(state.user?.userId);
   const mine = (state.user?.permitIds || []).filter((id) => state.permits.some((p) => p.permit_id === id));
   if (mine.length) state.find.permitId = mine.includes(saved) ? saved : mine[0];
   else if (saved && state.permits.some((p) => p.permit_id === saved)) state.find.permitId = saved;
@@ -133,7 +134,10 @@ async function onGuest() {
 
 function clearPersonalData() {
   parkingClock.stop();
+  // Discard a previous account's selected lot without breaking deliberate first-entry links.
+  if (state.authId && /^#(?:car|area)(?:\/|$)/.test(location.hash)) history.replaceState(null, "", "#areas");
   state.find.live = true;
+  state.find.permitId = null;
   state.authVersion++;
   state.authId = null;
   clearPasswords();
@@ -141,15 +145,29 @@ function clearPersonalData() {
   $("car-active").innerHTML = "";
   state.user = null;
   state.guest = false;
+  renderAccountBar();
+  setStatus("");
+  const timerStatus = $("car-action-status");
+  timerStatus.textContent = "";
+  timerStatus.hidden = true;
   state.favoriteIds = new Set();
   state.favoriteNames = new Map();
   state.activeSession = null;
   resetParkingClock();
   state.find.destinationId = null;
   state.destinations = [];
+  resetFindSearch();
+  resetMapSearch();
+  resetFavoriteEditor();
+  for (const id of ["area-search", "all-lots-search"]) {
+    const input = $(id);
+    if (input) input.value = "";
+  }
+  resetPersonalMap();
   stopTimer();
   closeCarSheet();
   renderCarFab();
+  renderFind();
   renderViews();
 }
 
