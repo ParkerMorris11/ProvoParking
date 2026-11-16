@@ -14,7 +14,7 @@ import { loadData } from "./data/load.js";
 import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind, applyPermitChoice } from "./pages/find.js";
-import { toggleFavorite } from "./pages/favorites.js";
+import { toggleFavorite, initFavorites } from "./pages/favorites.js";
 import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
 import { initCarFab, renderCarFab } from "./components/car-fab.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
@@ -140,6 +140,7 @@ function clearPersonalData() {
   state.user = null;
   state.guest = false;
   state.favoriteIds = new Set();
+  state.favoriteNames = new Map();
   state.activeSession = null;
   resetParkingClock();
   state.find.destinationId = null;
@@ -184,6 +185,7 @@ document.addEventListener("click", (e) => {
 });
 
 initFind({ go, choosePermit, refresh: renderViews });
+initFavorites({ renderViews });
 initCar({ requireAccount });
 initCarFab({ go });
 initAuth({ onSignedIn, onGuest, authStorage });
