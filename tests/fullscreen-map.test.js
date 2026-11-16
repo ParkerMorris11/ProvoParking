@@ -69,7 +69,7 @@ test('floating map controls use the shared frosted-glass tokens in light and dar
   const base = await readFile(new URL('../css/styles.css', import.meta.url), 'utf8');
   const map = await readFile(new URL('../css/fullscreen-map.css', import.meta.url), 'utf8');
   assert.equal((base.match(/--glass-strong:/g) || []).length >= 4, true, 'light, two dark blocks, and fallbacks define the tokens');
-  for (const selector of ['.permit-chip', '.map-search', '.map-help', '.fs-home .map-mode', '.home-sheet', '.fs-home .location-button.map-fab']) {
+  for (const selector of ['.permit-chip', '.map-search', '.fs-home .map-mode', '.home-sheet', '.fs-home .location-button.map-fab']) {
     const start = map.indexOf(`\n${selector} {`);
     const rule = start < 0 ? '' : map.slice(start, map.indexOf('}', start));
     assert.ok(rule && /backdrop-filter/.test(rule), `${selector} is frosted`);

@@ -125,7 +125,20 @@ The layout is a single centered column, so on a desktop browser it looks like th
 
 
 ### Dark mode
-The site starts in dark mode on a first visit. The round moon/sun button in the header (and in the corner of the sign-in screen) switches it, and an explicit choice is saved on that device (`localStorage` key `pp-theme`) and used on later visits. Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The 3D map uses Google's dark color scheme in dark theme, and 3D satellite imagery gets a gentle night tint; lot outlines keep their colors.
+### Map home layout
+
+The map fills the screen and the app floats on it, following the layout people already know from phone map apps (our own branding and icons):
+
+- **Bottom sheet** (a left sidebar on laptops): a grabber, then the search bar and a round profile button. Drag it between lowered, half and full on phones.
+- **Suggestions**: your parked car (when a timer runs), up to two favorites, then the first lots your permit allows now, in the same order as the list.
+- **Browse**: round shortcuts to Find, Areas, All Lots, Favorites, Help and My Car. Other screens open in the sheet with a round close button back to the map.
+- **Profile button**: sign up / log in (or log out), quick guide, Help & account page and the admin dashboard link.
+- **Top-left tile**: your permit, the time, and how many areas are open; tap it to change the permit.
+- **Right pill**: map-only controls: satellite/road, 2D/3D, your location, zoom (laptops) and dark mode.
+
+The layout is built at runtime by `js/pages/fullscreen-map.js` from the existing screens (ids and listeners stay the same), styled in `css/fullscreen-map.css`.
+
+The site starts in dark mode on a first visit. The round moon/sun button on the map (and in the corner of the sign-in screen) switches it, and an explicit choice is saved on that device (`localStorage` key `pp-theme`) and used on later visits. Colors live in `css/styles.css` as variables at the top of the file, with dark values in the "Dark mode" block at the bottom, so new styles should use `var(--card)`, `var(--text)`, `var(--border)` and friends instead of hex colors. `js/theme.js` loads in each page's `<head>` so there is no white flash. The 3D map uses Google's dark color scheme in dark theme, and 3D satellite imagery gets a gentle night tint; lot outlines keep their colors.
 
 <img src="docs/screens/dark-mode-signin.png" alt="Sign-in screen, light and dark side by side" width="640">
 

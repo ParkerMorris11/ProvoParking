@@ -27,20 +27,29 @@ function el(tag, attrs = {}, html = "") {
   return node;
 }
 
-// ---- Settings gear (map rail) -------------------------------------------------------------------
-// One gear holds the less-used things: the quick guide, the Guide & account page, sign in / log out,
-// and the admin dashboard (admin.html has its own admin sign-in, so the link alone grants nothing).
-// The person button in the search bar stays as the always-visible way to sign up.
-function buildSettingsMenu() {
-  const button = el("button", { type: "button", class: "map-help", id: "map-settings", "aria-expanded": "false", "aria-controls": "map-settings-menu", "aria-label": "Settings", title: "Settings" },
-    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>');
-  const menu = el("div", { class: "map-settings-menu", id: "map-settings-menu", role: "group", "aria-label": "Settings" },
+// ---- Account menu (the round profile button beside the search bar) --------------------------------
+// Like the profile button in other map apps, it holds the less-used things: sign up / log in (first, and
+// styled as the main action for guests), the quick guide, the Guide & account page, and the admin dashboard
+// (admin.html has its own admin sign-in, so the link alone grants nothing). The map rail stays map-only.
+function buildAccountMenu(button) {
+  const menu = el("div", { class: "map-settings-menu", id: "map-settings-menu", role: "group", "aria-label": "Account and settings" },
     '<p class="map-settings-who" id="map-settings-who"></p>' +
     '<button type="button" class="map-settings-item" id="map-settings-account"></button>' +
-    '<button type="button" class="map-settings-item" data-help-open data-help-return="map-settings" aria-haspopup="dialog">Quick guide</button>' +
+    '<button type="button" class="map-settings-item" data-help-open data-help-return="map-account" aria-haspopup="dialog">Quick guide</button>' +
     '<a class="map-settings-item" href="#help">Help &amp; account page</a>' +
     '<a class="map-settings-item" href="admin.html">Admin dashboard <span class="map-settings-note">team only</span></a>');
   menu.hidden = true;
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-controls", "map-settings-menu");
+  // The menu lives outside the sheet (which clips its content), placed next to the button: above it when the
+  // button is in the lower half of the screen (phone sheet lowered), otherwise below it.
+  const place = () => {
+    const r = button.getBoundingClientRect();
+    const below = r.top < window.innerHeight / 2;
+    menu.style.left = `${Math.max(8, Math.min(r.right - 248, window.innerWidth - 256))}px`;
+    menu.style.top = below ? `${r.bottom + 8}px` : "auto";
+    menu.style.bottom = below ? "auto" : `${window.innerHeight - r.top + 8}px`;
+  };
   const setOpen = (open, { focusButton = false } = {}) => {
     menu.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
@@ -49,8 +58,11 @@ function buildSettingsMenu() {
       const name = document.getElementById("account-name")?.textContent.trim();
       const action = document.getElementById("account-action")?.textContent.trim() || "Sign up";
       menu.querySelector("#map-settings-who").textContent = name || "Browsing as guest";
-      menu.querySelector("#map-settings-account").textContent = action === "Sign up" ? "Sign up or log in" : action;
-      menu.querySelector(".map-settings-item")?.focus();
+      const accountItem = menu.querySelector("#map-settings-account");
+      accountItem.textContent = action === "Sign up" ? "Sign up or log in" : action;
+      accountItem.classList.toggle("primary-item", !state.user);
+      place();
+      accountItem.focus();
     } else if (focusButton) button.focus();
   };
   button.addEventListener("click", () => setOpen(menu.hidden));
@@ -62,7 +74,8 @@ function buildSettingsMenu() {
   });
   menu.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false, { focusButton: true }); } });
   document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && !button.contains(e.target)) setOpen(false); });
-  return { button, menu };
+  window.addEventListener("resize", () => { if (!menu.hidden) place(); });
+  return menu;
 }
 
 // ---- Sheet position -------------------------------------------------------------------------
@@ -118,7 +131,7 @@ function updateChrome() {
     chip.querySelector(".chip-code").textContent = info.code;
     chip.querySelector(".chip-text").textContent = info.text;
     chip.querySelector(".chip-sub").textContent = matchText(count);
-    chip.setAttribute("aria-label", `${info.label}. ${sheetTitle(count, Boolean(state.find.permitId))}`);
+    chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
     const home = state.currentView === "areas";
     routeBar.hidden = home;
     suggestions.hidden = !home;
@@ -261,24 +274,20 @@ function buildSearch() {
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
   // Round account button beside the search bar: initials when signed in, a person icon for guests.
-  const account = el("button", { type: "button", class: "map-account", id: "map-account", "aria-label": "Sign up or log in" },
-    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="map-account-initials" aria-hidden="true"></span>');
+  const account = el("button", { type: "button", class: "map-account", id: "map-account", "aria-label": "Account and settings: sign up or log in" },
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="map-account-initials"></span>');
   const syncAccount = () => {
     const name = (state.user?.displayName || state.user?.email || "").trim();
     const initials = name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
     account.classList.toggle("has-initials", Boolean(state.user && initials));
     account.querySelector(".map-account-initials").textContent = state.user ? initials : "";
-    account.setAttribute("aria-label", state.user ? `Account and guide${name ? ` for ${name}` : ""}` : "Sign up or log in");
+    // The accessible name starts with the visible initials (Lighthouse "label-content-name-mismatch").
+    account.setAttribute("aria-label", state.user ? `${initials ? `${initials}, ` : ""}account and settings${name ? ` for ${name}` : ""}` : "Account and settings: sign up or log in");
+    account.title = state.user ? "Account and settings" : "Sign up or log in";
   };
   const accountName = document.getElementById("account-name");
   if (accountName) new MutationObserver(syncAccount).observe(accountName, { childList: true, characterData: true, subtree: true });
   syncAccount();
-  account.addEventListener("click", () => {
-    // Guests: go straight to sign in / create account (the account button lives on the hidden header otherwise).
-    if (!state.user) return document.getElementById("account-action")?.click();
-    if (location.hash === "#help") { setSheet("half"); document.getElementById("account-action")?.focus(); }
-    else location.hash = "#help";
-  });
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
   const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
   // Like other map apps, starting a search raises the sheet so suggestions and results have room.
@@ -364,14 +373,15 @@ function build() {
   const mapWrap = el("div", { class: "fs-map" });
 
   // Top-left status tile (like a weather tile): permit code + time, and how many areas are open.
-  chip = el("a", { href: "#find", class: "permit-chip", id: "permit-chip", "aria-label": "Change permit or time" },
-    `<span class="chip-code" aria-hidden="true">P</span><span class="chip-lines"><span class="chip-text">Choose permit</span><span class="chip-sub"></span></span>` +
+  // Its accessible name is its visible text plus a hidden hint, so spoken and visible words always match.
+  chip = el("a", { href: "#find", class: "permit-chip", id: "permit-chip" },
+    `<span class="chip-code">P</span> <span class="chip-lines"><span class="chip-text">Choose permit</span> <span class="chip-sub"></span></span><span class="visually-hidden chip-hint">. Change permit or time</span>` +
     `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
   const tile = el("div", { class: "map-tile" });
   tile.append(chip, buildPermitPopover());
 
-  // Right side: small round controls in two glass pills. Pill 1 is the map (style, 2D/3D, location,
-  // zoom on laptops); pill 2 is the app (dark mode, settings).
+  // Right side: one glass pill of map-only controls (style, 2D/3D, location, zoom on laptops, dark mode).
+  // Account, help and settings live behind the profile button beside the search bar.
   locate.classList.add("map-fab");
   locate.setAttribute("aria-label", "Use my location");
   locate.title = "Use my location";
@@ -389,16 +399,14 @@ function build() {
     zoom.addEventListener("click", () => zoomMap(delta));
     mapPill.append(zoom);
   }
-  const settings = buildSettingsMenu();
   // Dark mode lives in the rail too. js/theme.js handles the click (delegated on .theme-toggle) and saves the choice.
   const darkNow = document.documentElement.getAttribute("data-theme-active") === "dark";
   const theme = el("button", { type: "button", class: "theme-toggle", id: "map-theme", "aria-label": "Dark mode", "aria-pressed": darkNow ? "true" : "false", title: darkNow ? "Switch to light mode" : "Switch to dark mode" },
     '<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>' +
     '<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
-  const appPill = el("div", { class: "map-controls map-controls-app", role: "group", "aria-label": "App settings" });
-  appPill.append(theme, settings.button);
+  mapPill.append(theme);
   const rail = el("div", { class: "map-rail" });
-  rail.append(mapPill, appPill, settings.menu);
+  rail.append(mapPill);
   stage.append(tile, rail);
   mapWrap.append(stage);
 
@@ -470,6 +478,7 @@ function build() {
   const shell = el("div", { class: "fs-shell fs-home" });
   const toggle = el("button", { type: "button", id: "sidebar-toggle", class: "sidebar-toggle", "data-sidebar-toggle": "", "aria-expanded": "false", "aria-controls": "sheet-body", "aria-label": "Show or hide the parking sidebar", title: "Show or hide the sidebar" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.8"/></svg>');
   shell.append(mapWrap, sheet, toggle);
+  if (search) shell.append(buildAccountMenu(search.account));
   document.getElementById("app-main").append(shell);
   shell.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.addEventListener("click", () => setSheet(sheet.dataset.state === "peek" ? "half" : "peek")));
   view.classList.add("fs-home");
