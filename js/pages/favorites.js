@@ -73,7 +73,7 @@ export function favoriteRowHtml(area) {
   return `
     <li class="fav-row">
       <a class="fav-main" href="#area/${area.area_id}" aria-label="${name}${nickname ? ` (${escapeHtml(area.area_name)})` : ""}: ${escapeHtml(shortStatus(ev))}. Open rules and details">
-        <span class="fav-pin ${ev.kind}" aria-hidden="true">♥</span>
+        <span class="fav-pin" aria-hidden="true">♥</span>
         <span class="fav-text">
           <span class="fav-name">${name}</span>
           ${nickname ? `<span class="fav-lot">${escapeHtml(area.area_name)}</span>` : ""}
