@@ -186,9 +186,13 @@ export function stopMapLocation() {
   tracker?.stop();
 }
 
-function setMapStatus(message) {
+// routine: the everyday "N matching mapped boundaries" count. The map home already shows the same
+// count in its status tile, so it hides routine messages there; warnings and "All lots" still show.
+function setMapStatus(message, { routine = false } = {}) {
   const el = byId("map-status");
-  if (el) el.textContent = message;
+  if (!el) return;
+  el.textContent = message;
+  if (el.dataset) { if (routine) el.dataset.routine = ""; else delete el.dataset.routine; }
 }
 
 // ---- Drawing -----------------------------------------------------------------------------------
@@ -409,6 +413,6 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
     renderNearby();
     return;
   }
-  setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`);
+  setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`, { routine: true });
   renderNearby();
 }
