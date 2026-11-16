@@ -72,7 +72,6 @@ CREATE TABLE favorite_area (
   user_id     INT NOT NULL REFERENCES app_user(user_id) ON DELETE CASCADE,
   area_id     INT NOT NULL REFERENCES parking_area(area_id) ON DELETE CASCADE,
   saved_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  nickname    TEXT CHECK (nickname IS NULL OR char_length(btrim(nickname)) BETWEEN 1 AND 30), -- optional label, e.g. "Class"
   PRIMARY KEY (user_id, area_id)
 );
 
