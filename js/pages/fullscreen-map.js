@@ -287,8 +287,9 @@ function build() {
   const style = el("button", { type: "button", id: "map-style", "aria-pressed": "false", "aria-label": "Switch to satellite with labels", title: "Switch to satellite with labels" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>');
   style.addEventListener("click", () => void toggleMapStyle());
   controls.append(style, locate);
-  for (const [id, label, delta, text] of [["map-zoom-in", "Zoom in", 1, "+"], ["map-zoom-out", "Zoom out", -1, "−"]]) {
-    const zoom = el("button", { type: "button", id, "aria-label": label, title: label }, text);
+  // Zoom icons are SVGs (not "+"/"−" text) so every button in the rail has the same icon size and weight.
+  for (const [id, label, delta, path] of [["map-zoom-in", "Zoom in", 1, "M12 5v14M5 12h14"], ["map-zoom-out", "Zoom out", -1, "M5 12h14"]]) {
+    const zoom = el("button", { type: "button", id, "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
     zoom.addEventListener("click", () => zoomMap(delta));
     controls.append(zoom);
   }

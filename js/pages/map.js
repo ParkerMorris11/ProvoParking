@@ -251,11 +251,17 @@ async function ensureView(next, center) {
   return views[next];
 }
 
+// In the map rail only the button for the OTHER view shows (shows "3D" while in 2D), so 2D/3D reads as
+// one switch. If the button just used is now hidden, focus moves to the one that took its place.
 function syncToggle() {
   for (const m of ["2d", "3d"]) {
     const button = byId(`map-mode-${m}`);
-    if (button) button.setAttribute("aria-pressed", String(mode === m));
+    if (!button) continue;
+    button.setAttribute("aria-pressed", String(mode === m));
+    button.title = mode === m ? `${m.toUpperCase()} view (current)` : `Switch to ${m.toUpperCase()} view`;
   }
+  const current = byId(`map-mode-${mode}`), other = byId(`map-mode-${mode === "3d" ? "2d" : "3d"}`);
+  if (current && document.activeElement === current && current.closest?.(".map-controls")) other?.focus();
 }
 
 export async function setMode(next, failureMessage = "") {

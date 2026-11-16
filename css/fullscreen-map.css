@@ -166,15 +166,21 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .drawer-account { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
 .fs-shell .account-bar { display: flex; flex-wrap: wrap; gap: 8px; }
 .fs-shell .account-name { display: block; flex: 1; font-size: .8rem; }
-.fs-shell .map-controls { position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; z-index: 1000; display: flex; flex-direction: column; align-items: stretch; width: 52px; padding: 4px; border-radius: 18px; background: var(--glass-strong); border: 1px solid var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); }
+.fs-shell .map-controls { position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; z-index: 1000; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 52px; padding: 4px; border-radius: 18px; background: var(--glass-strong); border: 1px solid var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); }
 .fs-shell .map-controls > button { position: static; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; box-shadow: none; background: transparent; color: var(--text); font-size: 1.6rem; cursor: pointer; }
-.fs-shell .map-controls svg { width: 23px; height: 23px; }
+/* Every rail button: 44x44, 22px icon, same color. */
+.fs-shell .map-controls svg { width: 22px; height: 22px; }
+.fs-shell .map-controls .location-button.map-fab::before { width: 22px; height: 22px; background: var(--text); }
+.fs-shell .map-controls > button, .fs-shell .map-controls .map-mode button { display: inline-flex; align-items: center; justify-content: center; flex: none; }
 .fs-shell .map-controls > button:hover { background: var(--hover); }
 .fs-shell .map-controls button[aria-pressed="true"] { background: var(--brand-tint); color: var(--brand-ink); }
 .fs-shell .map-controls .location-button.map-fab { position: static; width: 44px; height: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 10px; box-shadow: none; background: transparent; font-size: 0; color: transparent; }
 .fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand-fill); }
-.fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
-.fs-shell .map-mode button { width: 44px; min-height: 44px; border-radius: 10px; }
+.fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; gap: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.fs-shell .map-mode button { width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 10px; font-size: .9rem; color: var(--text); }
+/* One 2D/3D switch: hide the button for the view already showing, so the rail shows the one to switch to. */
+.fs-shell .map-controls .map-mode button[aria-pressed="true"] { display: none; }
+.fs-shell .map-controls .map-mode button:hover { background: var(--hover); }
 /* Settings gear menu: opens to the left of the rail, bottom-aligned with it. */
 .fs-shell .map-settings-menu { position: absolute; right: calc(100% + 8px); bottom: 0; z-index: 1; display: flex; flex-direction: column; gap: 2px; width: 230px; padding: 8px; border-radius: 16px; background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); color: var(--text); }
 .fs-shell .map-settings-menu[hidden] { display: none; }
@@ -211,13 +217,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 @media (max-width: 600px) {
   .sidebar-toggle { display: none; }
   .has-fs-home .car-fab { top: max(16px, env(safe-area-inset-top, 0px)); left: 12px; bottom: auto; right: auto; }
-  .fs-shell .map-controls { top: auto; bottom: calc(156px + env(safe-area-inset-bottom, 0px)); right: 12px; width: auto; display: grid; grid-template-columns: repeat(2, 44px); }
-  .fs-shell .map-controls .map-mode { flex-direction: row; grid-column: 1 / -1; grid-row: 1; }
-  .fs-shell .map-controls #locate-me { grid-column: 1; grid-row: 2; }
-  .fs-shell .map-controls #map-style { grid-column: 2; grid-row: 2; }
+  /* Phones: same single column as laptops (pinch zooms, so the zoom buttons hide). */
+  .fs-shell .map-controls { top: auto; bottom: calc(156px + env(safe-area-inset-bottom, 0px)); right: 12px; }
   .fs-shell .map-controls #map-zoom-in, .fs-shell .map-controls #map-zoom-out { display: none; }
-  .fs-shell .map-controls #map-theme { grid-column: 1; grid-row: 3; }
-  .fs-shell .map-controls .map-help { grid-column: 2; grid-row: 3; }
   .fs-shell .map-card { max-height: calc(100% - 400px); }
   .fs-shell.sidebar-open .map-controls { z-index: 1002; bottom: auto; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; display: flex; flex-direction: row; width: auto; }
   .fs-shell.sidebar-open .map-controls > :not(.map-mode):not(#locate-me) { display: none; }
