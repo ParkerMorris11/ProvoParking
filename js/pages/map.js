@@ -25,6 +25,10 @@ let visibleFeatures = [], cityFacilities = [], cityVisible = false, shapes = [];
 const byId = (id) => document.getElementById(id);
 const isDark = () => document.documentElement?.getAttribute("data-theme-active") === "dark";
 const activeView = () => views[mode];
+// On the All Lots screen the map shows every lot: all BYU sections (not only permit matches) plus Provo city lots.
+const showingAllLots = () => state.currentView === "lots";
+let allLotsFitted = false, drewAllLots = false;
+let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
 
 function updateArrivalSuggestion(element, candidate) {
   if (!element) return;
@@ -147,6 +151,7 @@ export function hideCard() {
 function showFeatureCard(feature) { showCard(lotCardHtml(feature)); }
 
 function selectShape(shape) {
+  markSelected(shape.key);
   if (shape.source.type === "city") {
     const summary = cityFacilitySummary(shape.source.index);
     if (summary) showCard(cityPopupHtml(summary));
@@ -167,6 +172,7 @@ export function showAreaOnMap(area) {
   const el = byId("parking-map");
   el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
   if (mode === "2d") view.fitBounds(shape.bounds, 24); else view.focus(shape.center, 18);
+  markSelected(shape.key);
   showFeatureCard(feature);
   el?.focus?.({ preventScroll: true });
   return true;
@@ -189,19 +195,43 @@ function setMapStatus(message) {
 function drawShapes() {
   shapes = [
     ...visibleFeatures.map(byuShape),
-    ...(cityVisible ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
+    ...(cityVisible || showingAllLots() ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
   activeView()?.setShapes(shapes);
+  activeView()?.setSelected?.(selectedKey);
+}
+
+function markSelected(key) {
+  selectedKey = key;
+  activeView()?.setSelected?.(key);
 }
 
 // What the city layer asks the map to do.
 const cityHost = {
-  setFacilities(list) { cityFacilities = list; drawShapes(); },
+  setFacilities(list) { cityFacilities = list; drawShapes(); if (showingAllLots()) fitAllLots(); },
   setVisible(on) { cityVisible = on; drawShapes(); },
   focus(point, zoom) { activeView()?.focus(point, zoom); },
   fitBounds(bounds) { activeView()?.fitBounds(bounds, 24); },
   select(index) { const summary = cityFacilitySummary(index); if (summary) showCard(cityPopupHtml(summary)); },
 };
+
+// Frame every drawn lot (All Lots screen).
+function fitAllLots() {
+  const boxes = shapes.map(shape => shape.bounds || (shape.center && { south: shape.center.lat, north: shape.center.lat, west: shape.center.lng, east: shape.center.lng })).filter(Boolean);
+  if (!boxes.length) return;
+  activeView()?.fitBounds({
+    south: Math.min(...boxes.map(b => b.south)), west: Math.min(...boxes.map(b => b.west)),
+    north: Math.max(...boxes.map(b => b.north)), east: Math.max(...boxes.map(b => b.east)),
+  }, 24);
+}
+
+// Called on every route change once the map is up: switch between "permit matches" and "every lot".
+function syncAllLots() {
+  const on = showingAllLots();
+  refreshMapEligibility();
+  if (!on) { allLotsFitted = false; return; }
+  if (!allLotsFitted && shapes.length) { allLotsFitted = true; fitAllLots(); }
+}
 
 // ---- 2D / 3D -----------------------------------------------------------------------------------
 async function ensureView(next, center) {
@@ -221,11 +251,17 @@ async function ensureView(next, center) {
   return views[next];
 }
 
+// In the map rail only the button for the OTHER view shows (shows "3D" while in 2D), so 2D/3D reads as
+// one switch. If the button just used is now hidden, focus moves to the one that took its place.
 function syncToggle() {
   for (const m of ["2d", "3d"]) {
     const button = byId(`map-mode-${m}`);
-    if (button) button.setAttribute("aria-pressed", String(mode === m));
+    if (!button) continue;
+    button.setAttribute("aria-pressed", String(mode === m));
+    button.title = mode === m ? `${m.toUpperCase()} view (current)` : `Switch to ${m.toUpperCase()} view`;
   }
+  const current = byId(`map-mode-${mode}`), other = byId(`map-mode-${mode === "3d" ? "2d" : "3d"}`);
+  if (current && document.activeElement === current && current.closest?.(".map-controls")) other?.focus();
 }
 
 export async function setMode(next, failureMessage = "") {
@@ -293,7 +329,7 @@ export const NO_KEY_MESSAGE = "The map needs a Google Maps key. Add GOOGLE_MAPS_
 export async function initMap() {
   const el = document.querySelector("#parking-map");
   if (!el) return;
-  if (started) { centerOnDestination(); refreshMap(); hideCard(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
+  if (started) { centerOnDestination(); refreshMap(); hideCard(); syncAllLots(); if (!document.hidden && document.getElementById("auth-screen")?.hidden) tracker?.resume(); return; }
   const key = getMapsApiKey();
   if (!key) {
     renderMapMessage(el, NO_KEY_MESSAGE);
@@ -307,8 +343,8 @@ export async function initMap() {
     el.textContent = "";
     syncToggle();
     new MutationObserver(() => { for (const view of Object.values(views)) view.setDark(isDark()); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
-    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); el.focus({ preventScroll: true }); } });
-    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); markSelected(null); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); markSelected(null); el.focus({ preventScroll: true }); } });
     for (const m of ["2d", "3d"]) {
       const button = byId(`map-mode-${m}`);
       if (button) { button.disabled = false; button.addEventListener("click", () => void setMode(m)); }
@@ -341,7 +377,7 @@ export async function initMap() {
     centerOnDestination();
     refreshMap();
     if (features.length) {
-      refreshMapEligibility();
+      syncAllLots();
       initLocation();
     } else if (boundaryError) {
       setMapStatus("Lot boundaries unavailable. The parking list is still available.");
@@ -360,10 +396,18 @@ export function refreshMap() {
 
 export function refreshMapEligibility(selection = parkingSelection(state.find), areas = eligibleAreas(state.areas, state.rulesByArea, selection)) {
   if (!maps || !features.length && !visibleFeatures.length) return;
-  const next = eligibleMapFeatures(features, areas);
-  if (next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
+  const all = showingAllLots();
+  const next = all ? features : eligibleMapFeatures(features, areas);
+  // Redraw when the BYU set changes, or when the screen switches in/out of All Lots (city lots follow it).
+  if (all !== drewAllLots || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
     visibleFeatures = next;
+    drewAllLots = all;
     drawShapes();
+  }
+  if (all) {
+    setMapStatus(`All lots: ${visibleFeatures.length} BYU ${visibleFeatures.length === 1 ? "section" : "sections"}${cityFacilities.length ? ` + ${cityFacilities.length} Provo lots` : ""}`);
+    renderNearby();
+    return;
   }
   setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`);
   renderNearby();

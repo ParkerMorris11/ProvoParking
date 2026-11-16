@@ -181,6 +181,37 @@ test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () 
   assert.equal(children.length, 0);
 });
 
+test('2D view highlights the selected lot and clears it again', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  for (const P of [lib.Polygon, lib.Circle]) P.prototype.setOptions = function (o) { Object.assign(this.options, o); };
+  const view = createMap2D({ maps, lib, container: {}, onSelect() {} });
+  const a = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
+  const b = byuShape({ properties: { OBJECTID: 2, permit_typ: 'G' }, geometry: { type: 'Polygon', coordinates: [square] } });
+  view.setShapes([a, b]);
+  view.setSelected(a.key);
+  assert.equal(made.polygons[0].options.strokeColor, '#ffffff');
+  assert.equal(made.polygons[0].options.strokeWeight, 5);
+  assert.equal(made.polygons[1].options.strokeColor, b.color);
+  view.setSelected(null);
+  assert.equal(made.polygons[0].options.strokeColor, a.color);
+  assert.equal(made.polygons[0].options.fillOpacity, 0.24);
+});
+
+test('3D view raises and outlines the selected lot', () => {
+  class El { constructor(o) { Object.assign(this, o); this.options = o; } addEventListener() {} append() {} remove() {} setAttribute() {} }
+  const lib = { Map3DElement: El, Polygon3DElement: El, Marker3DElement: El, MapMode: { HYBRID: 'HYBRID' } };
+  const els = [];
+  const view = createMap3D({ lib, container: { append(m) { m.append = (c) => els.push(c); } }, onSelect() {} });
+  const a = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
+  view.setShapes([a]);
+  view.setSelected(a.key);
+  assert.equal(els[0].strokeColor, '#ffffff');
+  assert.equal(els[0].outerCoordinates[0].altitude, 30);
+  view.setSelected(null);
+  assert.equal(els[0].strokeColor, a.color);
+  assert.equal(els[0].outerCoordinates[0].altitude, 10);
+});
+
 test('lot card links to Area details and the timer for each matching area', () => {
   const feature = { properties: { OBJECTID: 5, Lot_Type: '20Y', permit_typ: 'Y', Descriptio: 'Student parking' } };
   const html = lotCardHtml(feature, [{ area_id: 9, area_name: 'Lot 20Y' }]);

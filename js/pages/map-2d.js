@@ -34,7 +34,11 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   });
   let mapStyle = "roadmap", darkOn = dark;
   const applyStyle = () => map.setOptions({ mapTypeId: mapStyle, styles: mapStyle === "roadmap" && darkOn ? DARK_STYLE : null });
-  let drawn = [], accuracyRing = null, userCursor = null;
+  let drawn = [], drawnShapes = [], accuracyRing = null, userCursor = null;
+  // Selected lot: thick white outline and a stronger fill so it stands out from its neighbours.
+  const paint = (item, shape, selected) => item.setOptions?.(selected
+    ? { strokeColor: "#ffffff", strokeWeight: 5, fillOpacity: shape.kind === "polygon" ? 0.6 : 0.75, zIndex: 900 }
+    : { strokeColor: shape.color, strokeWeight: 2.4, fillOpacity: shape.kind === "polygon" ? 0.24 : 0.35, zIndex: 0 });
 
   class LocationCursor extends maps.OverlayView {
     constructor(point, heading) {
@@ -69,7 +73,7 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
     onRemove() { this.element.remove(); }
   }
 
-  const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; };
+  const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; drawnShapes = []; };
   const clearUser = () => { accuracyRing?.setMap(null); userCursor?.setMap(null); accuracyRing = userCursor = null; };
   map.addListener?.("zoom_changed", () => userCursor?.draw());
 
@@ -84,8 +88,10 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
           : new lib.Circle({ ...style, center: shape.center, radius: 24, fillOpacity: 0.35 });
         item.addListener("click", () => onSelect(shape));
         drawn.push(item);
+        drawnShapes.push(shape);
       }
     },
+    setSelected(key) { drawn.forEach((item, i) => paint(item, drawnShapes[i], key != null && drawnShapes[i].key === key)); },
     setUser(point, accuracy, heading = null, speed = null) {
       if (!point) return clearUser();
       if (Number.isFinite(speed) && speed < 0.3) heading = null;
