@@ -91,22 +91,8 @@ main { max-width: calc(var(--page-max) + 2 * var(--gutter)); margin: 0 auto; pad
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow-sm); transition: border-color .15s, box-shadow .15s; }
 .card:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
 .card-body { flex: 1; min-width: 0; }
-/* Favorites: full-width horizontal cards. Narrow: name + icon pair on top, status, then actions.
-   Wide (card >= 620px): name/status | actions | icon pair in one row. Sized by the card, so it works in the map sheet too. */
-#fav-list { grid-template-columns: minmax(0, 1fr); container-type: inline-size; }
-.fav-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "info icons" "actions actions"; gap: 14px 12px; align-items: start; }
-.fav-info { grid-area: info; min-width: 0; }
-.fav-info h3 { margin: 0 0 2px; overflow-wrap: anywhere; }
-.fav-status { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 8px 0 0; font-size: .88rem; }
-.fav-status .elig, .fav-status .avail { margin: 0; font-weight: 600; }
-.fav-info .hint { margin: 6px 0 0; }
-.fav-actions { grid-area: actions; display: flex; gap: 8px; }
-.fav-actions a { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin: 0; padding: 0 18px; border-radius: 999px; font-weight: 650; font-size: .92rem; text-decoration: none; white-space: nowrap; }
-.icon-pair { grid-area: icons; display: flex; gap: 8px; }
-@container (min-width: 620px) {
-  .fav-card { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "info actions icons"; align-items: center; gap: 16px; }
-  .fav-actions a { flex: none; }
-}
+.favorite-directions { display: grid; justify-items: start; gap: 6px; margin-top: 10px; }
+.favorite-directions .secondary { gap: 8px; max-width: 100%; }
 .card h3 { margin: 0 0 4px; font-size: 1.02rem; color: var(--ink-2); letter-spacing: -.01em; }
 .meta { margin: 0; color: var(--muted); font-size: .88rem; }
 .avail { margin: 6px 0 0; font-weight: 600; font-size: .88rem; }
@@ -156,7 +142,7 @@ select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:fo
 .elig.pick, .elig.unknown { color: var(--muted); }
 .elig.big { font-size: 1.1rem; } .elig .when { font-weight: 400; color: var(--muted); }
 .detail-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
-.detail-head-actions { display: flex; gap: 8px; flex-shrink: 0; padding-top: 2px; }
+.detail-head-actions { display: flex; gap: 10px; flex-shrink: 0; padding-top: 2px; }
 .rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
 .rule { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow-sm); }
 .rule ul { margin: 6px 0; padding-left: 20px; }
@@ -471,7 +457,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 
 /* Wide screens: lists that span the full content column split into two columns. */
 @media (min-width: 900px) {
-  .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #fav-list, .rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ---- Account: Continue with Google + "or" divider ---- */
@@ -591,6 +577,7 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .help-modal-body .map-legend li { font-size: .78rem; }
 .help-modal-body a { color: var(--brand-ink); font-weight: 600; }
 .directions-apple { margin-left: 4px; }
+.favorite-directions .directions-apple { margin-left: 0; }
 
 /* No backdrop-filter support, or the person asked for less transparency: solid surfaces instead. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
