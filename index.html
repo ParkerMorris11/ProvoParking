@@ -410,7 +410,7 @@
 
     <div id="car-sheet" class="car-sheet" hidden>
       <div class="car-sheet-backdrop" id="car-backdrop"></div>
-      <!-- Parking timer sheet: opened by the floating car button (#car-fab) -->
+      <!-- Parking timer sheet: opened from the My Car tab or Park here (#car) -->
       <section id="view-car" class="car-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="h-car">
         <button type="button" class="car-sheet-close" id="car-close" aria-label="Close parking timer"><span aria-hidden="true">×</span></button>
         <h2 id="h-car" tabindex="-1">Parking timer</h2>
@@ -460,19 +460,6 @@
       </section>
     </div>
 
-    <!-- Floating car button; becomes an h:mm timer pill while a parking timer is running -->
-    <button type="button" id="car-fab" class="car-fab" aria-haspopup="dialog" aria-label="Parking timer: start a timer">
-      <svg class="car-fab-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-        <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M13.5 21 17.5 12.5C18 11.6 18.8 11 19.8 11H28.2C29.2 11 30 11.6 30.5 12.5L34.5 21"/>
-          <rect x="8" y="21" width="32" height="14" rx="4.5"/>
-          <path d="M3.5 19.5h4M40.5 19.5h4"/>
-          <path d="M13 28h4M31 28h4"/>
-          <path d="M14 35v4.5M34 35v4.5"/>
-        </g>
-      </svg>
-      <span class="car-fab-time" id="car-fab-time" hidden></span>
-    </button>
   </main>
 
   <footer class="site-footer" id="app-footer" hidden>

@@ -175,6 +175,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .map-controls .location-button.map-fab[aria-pressed="true"] { background: var(--brand-fill); }
 .fs-shell .map-controls .map-mode { display: flex; flex-direction: column; padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
 .fs-shell .map-mode button { width: 44px; min-height: 44px; border-radius: 10px; }
+/* Dark mode button in the rail: the sun/moon icon shows the state, so no "pressed" fill. */
+.fs-shell .map-controls > .theme-toggle, .fs-shell .map-controls > .theme-toggle[aria-pressed="true"] { display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text); }
+.fs-shell .map-controls > .theme-toggle:hover { background: var(--hover); }
 .fs-shell :is(button, a, select, input):focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; }
 .fs-shell .map-card { top: 80px; left: 12px; right: 80px; max-width: 340px; max-height: calc(100% - 250px); }
 .fs-shell .map-status { left: auto; right: 78px; bottom: auto; top: 16px; max-width: min(300px, calc(100% - 100px)); font-size: .7rem; }
@@ -205,7 +208,8 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .map-controls #locate-me { grid-column: 1; grid-row: 2; }
   .fs-shell .map-controls #map-style { grid-column: 2; grid-row: 2; }
   .fs-shell .map-controls #map-zoom-in, .fs-shell .map-controls #map-zoom-out { display: none; }
-  .fs-shell .map-controls .map-help { grid-column: 1 / -1; justify-self: center; }
+  .fs-shell .map-controls #map-theme { grid-column: 1; grid-row: 3; }
+  .fs-shell .map-controls .map-help { grid-column: 2; grid-row: 3; }
   .fs-shell .map-card { max-height: calc(100% - 400px); }
   .fs-shell.sidebar-open .map-controls { z-index: 1002; bottom: auto; top: max(16px, env(safe-area-inset-top, 0px)); right: 16px; display: flex; flex-direction: row; width: auto; }
   .fs-shell.sidebar-open .map-controls > :not(.map-mode):not(#locate-me) { display: none; }

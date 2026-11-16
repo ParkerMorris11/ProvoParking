@@ -51,8 +51,12 @@ export function renderCarFab() {
     : `Parking timer: ${fmtDuration(minutes)} left. Open details.`);
 }
 
+// The button was taken off the map (2026-11-16); My Car is reached from the sidebar tab and Park here.
+// Kept safe to call so it comes back by adding the #car-fab markup again.
 export function initCarFab({ go }) {
-  $("car-fab").addEventListener("click", () => go("#car"));
+  const fab = $("car-fab");
+  if (!fab) return;
+  fab.addEventListener("click", () => go("#car"));
   renderCarFab();
   // One light tick for the whole app; it only touches the page when the h:mm text changes.
   setInterval(renderCarFab, 1000);

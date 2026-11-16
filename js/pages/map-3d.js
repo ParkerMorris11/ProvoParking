@@ -23,6 +23,8 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   const map = new lib.Map3DElement({
     center: { ...center, altitude: ALTITUDE }, ...DEFAULT_CAMERA,
     mode: lib.MapMode?.HYBRID ?? "HYBRID", colorScheme: scheme(),
+    // Google's own compass/zoom buttons sat behind our map control rail; the rail already has zoom.
+    defaultUIHidden: true,
   });
   map.setAttribute?.("aria-label", "3D map of BYU and Provo parking");
   map.addEventListener("gmp-error", onError);
