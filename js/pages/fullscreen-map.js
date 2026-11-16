@@ -353,22 +353,6 @@ function buildPermitPopover() {
 const CLOSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 const LAYERS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
 
-// Only one of the two 2D / 3D buttons shows at a time: the one that switches away from the current view,
-// labeled with the view it switches to. When the pressed one hides, focus moves to the one now showing.
-function singleModeButton(modeSwitch) {
-  const buttons = [...modeSwitch.querySelectorAll("button")];
-  const sync = () => {
-    const hiddenFocus = buttons.find(b => b === document.activeElement && b.getAttribute("aria-pressed") === "true");
-    if (hiddenFocus) buttons.find(b => b !== hiddenFocus)?.focus();
-    for (const b of buttons) {
-      const target = b.id === "map-mode-3d" ? "3D" : "2D";
-      b.title = `Switch to the ${target} map`;
-    }
-  };
-  for (const b of buttons) new MutationObserver(sync).observe(b, { attributes: true, attributeFilter: ["aria-pressed"] });
-  sync();
-}
-
 function build() {
   view = document.getElementById("view-areas");
   const stage = view?.querySelector(".map-stage");
@@ -395,11 +379,13 @@ function build() {
   style.addEventListener("click", () => void toggleMapStyle());
   const mapPill = el("div", { class: "map-controls", role: "group", "aria-label": "Map controls" });
   mapPill.append(style);
+  // 2D / 3D is one round button: map.js shows only the view you can switch to and moves focus.
   const modeSwitch = stage.querySelector(".map-mode");
-  if (modeSwitch) { mapPill.append(modeSwitch); singleModeButton(modeSwitch); }
+  if (modeSwitch) mapPill.append(modeSwitch);
   mapPill.append(locate);
-  for (const [id, label, delta, text] of [["map-zoom-in", "Zoom in", 1, "+"], ["map-zoom-out", "Zoom out", -1, "−"]]) {
-    const zoom = el("button", { type: "button", id, class: "map-zoom", "aria-label": label, title: label }, text);
+  // Zoom icons are SVGs (not "+"/"−" text) so every button in the rail has the same icon size and weight.
+  for (const [id, label, delta, path] of [["map-zoom-in", "Zoom in", 1, "M12 5v14M5 12h14"], ["map-zoom-out", "Zoom out", -1, "M5 12h14"]]) {
+    const zoom = el("button", { type: "button", id, class: "map-zoom", "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
     zoom.addEventListener("click", () => zoomMap(delta));
     mapPill.append(zoom);
   }
