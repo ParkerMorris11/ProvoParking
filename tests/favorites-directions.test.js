@@ -99,3 +99,22 @@ test('each favorite offers Google Maps and Apple Maps driving directions', () =>
   assert.match(html, /href="https:\/\/maps\.apple\.com\/\?daddr=40\.243896%2C-111\.649081&amp;dirflg=d"/);
   assert.equal((html.match(/class="secondary"/g) || []).length, 1);
 });
+
+test('lot detail directions button opens Apple Maps on iPhone/iPad and Google Maps elsewhere', async () => {
+  const { deviceDirections } = await import('../js/lib/format.js');
+  const iphone = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)', maxTouchPoints: 5 };
+  const ipad = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', maxTouchPoints: 5 };
+  const mac = { userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', maxTouchPoints: 0 };
+  const android = { userAgent: 'Mozilla/5.0 (Linux; Android 15)', maxTouchPoints: 5 };
+  for (const nav of [iphone, ipad]) {
+    const d = deviceDirections(lots[0], 'driving', nav);
+    assert.equal(d.app, 'Apple Maps');
+    assert.equal(new URL(d.url).searchParams.get('daddr'), '40.243896,-111.649081');
+  }
+  for (const nav of [mac, android, undefined]) {
+    const d = deviceDirections(lots[0], 'driving', nav);
+    assert.equal(d.app, 'Google Maps');
+    assert.equal(new URL(d.url).searchParams.get('destination'), '40.243896,-111.649081');
+  }
+  assert.equal(deviceDirections({}, 'driving', iphone), null);
+});

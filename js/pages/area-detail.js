@@ -1,8 +1,8 @@
 // Page: Area details — parking status, 24-hour rules timeline, sources, tow contact, Park here.
 import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
-import { DAY_NAMES, escapeHtml, fmtTime, timeAgo, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
-import { availabilityText, evaluateArea, heartHtml } from "../components/area-card.js";
+import { DAY_NAMES, escapeHtml, fmtTime, timeAgo, directionsUrl, appleDirectionsUrl, deviceDirections } from "../lib/format.js";
+import { availabilityText, evaluateArea, heartHtml, DIRECTIONS_ICON } from "../components/area-card.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { ruleScheduleHtml } from "../components/rule-schedule.js";
 
@@ -33,6 +33,7 @@ export function renderAreaDetail(areaId) {
   const ev = evaluateArea(area);
   const directions = directionsUrl(area, "driving");
   const appleDirections = appleDirectionsUrl(area, "driving");
+  const quickDirections = area.is_sample_data ? null : deviceDirections(area, "driving");
   const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
   const rules = rulesFor(area.area_id);
@@ -48,7 +49,10 @@ export function renderAreaDetail(areaId) {
         <h2 id="h-area" tabindex="-1">${escapeHtml(area.area_name)}</h2>
         <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}</p>
       </div>
-      ${heartHtml(area)}
+      <div class="detail-head-actions">
+        ${quickDirections ? `<a class="icon-btn directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)">${DIRECTIONS_ICON}</a>` : ""}
+        ${heartHtml(area)}
+      </div>
     </div>
     <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
       <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
