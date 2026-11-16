@@ -22,10 +22,10 @@ try {
     await page.getByRole("heading",{name:"24-hour parking rules"}).waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Overflow at ${width}px ${theme}`);
     assert.equal(await page.locator(".day-period").count(),5);
-    const originalStatus=await page.locator(".detail-status").innerText();
+    const originalStatus=await page.locator(".elig").innerText();
     await page.getByLabel("Day",{exact:true}).selectOption("6");
     assert.equal(await page.locator(".day-period").count(),3);
-    assert.equal(await page.locator(".detail-status").innerText(),originalStatus);
+    assert.equal(await page.locator(".elig").innerText(),originalStatus);
     assert.equal(await page.locator("#rules-day").evaluate(el=>el===document.activeElement),true);
     await page.getByLabel("Day",{exact:true}).selectOption("1");
     await page.getByText("Sources and verification",{exact:true}).click();
