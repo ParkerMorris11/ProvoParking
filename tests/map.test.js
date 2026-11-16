@@ -165,11 +165,12 @@ test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () 
   const selected = [];
   const view = createMap3D({ lib, container, onSelect: (s) => selected.push(s) });
   assert.equal(events.map.options.mode, 'HYBRID');
-  assert.equal(events.map.options.tilt, 65);
+  assert.equal(events.map.options.tilt, 45);
+  assert.equal(events.map.options.heading, 0, 'north-up so campus, not Orem, fills the screen');
   view.zoomBy(1);
-  assert.equal(events.map.range, 600);
-  view.zoomBy(-1);
   assert.equal(events.map.range, 1200);
+  view.zoomBy(-1);
+  assert.equal(events.map.range, 2400);
   const poly = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
   view.setShapes([poly]);
   assert.equal(children.length, 1);
