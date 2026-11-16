@@ -1,6 +1,6 @@
 // Page: Favorites — areas saved with the heart (favorite_area).
 // Kept deliberately simple, like saved places in Google/Apple Maps: one row per lot with its name
-// (or the user's nickname for it), one short status line, a Go button (Google Maps directions) and a ⋯ menu (Rename, Remove).
+// (or the user's nickname for it; tap it to see the lot on the map), one short status line, a Go button (Google Maps directions) and a ⋯ menu (Rename, Remove).
 // Removing a favorite anywhere shows an Undo bar, so a mis-tap never loses a saved lot.
 import { state } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
@@ -8,6 +8,7 @@ import { escapeHtml, fmtDuration, directionsUrl } from "../lib/format.js";
 import { evaluateArea } from "../components/area-card.js";
 import { formatDistance } from "../domain/area-list.js";
 import { addFavorite, removeFavorite, renameFavorite, cleanNickname } from "../data/favorites.js";
+import { showAreaOnMap } from "./map.js";
 
 const UNDO_MS = 6000;
 let renamingId = null; // the favorite whose name is being edited, if any
@@ -66,14 +67,14 @@ export function favoriteRowHtml(area) {
     : "";
   return `
     <li class="fav-row">
-      <a class="fav-main" href="#area/${area.area_id}" aria-label="${name}${nickname ? ` (${escapeHtml(area.area_name)})` : ""}: ${escapeHtml(shortStatus(ev))}. Open rules and details">
+      <button type="button" class="fav-main" data-map-area="${area.area_id}" aria-label="${name}${nickname ? ` (${escapeHtml(area.area_name)})` : ""}: ${escapeHtml(shortStatus(ev))}. Show on map">
         <span class="fav-pin" aria-hidden="true">♥</span>
         <span class="fav-text">
           <span class="fav-name">${name}</span>
           ${nickname ? `<span class="fav-lot">${escapeHtml(area.area_name)}</span>` : ""}
           <span class="fav-sub"><span class="fav-status ${ev.kind}"><span aria-hidden="true">${ICONS[ev.kind] ?? "?"}</span> ${escapeHtml(shortStatus(ev))}</span>${details ? ` · ${details}` : ""}</span>
         </span>
-      </a>
+      </button>
       ${go}
       <details class="fav-more fav-pop">
         <summary class="fav-more-btn" data-area-id="${area.area_id}" aria-label="More options for ${name}">${MORE_ICON}</summary>
@@ -165,6 +166,15 @@ export function initFavorites({ renderViews }) {
     // Only one ⋯ menu open at a time; a click anywhere else closes it.
     for (const menu of document.querySelectorAll(".fav-pop[open]")) {
       if (!menu.contains(e.target)) menu.open = false;
+    }
+    // Tapping a favorite shows it on the map behind the panel (the map card links to Rules & details).
+    // If the map is not ready (no key, still loading), open the details page instead.
+    const onMap = e.target.closest("#fav-list [data-map-area]");
+    if (onMap) {
+      const id = Number(onMap.dataset.mapArea);
+      const area = state.areas.find((a) => a.area_id === id);
+      if (!showAreaOnMap(area)) location.hash = `#area/${id}`;
+      return;
     }
     const rename = e.target.closest("[data-fav-rename]");
     if (rename) { renamingId = Number(rename.dataset.favRename); return renderFavorites(); }

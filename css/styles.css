@@ -746,7 +746,7 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-list { list-style: none; margin: 0; padding: 0; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
 .fav-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; }
 .fav-row + .fav-row { border-top: 1px solid var(--border); }
-.fav-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; color: inherit; text-decoration: none; }
+.fav-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px; border: 0; border-radius: 12px; background: none; color: inherit; font: inherit; text-align: left; text-decoration: none; cursor: pointer; }
 .fav-main:hover { background: var(--hover); }
 .fav-main:focus-visible, .fav-go-btn:focus-visible, .fav-menu a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--fav); background: var(--fav-tint); color: var(--brand); font-size: 1.15rem; line-height: 1; } /* same look as the saved heart button, but just an icon */

@@ -29,6 +29,7 @@ const activeView = () => views[mode];
 const showingAllLots = () => state.currentView === "lots";
 let allLotsFitted = false, drewAllLots = false;
 let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
+let shownExtra = null;   // a lot shown on request (e.g. a favorite) that the permit filter would hide; drawn until its card closes
 
 function updateArrivalSuggestion(element, candidate) {
   if (!element) return;
@@ -146,6 +147,13 @@ function showCard(html) {
 export function hideCard() {
   const card = byId("map-card");
   if (card && !card.hidden) { card.hidden = true; card.innerHTML = ""; }
+  if (shownExtra) { shownExtra = null; drawShapes(); }
+}
+
+// Card for a saved lot that has a location but no mapped boundary (for example a Provo city lot).
+export function pointCardHtml(area) {
+  return `<div class="lot-popup"><span class="lot-popup-type">${escapeHtml(area.operator || "Parking area")}</span><h3>${escapeHtml(area.area_name)}</h3>`
+    + `<a class="lot-popup-link" href="#area/${area.area_id}">Rules &amp; details →</a><a class="lot-popup-link" href="#car/${area.area_id}">Park here →</a></div>`;
 }
 
 function showFeatureCard(feature) { showCard(lotCardHtml(feature)); }
@@ -162,18 +170,37 @@ function selectShape(shape) {
   else showFeatureCard(shape.source.feature);
 }
 
-/** "Show on map" from an Areas card: zoom to that section's boundary and open its card. */
+/** "Show on map" from an Areas card or a favorite: zoom to that lot and open its card.
+ *  Works for lots the current permit filter hides (they are drawn until the card closes), and for
+ *  lots with only a location (centered on the point). Returns false when the map is not ready. */
 export function showAreaOnMap(area) {
   const view = activeView();
   if (!view || !area) return false;
-  const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
-  const shape = feature && shapes.find((s) => s.source.feature === feature);
-  if (!shape) return false;
   const el = byId("parking-map");
-  el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-  if (mode === "2d") view.fitBounds(shape.bounds, 24); else view.focus(shape.center, 18);
-  markSelected(shape.key);
-  showFeatureCard(feature);
+  const reveal = () => {
+    el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  };
+  const feature = Number.isInteger(area.source_feature_id)
+    && (visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id)
+      || features.find((f) => f.properties?.OBJECTID === area.source_feature_id));
+  if (feature) {
+    if (!visibleFeatures.includes(feature) && shownExtra !== feature) { shownExtra = feature; drawShapes(); }
+    const shape = shapes.find((s) => s.source.feature === feature);
+    if (shape) {
+      reveal();
+      if (mode === "2d") view.fitBounds(shape.bounds, 24); else view.focus(shape.center, 18);
+      markSelected(shape.key);
+      showFeatureCard(feature);
+      el?.focus?.({ preventScroll: true });
+      return true;
+    }
+  }
+  const point = areaPoint(area);
+  if (!point) return false;
+  reveal();
+  view.focus({ lat: point.latitude, lng: point.longitude }, 18);
+  markSelected(null);
+  showCard(pointCardHtml(area));
   el?.focus?.({ preventScroll: true });
   return true;
 }
@@ -211,6 +238,7 @@ function setMapStatus(message, { routine = false } = {}) {
 function drawShapes() {
   shapes = [
     ...visibleFeatures.map(byuShape),
+    ...(shownExtra && !visibleFeatures.includes(shownExtra) ? [byuShape(shownExtra)] : []),
     ...(cityVisible || showingAllLots() ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
   activeView()?.setShapes(shapes);
