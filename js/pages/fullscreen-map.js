@@ -1,3 +1,5 @@
+import { searchMapCatalog } from "../domain/map-search.js";
+import { findExactLot } from "../domain/lot-search.js";
 // The map stays mounted while existing screens move through one floating drawer.
 // Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
 // and account button, a Suggestions card (parked car, favorites, nearby legal lots), a row of round
@@ -131,7 +133,7 @@ export function sheetTitle(count, hasPermit, selection = {}) {
 export function matchText(count, hasPermit = true, selection = {}) {
   if (!count && !hasPermit) return "Choose a permit";
   if (!count) return selection.day === 0 || selection.day === 6 ? "Weekend: check signs" : "No lots match now";
-  return `${count} ${count === 1 ? "area" : "areas"} open`;
+  return `${count} matching ${count === 1 ? "section" : "sections"}`;
 }
 
 function updateChrome() {
@@ -280,6 +282,8 @@ const GO_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><
 export function resetMapSearch() {
   const input = document.getElementById("map-search-text"), status = document.getElementById("map-search-status");
   if (input) input.value = "";
+  const results = document.getElementById("map-search-results");
+  if (results) { results.replaceChildren(); results.hidden = true; }
   if (status) {
     status.textContent = "";
     status.classList.remove("warn");
@@ -291,11 +295,11 @@ function buildSearch() {
   const nlForm = document.getElementById("nl-form"), nlText = document.getElementById("nl-text");
   const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
   if (!nlForm || !nlText) return null;
-  const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking in plain language" },
+  const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking and campus buildings" },
     `<span class="map-search-icon">${SEARCH_ICON}</span>` +
-    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
+    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Search lots, buildings, or describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
-    `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
+    `<button type="submit" class="map-search-btn map-search-go" aria-label="Search" title="Search">${GO_ICON}</button>`);
   // Round account button beside the search bar: initials when signed in, a person icon for guests.
   const account = el("button", { type: "button", class: "map-account", id: "map-account", "aria-label": "Account and settings: sign up or log in" },
     '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="map-account-initials"></span>');
@@ -313,13 +317,86 @@ function buildSearch() {
   syncAccount();
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
   const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
+  const results = el("div", { class: "map-search-results", id: "map-search-results", "aria-label": "Search suggestions", hidden: "" });
+  const clearResults = () => { results.replaceChildren(); results.hidden = true; };
+  const selectResult = (result) => {
+    clearResults(); input.value = result.title; status.hidden = true;
+    if (result.type === "lot") { location.hash = `#area/${result.id}`; return; }
+    setSheet("half");
+    const version = state.authVersion;
+    const chooseDestination = () => {
+      if (version !== state.authVersion) return;
+      const select = document.getElementById("find-destination");
+      if (select) select.value = String(result.id);
+    };
+    if (location.hash === "#find") chooseDestination();
+    else { window.addEventListener("hashchange", chooseDestination, { once: true }); location.hash = "#find"; }
+  };
+  const suggest = () => {
+    clearResults();
+    const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations });
+    for (const result of matches) {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "map-search-result";
+      const title = document.createElement("strong"); title.textContent = result.title;
+      const subtitle = document.createElement("span"); subtitle.textContent = result.subtitle;
+      button.append(title, subtitle); button.addEventListener("click", () => selectResult(result));
+      results.append(button);
+    }
+    results.hidden = matches.length === 0;
+  };
+  input.addEventListener("input", suggest);
+  document.addEventListener("pointerdown", e => {
+    if (!bar.contains(e.target) && !results.contains(e.target)) clearResults();
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") clearResults();
+    if (e.key === "ArrowDown" && !results.hidden) { e.preventDefault(); results.querySelector("button")?.focus(); }
+  });
+  results.addEventListener("keydown", e => { if (e.key === "Escape") { clearResults(); input.focus(); } });
   // Like other map apps, starting a search raises the sheet so suggestions and results have room.
-  input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); });
+  input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); if (input.value.trim()) suggest(); });
 
   bar.addEventListener("submit", (e) => {
     e.preventDefault();
     const text = input.value.trim();
     if (!text) { status.hidden = false; status.textContent = "Type or say something like “class at 3 pm at the JKB”."; input.focus(); return; }
+    clearResults();
+    const exactLots = findExactLot(text, state.areas || []);
+    if (exactLots.length === 1) {
+      status.textContent = "";
+      status.hidden = true;
+      nlStatus.textContent = "";
+      location.hash = `#area/${exactLots[0].area_id}`;
+      return;
+    }
+    if (exactLots.length > 1) {
+      const filter = document.getElementById("all-lots-search");
+      filter.value = exactLots[0].lot_code;
+      const version = state.authVersion;
+      const applyFilter = () => {
+        if (version !== state.authVersion) return;
+        filter.value = exactLots[0].lot_code;
+        filter.dispatchEvent(new Event("input", { bubbles: true }));
+        setSheet("half");
+      };
+      if (location.hash === "#lots") applyFilter();
+      else { window.addEventListener("hashchange", applyFilter, { once: true }); location.hash = "#lots"; }
+      setSheet("half");
+      status.textContent = `Choose a section of lot ${exactLots[0].lot_code}.`;
+      status.hidden = false;
+      return;
+    }
+    const matches = searchMapCatalog(text, { areas: state.areas, destinations: state.destinations });
+    const exactDestination = matches.find(item => item.type === "destination" && (item.title.toLowerCase() === text.toLowerCase() || state.destinations.some(d => d.destination_id === item.id && String(d.building_code).toLowerCase() === text.toLowerCase())));
+    if (exactDestination) { selectResult(exactDestination); return; }
+    if (matches.length === 1) { selectResult(matches[0]); return; }
+    if (matches.length > 1) {
+      setSheet("half"); suggest();
+      status.textContent = "Choose a matching location below.";
+      status.hidden = false;
+      return;
+    }
     setSheet("half");
     nlText.value = text;
     const version = state.authVersion;
@@ -354,7 +431,7 @@ function buildSearch() {
     new MutationObserver(syncStatus).observe(nlStatus, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["class"] });
     status.hidden = true;
   }
-  return { bar, status, account };
+  return { bar, status, account, results };
 }
 
 // ---- Permit popover (the permit chip) --------------------------------------------------------------
@@ -445,7 +522,7 @@ function build() {
     `<span class="sheet-grip" aria-hidden="true"></span>`);
   head = el("div", { class: "sheet-head" });
   const searchRow = el("div", { class: "sheet-search-row" });
-  if (search) { searchRow.append(search.bar, search.account); head.append(searchRow, search.status); }
+  if (search) { searchRow.append(search.bar, search.account); head.append(searchRow, search.status, search.results); }
   body = el("div", { class: "sheet-body", id: "sheet-body", role: "region", "aria-label": "Parking list" });
 
   // Fine print: the long notes fold into one line with an (i) button. Same text, same ids.
@@ -558,10 +635,11 @@ function build() {
 
 
 // Called after the router selects a screen. The canvas is a sibling of the drawer, never a route.
-export function syncFullscreenRoute(name) {
+export function syncFullscreenRoute(name, { showResults = false } = {}) {
   if (!sheet) return false;
   // Phones open on the map with the sheet lowered; laptops keep the sidebar open.
-  setSheet(name === "areas" && !isDesktop() ? "peek" : "half");
+  setSheet(name === "areas" && !isDesktop() && !showResults ? "peek" : "half");
+  if (name === "area" && body) body.scrollTop = 0;
   updateChrome();
   refreshMap();
   return true;

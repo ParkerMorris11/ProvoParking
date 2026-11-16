@@ -58,11 +58,15 @@ export function renderAreaDetail(areaId) {
       <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
     <p class="avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
 
+    <div class="actions detail-primary-actions">
+      ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here · set timer</a>` : ""}
+      ${quickDirections ? `<a class="secondary" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener">Directions · ${escapeHtml(quickDirections.app)}</a>` : ""}
+    </div>
     <section class="detail-schedule" aria-labelledby="detail-schedule-title">
       <div class="schedule-heading"><div><p class="detail-eyebrow">Ordinary parking stalls</p><h3 id="detail-schedule-title">24-hour parking rules</h3></div>
         <div class="schedule-day-control"><label for="rules-day">Day</label><select id="rules-day">${fullDays.map((name, i) => `<option value="${i}"${i === day ? " selected" : ""}>${name}</option>`).join("")}</select></div>
       </div>
-      <p class="schedule-intro">Same schedule for every driver. Permit requirements are listed below.</p>
+      <p class="schedule-intro">Rules for this day, in 24 one-hour blocks. This is not live space availability.</p>
       <div id="rules-day-schedule">${ruleScheduleHtml(rules, day, state.permits)}</div>
       ${byu ? '<p class="schedule-footnote">Regular fall/winter week. Unverified periods are not permission to park. Specialty stalls, events, holidays, finals and breaks may have different rules. Vehicle must be registered and active.</p>' : '<p class="schedule-footnote">Based on the rules recorded for this area. Check posted signs.</p>'}
     </section>
@@ -72,13 +76,12 @@ export function renderAreaDetail(areaId) {
       ${byu ? '<p><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU permit and overnight regulations</a> · <a href="https://map.byu.edu/?layer=parking" target="_blank" rel="noopener">Official campus parking map</a></p>' : ""}
     </details>
 
-    <h3>If you are towed</h3>
-    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p>
+    <details class="detail-source-disclosure"><summary>Towing information</summary>
+    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p></details>
 
-    <div class="actions">
-      ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here — set up timer</a>` : ""}
+    <details class="detail-source-disclosure"><summary>Other directions options</summary><div class="actions detail-more-directions">
       ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Driving directions (sample location)" : "Driving directions · Google Maps"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener">Apple Maps</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
-    </div>`;
+    </div></details>`;
   $("rules-day").addEventListener("change", (event) => {
     dayChoice.day = Number(event.target.value);
     renderAreaDetail(areaId);

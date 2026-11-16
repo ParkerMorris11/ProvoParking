@@ -141,6 +141,22 @@ test('2D view draws polygons and points, and a tap reports the shape', () => {
   assert.equal(made.polygons[0].options.map, null, 'old shapes are removed from the map');
 });
 
+test('2D long press drops and replaces a pin, including on lot shapes', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  const points = [];
+  const view = createMap2D({ maps, lib, container: {}, onDropPin: p => points.push(p), onSelect() {} });
+  const point = (lat, lng) => ({ latLng: { lat: () => lat, lng: () => lng } });
+  made.maps[0].listeners.contextmenu(point(40.25, -111.65));
+  assert.deepEqual(points, [{ latitude: 40.25, longitude: -111.65 }]);
+  const first = made.circles[0];
+  view.setShapes([byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } })]);
+  made.polygons[0].listeners.contextmenu(point(40.26, -111.66));
+  assert.equal(first.options.map, null);
+  assert.equal(points.length, 2);
+  view.clearPin();
+  assert.equal(made.circles[1].options.map, null);
+});
+
 test('2D view starts with road map styling and supports dark mode', () => {
   const { made, lib, maps } = fakeMaps2D();
   const view = createMap2D({ maps, lib, container: {}, onSelect() {} });

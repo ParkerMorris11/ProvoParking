@@ -11,11 +11,22 @@ export function scheduleSummary(segment, permits) {
   return { title: "Permit required", detail: `Accepted: ${codes}. Vehicle registration and active privileges required.${limits ? " " + limits + "." : ""}`, icon: "P" };
 }
 
+// Each hour preserves rule transitions inside the hour rather than rounding them.
+export function hourBlocks(segments) {
+  return Array.from({ length: 24 }, (_, hour) => {
+    const start = hour * 60, end = start + 60;
+    return segments.filter(s => s.start < end && s.end > start).map(s => ({
+      kind: s.kind, start: Math.max(s.start, start) - start, end: Math.min(s.end, end) - start,
+    }));
+  });
+}
+
 export function ruleScheduleHtml(rules, day, permits) {
   const segments = dailyRuleSchedule(rules, day);
   if (!segments.length) return '<p class="empty">Choose a day to see the schedule.</p>';
   return `
-    <div class="day-strip" aria-hidden="true">${segments.map(s => `<span class="day-strip-segment schedule-${s.kind}" style="flex-grow:${s.end-s.start}"></span>`).join("")}</div>
+    <div class="day-strip" aria-hidden="true">${hourBlocks(segments).map(block => `<span class="hour-block" style="background:linear-gradient(to right,${block.map(part => `var(--schedule-${part.kind}) ${part.start / 60 * 100}% ${part.end / 60 * 100}%`).join(",")})"></span>`).join("")}</div>
+    <ul class="schedule-legend" aria-label="Schedule legend"><li class="legend-open">No permit restriction listed</li><li class="legend-permit">Permit required</li><li class="legend-closed">No parking</li><li class="legend-unknown">Not verified</li></ul>
     <div class="day-scale" aria-hidden="true"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span></div>
     <p class="schedule-boundary-note">Each period ends when the next begins. All times are Provo time.</p>
     <ol class="day-periods">${segments.map(s => {

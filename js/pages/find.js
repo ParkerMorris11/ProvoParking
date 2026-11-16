@@ -176,6 +176,8 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     state.find.time = $("arrive-time").value || nowHHMM();
     const selection = parkingSelection(state.find);
     setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
+    $("nl-status").textContent = "";
+    document.dispatchEvent(new CustomEvent("parking:show-results"));
     go("#areas");
   });
 }

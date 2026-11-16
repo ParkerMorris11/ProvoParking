@@ -495,6 +495,10 @@ The city snapshot is `data/provo-city-parking.json` (outlines simplified to abou
 
 On Areas, click **Use my location** and allow location access. The blue dot and nearest mapped lots update as you move; use **Stop tracking** to turn it off. Tracking also pauses when you leave the map or hide the tab. Location is not saved to our database. Nearby distances are estimates and do not verify open spaces or permission to park. See [location behavior and testing](docs/live-location.md).
 
+### BYU building search data
+
+The campus destination expansion in `20261116230000_byu_campus_destinations.sql` adds 236 uniquely coded building records from BYU’s [Campus Buildings layer](https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0), retrieved November 16, 2026. Existing curated records and IDs are preserved. Coordinates are approximate geometry centers, not building entrances; this dataset does not supply parking permission or live availability. The complete snapshot and per-building source links are in `data/byu-campus-buildings.json`. Apply the migration to the intended project before expecting the extra destinations in Find or AI search. Recheck the source before refreshing this data.
+
 ### Turning on plain-language / voice Find (project owner)
 Nothing below happens automatically; the Edge Function is not deployed by this branch.
 1. Get a Gemini API key (Google AI Studio).

@@ -1,0 +1,1896 @@
+{
+  "source": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0",
+  "retrieved_on": "2026-11-16",
+  "coordinate_method": "WGS84 geometry bounding-box center, not an entrance",
+  "exclusions": "Unnamed, duplicate-code, invalid-geometry, and out-of-area records excluded; existing curated destination names and coordinates take precedence.",
+  "buildings": [
+    {
+      "building_code": "ARTS",
+      "name": "ARTS BUILDING",
+      "latitude": 40.24998,
+      "longitude": -111.647981,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/279",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "B66",
+      "name": "B66 (CERAMICS, SCULP, TECH LAB BLDG)",
+      "latitude": 40.247247,
+      "longitude": -111.644564,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/51",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "B67",
+      "name": "B67 (Outdoors Unlimited and Museum of Peoples and Cultures)",
+      "latitude": 40.262998,
+      "longitude": -111.657798,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/54",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "B73",
+      "name": "B73 (Service Building- Paint)",
+      "latitude": 40.247289,
+      "longitude": -111.644951,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/119",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "BELL",
+      "name": "Centennial Carillon Tower",
+      "latitude": 40.252756,
+      "longitude": -111.647619,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/58",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "BNSN",
+      "name": "BENSON (EZRA TAFT) BUILDING",
+      "latitude": 40.246077,
+      "longitude": -111.650372,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/122",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "BRMB",
+      "name": "BRIMHALL (GEORGE H) BUILDING",
+      "latitude": 40.246263,
+      "longitude": -111.652377,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/69",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "BRWB",
+      "name": "BREWSTER (SAM F) BUILDING",
+      "latitude": 40.246505,
+      "longitude": -111.64492,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/300",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "BYUB",
+      "name": "BYU Broadcasting",
+      "latitude": 40.254562,
+      "longitude": -111.647502,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/7",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CANC",
+      "name": "CANNON (GEORGE Q) CENTER (HELAMAN HALLS)",
+      "latitude": 40.252488,
+      "longitude": -111.65297,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/4",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CB",
+      "name": "CLYDE (W W) ENGINEERING BUILDING",
+      "latitude": 40.246939,
+      "longitude": -111.648035,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/13",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CMB",
+      "name": "Chemicals Management Building",
+      "latitude": 40.247747,
+      "longitude": -111.644535,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/50",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CONE",
+      "name": "Creamery on Ninth East",
+      "latitude": 40.250297,
+      "longitude": -111.644449,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/283",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CONF",
+      "name": "BYU CONFERENCE CENTER",
+      "latitude": 40.25557,
+      "longitude": -111.645489,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/221",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CSC",
+      "name": "Culinary Support Center",
+      "latitude": 40.254492,
+      "longitude": -111.646217,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/79",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "CTB",
+      "name": "CRABTREE (ROLAND A) TECHNOLOGY BUILDING",
+      "latitude": 40.247644,
+      "longitude": -111.646536,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/36",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "EB",
+      "name": "ENGINEERING BUILDING",
+      "latitude": 40.246282,
+      "longitude": -111.647855,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/142",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ECCB",
+      "name": "East Campus Central Building",
+      "latitude": 40.248023,
+      "longitude": -111.641553,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/284",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ECNB",
+      "name": "East Campus North Building",
+      "latitude": 40.248622,
+      "longitude": -111.641012,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/285",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ELLB",
+      "name": "Leo B. Ellsworth Building",
+      "latitude": 40.264487,
+      "longitude": -111.659446,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/76",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ERL",
+      "name": "ENGINEERING RESEARCH LAB",
+      "latitude": 40.246685,
+      "longitude": -111.647181,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/144",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ESC",
+      "name": "EYRING (CARL F) SCIENCE CENTER",
+      "latitude": 40.247166,
+      "longitude": -111.650241,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/74",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "FPH",
+      "name": "Former Presidents' Home",
+      "latitude": 40.246645,
+      "longitude": -111.652856,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/57",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "FTGB",
+      "name": "Food to Go Building",
+      "latitude": 40.262593,
+      "longitude": -111.656344,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/89",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "GH",
+      "name": "University Guest House",
+      "latitude": 40.246933,
+      "longitude": -111.652681,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/86",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HBLL",
+      "name": "LEE (HAROLD B) LIBRARY",
+      "latitude": 40.249035,
+      "longitude": -111.649239,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/81",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HC",
+      "name": "HINCKLEY (GORDON B) ALUMNI & VISITORS CENTER",
+      "latitude": 40.25176,
+      "longitude": -111.651678,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/48",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HCEB",
+      "name": "HARMAN (CAROLINE HEMENWAY) CONTINUING EDUCATION BUILDING",
+      "latitude": 40.255885,
+      "longitude": -111.645376,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/14",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HGB",
+      "name": "GRANT (HEBER J) BUILDING",
+      "latitude": 40.245481,
+      "longitude": -111.652476,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/67",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLB",
+      "name": "Helaman Halls - Hinckley Hall",
+      "latitude": 40.251397,
+      "longitude": -111.654018,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/19",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLC",
+      "name": "Helaman Halls - Chipman Hall",
+      "latitude": 40.251368,
+      "longitude": -111.655024,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/20",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLD",
+      "name": "Helaman Halls - David John Hall",
+      "latitude": 40.25192,
+      "longitude": -111.655024,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/16",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLE",
+      "name": "Helaman Halls - Taylor Hall",
+      "latitude": 40.252467,
+      "longitude": -111.655016,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/59",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLF",
+      "name": "Helaman Halls - Stover Hall",
+      "latitude": 40.252687,
+      "longitude": -111.654165,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/18",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLG",
+      "name": "Helaman Halls - Budge Hall",
+      "latitude": 40.253586,
+      "longitude": -111.653488,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/1",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLH",
+      "name": "Helaman Halls - Merrill Hall",
+      "latitude": 40.253474,
+      "longitude": -111.652808,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/17",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLI",
+      "name": "Helaman Halls - May Hall",
+      "latitude": 40.253675,
+      "longitude": -111.65107,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/3",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HLJ",
+      "name": "Helaman Halls - Building 9",
+      "latitude": 40.253569,
+      "longitude": -111.652234,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/12",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR02",
+      "name": "Heritage Halls - Building 7",
+      "latitude": 40.250946,
+      "longitude": -111.644851,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/38",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR03",
+      "name": "Heritage Halls - Building 9",
+      "latitude": 40.250947,
+      "longitude": -111.644042,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/41",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR04",
+      "name": "Heritage Halls - Building 10",
+      "latitude": 40.251559,
+      "longitude": -111.644043,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/42",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR05",
+      "name": "Heritage Halls - Building 8",
+      "latitude": 40.251558,
+      "longitude": -111.644852,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/37",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR06",
+      "name": "Heritage Halls - Building 6",
+      "latitude": 40.251148,
+      "longitude": -111.64574,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/24",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR07",
+      "name": "Heritage Halls - Building 14",
+      "latitude": 40.25242,
+      "longitude": -111.644828,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/34",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR08",
+      "name": "Heritage Halls - Building 15",
+      "latitude": 40.252221,
+      "longitude": -111.644044,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/35",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR09",
+      "name": "Heritage Halls - Building 25",
+      "latitude": 40.253206,
+      "longitude": -111.644015,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/46",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR10",
+      "name": "Heritage Halls - Building 26",
+      "latitude": 40.2532,
+      "longitude": -111.645386,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/45",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR11",
+      "name": "Heritage Halls - Building 27",
+      "latitude": 40.253222,
+      "longitude": -111.646118,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/11",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR12",
+      "name": "Heritage Halls - Building 28",
+      "latitude": 40.253783,
+      "longitude": -111.646005,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/44",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR13",
+      "name": "Heritage Halls - Building 30v",
+      "latitude": 40.253818,
+      "longitude": -111.644895,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/225",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR14",
+      "name": "Heritage Halls - Building 30",
+      "latitude": 40.25383,
+      "longitude": -111.64405,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/224",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR15",
+      "name": "Heritage Halls - Building 30",
+      "latitude": 40.25443,
+      "longitude": -111.644064,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/40",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HR16",
+      "name": "Heritage Halls - Building 29",
+      "latitude": 40.254417,
+      "longitude": -111.64491,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/9",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HRCB",
+      "name": "CLARK (HERALD R) BUILDING",
+      "latitude": 40.247586,
+      "longitude": -111.649234,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/62",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "HRCN",
+      "name": "HERITAGE HALLS CENTRAL BUILDING",
+      "latitude": 40.250508,
+      "longitude": -111.645627,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/25",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "IPF",
+      "name": "INDOOR PRACTICE FACILITY",
+      "latitude": 40.247208,
+      "longitude": -111.656886,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/23",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ITB",
+      "name": "INFORMATION TECHNOLOGY BUILDING",
+      "latitude": 40.252592,
+      "longitude": -111.657657,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/47",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "JFSB",
+      "name": "SMITH (JOSEPH F) BUILDING",
+      "latitude": 40.248441,
+      "longitude": -111.651197,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/15",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "JKB",
+      "name": "KNIGHT (JESSE) BUILDING",
+      "latitude": 40.249958,
+      "longitude": -111.650332,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/60",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "JRCB",
+      "name": "CLARK (J REUBEN) BUILDING (LAW SCHOOL)",
+      "latitude": 40.249485,
+      "longitude": -111.645283,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/6",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "JSB",
+      "name": "SMITH (JOSEPH) BUILDING",
+      "latitude": 40.245876,
+      "longitude": -111.651599,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/73",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "KMBL",
+      "name": "KIMBALL (SPENCER W) TOWER",
+      "latitude": 40.247409,
+      "longitude": -111.651168,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/72",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "LDSP",
+      "name": "LDS Philanthropies Office Building",
+      "latitude": 40.253426,
+      "longitude": -111.657712,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/49",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "LISR",
+      "name": "Foreign Language Student Residence",
+      "latitude": 40.259732,
+      "longitude": -111.642246,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/78",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "LSB",
+      "name": "LIFE SCIENCES BUILDING",
+      "latitude": 40.245018,
+      "longitude": -111.649325,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/8",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "LSGH",
+      "name": "BYU Greenhouse",
+      "latitude": 40.245277,
+      "longitude": -111.641177,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/93",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "LVES",
+      "name": "LAVELL EDWARDS STADIUM",
+      "latitude": 40.257476,
+      "longitude": -111.654585,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/77",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MARB",
+      "name": "MARTIN (THOMAS L) BUILDING",
+      "latitude": 40.246832,
+      "longitude": -111.649216,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/85",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MB",
+      "name": "MUSIC BUILDING",
+      "latitude": 40.248924,
+      "longitude": -111.644108,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/251",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MC",
+      "name": "MARRIOTT (J WILLARD) CENTER",
+      "latitude": 40.254073,
+      "longitude": -111.649346,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/43",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MCA",
+      "name": "MARRIOTT CENTER ANNEX",
+      "latitude": 40.254011,
+      "longitude": -111.648363,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/123",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MCDB",
+      "name": "MCDONALD (HOWARD S) BUILDING",
+      "latitude": 40.245688,
+      "longitude": -111.648337,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/301",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MCKB",
+      "name": "MCKAY (DAVID O) BUILDING",
+      "latitude": 40.247223,
+      "longitude": -111.651912,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/71",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MLBM",
+      "name": "BEAN (MONTE L) LIFE SCIENCE MUSEUM",
+      "latitude": 40.253436,
+      "longitude": -111.647299,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/22",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MLRP",
+      "name": "Miller Park (Baseball/Softball Complex)",
+      "latitude": 40.25506,
+      "longitude": -111.652544,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/2",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MOA",
+      "name": "MUSEUM OF ART",
+      "latitude": 40.2508,
+      "longitude": -111.647994,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/65",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MOP",
+      "name": "MUSEUM OF PALEONTOLOGY",
+      "latitude": 40.256522,
+      "longitude": -111.65701,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/100",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MPS",
+      "name": "Motion Picture Studio",
+      "latitude": 40.266907,
+      "longitude": -111.66736,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/110",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "MSRB",
+      "name": "MAESER (KARL G) BUILDING",
+      "latitude": 40.245389,
+      "longitude": -111.653494,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/68",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "NICB",
+      "name": "Joseph K Nicholes Building",
+      "latitude": 40.246542,
+      "longitude": -111.650223,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/220",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "PFNB",
+      "name": "Auxiliary Maintenance Building",
+      "latitude": 40.256377,
+      "longitude": -111.641542,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/147",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "PGWT",
+      "name": "Wymount Terrace",
+      "latitude": 40.258464,
+      "longitude": -111.63971,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/172",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "PPCH",
+      "name": "Physical Plant Central Heating Plant",
+      "latitude": 40.247127,
+      "longitude": -111.646483,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/145",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "PPMV",
+      "name": "Motor Pool Vehicle Shelter",
+      "latitude": 40.246283,
+      "longitude": -111.644053,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/75",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "PPT4",
+      "name": "Wyview Park",
+      "latitude": 40.263261,
+      "longitude": -111.659989,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/336",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R1",
+      "name": "Missionary Training Center",
+      "latitude": 40.260061,
+      "longitude": -111.646041,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/253",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R2",
+      "name": "Missionary Training Center",
+      "latitude": 40.260032,
+      "longitude": -111.646682,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/255",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R3",
+      "name": "Missionary Training Center",
+      "latitude": 40.259624,
+      "longitude": -111.64632,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/256",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R4",
+      "name": "Missionary Training Center",
+      "latitude": 40.259593,
+      "longitude": -111.646928,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/257",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R5",
+      "name": "Missionary Training Center",
+      "latitude": 40.259217,
+      "longitude": -111.64596,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/259",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R6",
+      "name": "Missionary Training Center",
+      "latitude": 40.259165,
+      "longitude": -111.646634,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/258",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R7",
+      "name": "Missionary Training Center",
+      "latitude": 40.258807,
+      "longitude": -111.645598,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/261",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R8",
+      "name": "Missionary Training Center",
+      "latitude": 40.258774,
+      "longitude": -111.646235,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/260",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "R9",
+      "name": "Missionary Training Center",
+      "latitude": 40.258565,
+      "longitude": -111.644862,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/268",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RB",
+      "name": "RICHARDS (STEPHEN L) BUILDING",
+      "latitude": 40.248979,
+      "longitude": -111.653453,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/83",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RMB",
+      "name": "Risk Management Building",
+      "latitude": 40.244032,
+      "longitude": -111.650361,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/56",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ROTC",
+      "name": "Daniel H. Wells Building (Air Force / Army Reserve)",
+      "latitude": 40.247981,
+      "longitude": -111.643957,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/64",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVA",
+      "name": "Riviera Apartments Building A",
+      "latitude": 40.253877,
+      "longitude": -111.656807,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/287",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVB",
+      "name": "Riviera Apartments Building B",
+      "latitude": 40.253873,
+      "longitude": -111.657063,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/288",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVC",
+      "name": "Riviera Apartments Building C",
+      "latitude": 40.253931,
+      "longitude": -111.657325,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/289",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVD",
+      "name": "Riviera Apartments Building D",
+      "latitude": 40.253827,
+      "longitude": -111.657501,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/290",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVE",
+      "name": "Riviera Apartments Building E",
+      "latitude": 40.254396,
+      "longitude": -111.657325,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/291",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVF",
+      "name": "Riviera Apartments Building F",
+      "latitude": 40.254313,
+      "longitude": -111.657555,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/292",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVG",
+      "name": "Riviera Apartments Building G",
+      "latitude": 40.254392,
+      "longitude": -111.657985,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/293",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVH",
+      "name": "Riviera Apartments Building H",
+      "latitude": 40.255056,
+      "longitude": -111.658013,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/294",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVI",
+      "name": "Riviera Apartments Building I",
+      "latitude": 40.255386,
+      "longitude": -111.657975,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/295",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVJ",
+      "name": "Riviera Apartments Building J",
+      "latitude": 40.255578,
+      "longitude": -111.657859,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/296",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVK",
+      "name": "Riviera Apartments Building K",
+      "latitude": 40.255255,
+      "longitude": -111.657708,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/297",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "RVL",
+      "name": "Riviera Apartments Building L",
+      "latitude": 40.254925,
+      "longitude": -111.657742,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/298",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "S1",
+      "name": "Missionary Training Center",
+      "latitude": 40.260314,
+      "longitude": -111.64507,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/341",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "S2",
+      "name": "Missionary Training Center",
+      "latitude": 40.260515,
+      "longitude": -111.646196,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/252",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "S3",
+      "name": "Missionary Training Center",
+      "latitude": 40.258787,
+      "longitude": -111.644142,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/267",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SAB",
+      "name": "STUDENT ATHLETE BUILDING",
+      "latitude": 40.248191,
+      "longitude": -111.655249,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/5",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SCB",
+      "name": "SOUTH CAMPUS OFFICE BUILDING",
+      "latitude": 40.243319,
+      "longitude": -111.650445,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/277",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SCGH",
+      "name": "South Campus Greenhouse",
+      "latitude": 40.243705,
+      "longitude": -111.650517,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/299",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SFH",
+      "name": "SMITH (GEORGE ALBERT) FIELDHOUSE",
+      "latitude": 40.247465,
+      "longitude": -111.654267,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/84",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SHC",
+      "name": "STUDENT HEALTH CENTER",
+      "latitude": 40.257813,
+      "longitude": -111.642618,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/53",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "SNLB",
+      "name": "SNELL (WILLIAM H) BUILDING",
+      "latitude": 40.247351,
+      "longitude": -111.645201,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/63",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "T1",
+      "name": "Missionary Training Center",
+      "latitude": 40.259654,
+      "longitude": -111.645679,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/254",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "T2",
+      "name": "Missionary Training Center",
+      "latitude": 40.259096,
+      "longitude": -111.644414,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/272",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "T3",
+      "name": "Missionary Training Center",
+      "latitude": 40.257774,
+      "longitude": -111.64465,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/133",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "T4",
+      "name": "Missionary Training Center",
+      "latitude": 40.257133,
+      "longitude": -111.644286,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/270",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "TCB",
+      "name": "Tennis Courts Building",
+      "latitude": 40.246671,
+      "longitude": -111.654083,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/70",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "TLRB",
+      "name": "TAYLOR (JOHN) BUILDING (COMPREHENSIVE CLINIC)",
+      "latitude": 40.249311,
+      "longitude": -111.64257,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/52",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "TMCB",
+      "name": "TALMAGE (JAMES E) MATH SCIENCES/COMPUTER BLDG",
+      "latitude": 40.249466,
+      "longitude": -111.651006,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/66",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "TNRB",
+      "name": "TANNER (N ELDON) BUILDING",
+      "latitude": 40.250444,
+      "longitude": -111.652516,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/82",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "TRAK",
+      "name": "Track and Field Complex",
+      "latitude": 40.254073,
+      "longitude": -111.655592,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/32",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "ULB",
+      "name": "UNIVERSITY LAUNDRY BUILDING",
+      "latitude": 40.256072,
+      "longitude": -111.642536,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/88",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "UPB",
+      "name": "University Press Building",
+      "latitude": 40.257546,
+      "longitude": -111.646005,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/109",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "UPC",
+      "name": "UNIVERSITY PARKWAY CENTER",
+      "latitude": 40.256305,
+      "longitude": -111.658061,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/55",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "USB",
+      "name": "University Services Building",
+      "latitude": 40.257454,
+      "longitude": -111.646571,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/227",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W02A",
+      "name": "Wymount Terrace - 2A",
+      "latitude": 40.258436,
+      "longitude": -111.640806,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/174",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W02B",
+      "name": "Wymount Terrace - 2B",
+      "latitude": 40.258074,
+      "longitude": -111.640378,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/168",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W02C",
+      "name": "Wymount Terrace - 2C",
+      "latitude": 40.258039,
+      "longitude": -111.641012,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/167",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W02D",
+      "name": "Wymount Terrace - 2D",
+      "latitude": 40.258395,
+      "longitude": -111.641445,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/173",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W05A",
+      "name": "Wymount Terrace - 5A",
+      "latitude": 40.256264,
+      "longitude": -111.639985,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/156",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W05B",
+      "name": "Wymount Terrace - 5B",
+      "latitude": 40.255789,
+      "longitude": -111.63985,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/152",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W05C",
+      "name": "Wymount Terrace - 5C",
+      "latitude": 40.256003,
+      "longitude": -111.640422,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/154",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W05D",
+      "name": "Wymount Terrace - 5D",
+      "latitude": 40.25648,
+      "longitude": -111.640556,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/157",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W06A",
+      "name": "Wymount Terrace - 6A",
+      "latitude": 40.255604,
+      "longitude": -111.640943,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/150",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W06B",
+      "name": "Wymount Terrace - 6B",
+      "latitude": 40.255183,
+      "longitude": -111.640868,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/148",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W06C",
+      "name": "Wymount Terrace - 6C",
+      "latitude": 40.255346,
+      "longitude": -111.641384,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/149",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W06D",
+      "name": "Wymount Terrace - 6D",
+      "latitude": 40.255766,
+      "longitude": -111.641457,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/151",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W08C",
+      "name": "Wymount Terrace - 8C",
+      "latitude": 40.259076,
+      "longitude": -111.640112,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/187",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W08D",
+      "name": "Wymount Terrace - 8D",
+      "latitude": 40.258856,
+      "longitude": -111.640226,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/181",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W08E",
+      "name": "Wymount Terrace - 8E",
+      "latitude": 40.258964,
+      "longitude": -111.64064,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/183",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W08F",
+      "name": "Wymount Terrace - 8F",
+      "latitude": 40.259079,
+      "longitude": -111.640981,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/186",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W09A",
+      "name": "Wymount Terrace - 9A",
+      "latitude": 40.259923,
+      "longitude": -111.640549,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/200",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W09B",
+      "name": "Wymount Terrace - 9B",
+      "latitude": 40.259784,
+      "longitude": -111.640145,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/198",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W09C",
+      "name": "Wymount Terrace - 9C",
+      "latitude": 40.259563,
+      "longitude": -111.640257,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/196",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W09D",
+      "name": "Wymount Terrace - 9D",
+      "latitude": 40.259701,
+      "longitude": -111.640657,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/197",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W0L1",
+      "name": "Wymount Terrace",
+      "latitude": 40.257618,
+      "longitude": -111.640602,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/218",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W0L2",
+      "name": "Wymount Terrace",
+      "latitude": 40.256786,
+      "longitude": -111.640054,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/158",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W0L3",
+      "name": "Wymount Terrace",
+      "latitude": 40.255897,
+      "longitude": -111.641235,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/153",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W0MP",
+      "name": "Wymount Terrace",
+      "latitude": 40.258195,
+      "longitude": -111.638683,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/170",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10A",
+      "name": "Wymount Terrace - 10A",
+      "latitude": 40.2608,
+      "longitude": -111.639806,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/211",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10B",
+      "name": "Wymount Terrace - 10B",
+      "latitude": 40.26037,
+      "longitude": -111.639711,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/205",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10C",
+      "name": "Wymount Terrace - 10C",
+      "latitude": 40.260187,
+      "longitude": -111.639904,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/203",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10D",
+      "name": "Wymount Terrace - 10D",
+      "latitude": 40.260392,
+      "longitude": -111.640289,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/206",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10E",
+      "name": "Wymount Terrace - 10E",
+      "latitude": 40.260672,
+      "longitude": -111.640199,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/208",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W10F",
+      "name": "Wymount Terrace -10F",
+      "latitude": 40.260938,
+      "longitude": -111.64008,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/212",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W11A",
+      "name": "Wymount Terrace - 11A",
+      "latitude": 40.260159,
+      "longitude": -111.639408,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/202",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W11B",
+      "name": "Wymount Terrace - 11B",
+      "latitude": 40.259862,
+      "longitude": -111.639453,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/199",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W11C",
+      "name": "Wymount Terrace - 11C",
+      "latitude": 40.259449,
+      "longitude": -111.639359,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/195",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W11D",
+      "name": "Wymount Terrace - 11D",
+      "latitude": 40.259088,
+      "longitude": -111.639251,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/188",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W11E",
+      "name": "Wymount Terrace - 11E",
+      "latitude": 40.258769,
+      "longitude": -111.639027,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/180",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W12A",
+      "name": "Wymount Terrace - 12A",
+      "latitude": 40.2595,
+      "longitude": -111.638756,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/194",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W12B",
+      "name": "Wymount Terrace - 12B",
+      "latitude": 40.259224,
+      "longitude": -111.638675,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/191",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W12C",
+      "name": "Wymount Terrace -12C",
+      "latitude": 40.258906,
+      "longitude": -111.638496,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/184",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W12D",
+      "name": "Wymount Terrace",
+      "latitude": 40.258631,
+      "longitude": -111.638222,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/177",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W13A",
+      "name": "Wymount Terrace - 13A",
+      "latitude": 40.257874,
+      "longitude": -111.638252,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/166",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W13B",
+      "name": "Wymount Terrace - 13B",
+      "latitude": 40.257025,
+      "longitude": -111.638097,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/160",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W13C",
+      "name": "Wymount Terrace - 13C",
+      "latitude": 40.257312,
+      "longitude": -111.638336,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/163",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W13D",
+      "name": "Wymount Terrace - 13D",
+      "latitude": 40.257615,
+      "longitude": -111.63866,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/164",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W14A",
+      "name": "Wymount Terrace - 14A",
+      "latitude": 40.262126,
+      "longitude": -111.639401,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/217",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W14B",
+      "name": "Wymount Terrace - 14B",
+      "latitude": 40.261866,
+      "longitude": -111.639753,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/216",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W14C",
+      "name": "Wymount Terrace - 14C",
+      "latitude": 40.261663,
+      "longitude": -111.639925,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/215",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W14D",
+      "name": "Wymount Terrace - 14D",
+      "latitude": 40.26129,
+      "longitude": -111.639548,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/214",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W15A",
+      "name": "Wymount Terrace",
+      "latitude": 40.261171,
+      "longitude": -111.640625,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/213",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W15B",
+      "name": "Wymount Terrace - 15B",
+      "latitude": 40.26076,
+      "longitude": -111.64088,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/210",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W15C",
+      "name": "Wymount Terrace -15C",
+      "latitude": 40.260645,
+      "longitude": -111.64114,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/209",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W15D",
+      "name": "Wymount Terrace - 15D",
+      "latitude": 40.260387,
+      "longitude": -111.641539,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/207",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W15E",
+      "name": "Wymount Terrace -15E",
+      "latitude": 40.260233,
+      "longitude": -111.641813,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/204",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16A",
+      "name": "Wymount Terrace - 16A",
+      "latitude": 40.258926,
+      "longitude": -111.641939,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/182",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16B",
+      "name": "Wymount Terrace - 16B",
+      "latitude": 40.259074,
+      "longitude": -111.642323,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/185",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16C",
+      "name": "Wymount Terrace - 16C",
+      "latitude": 40.259318,
+      "longitude": -111.642763,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/193",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16D",
+      "name": "Wymount Terrace - 16D",
+      "latitude": 40.259098,
+      "longitude": -111.642924,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/189",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16E",
+      "name": "Wymount Terrace - 16E",
+      "latitude": 40.258781,
+      "longitude": -111.642736,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/179",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16F",
+      "name": "Wymount Terrace - 16F",
+      "latitude": 40.258649,
+      "longitude": -111.642399,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/178",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W16G",
+      "name": "Wymount Terrace - 16G",
+      "latitude": 40.258517,
+      "longitude": -111.642061,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/175",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W17A",
+      "name": "Wymount Terrace -17A",
+      "latitude": 40.258525,
+      "longitude": -111.642807,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/176",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W17B",
+      "name": "Wymount Terrace - 17B",
+      "latitude": 40.258392,
+      "longitude": -111.64247,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/171",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "W17C",
+      "name": "Wymount Terrace - 17C",
+      "latitude": 40.25826,
+      "longitude": -111.642132,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/169",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCAS",
+      "name": "BYU WEST CAMPUS AUTO SHOP BUILDING",
+      "latitude": 40.247024,
+      "longitude": -111.660822,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/238",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCCB",
+      "name": "BYU WEST CAMPUS CENTRAL BUILDING",
+      "latitude": 40.248429,
+      "longitude": -111.659637,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/247",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCCL",
+      "name": "BYU WEST CAMPUS CLASSROOM BUILDING",
+      "latitude": 40.246935,
+      "longitude": -111.66028,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/237",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCGB",
+      "name": "BYU WEST CAMPUS CENTRAL GYMNASIUM BUILDING",
+      "latitude": 40.249323,
+      "longitude": -111.659364,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/249",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCOB",
+      "name": "WEST CAMPUS OFFICE BUILDING",
+      "latitude": 40.246928,
+      "longitude": -111.659547,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/235",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCPB",
+      "name": "BYU WEST CAMPUS WEST PRESS BOX",
+      "latitude": 40.249552,
+      "longitude": -111.661729,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/248",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCSB",
+      "name": "BYU WEST CAMPUS CENTRAL SOUTH BUILDING",
+      "latitude": 40.247522,
+      "longitude": -111.659694,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/241",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WCWS",
+      "name": "BYU WEST CAMPUS WEST STAND",
+      "latitude": 40.249573,
+      "longitude": -111.660262,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/250",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP01",
+      "name": "Wyview Park",
+      "latitude": 40.259315,
+      "longitude": -111.659581,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/304",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP02",
+      "name": "Wyview Park",
+      "latitude": 40.259749,
+      "longitude": -111.659595,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/306",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP03",
+      "name": "Wyview Park",
+      "latitude": 40.259152,
+      "longitude": -111.658967,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/303",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP04",
+      "name": "Wyview Park",
+      "latitude": 40.2596,
+      "longitude": -111.658999,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/305",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP05",
+      "name": "Wyview Park",
+      "latitude": 40.260107,
+      "longitude": -111.659103,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/307",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP06",
+      "name": "Wyview Park",
+      "latitude": 40.260548,
+      "longitude": -111.659115,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/312",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP07",
+      "name": "Wyview Park",
+      "latitude": 40.260576,
+      "longitude": -111.659672,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/313",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP08",
+      "name": "Wyview Park",
+      "latitude": 40.260314,
+      "longitude": -111.659888,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/308",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP09",
+      "name": "Wyview Park",
+      "latitude": 40.260595,
+      "longitude": -111.660073,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/314",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP10",
+      "name": "Wyview Park",
+      "latitude": 40.260849,
+      "longitude": -111.660428,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/316",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP11",
+      "name": "Wyview Park",
+      "latitude": 40.260468,
+      "longitude": -111.660635,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/310",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP12",
+      "name": "Wyview Park",
+      "latitude": 40.260319,
+      "longitude": -111.661025,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/309",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP13",
+      "name": "Wyview Park",
+      "latitude": 40.260771,
+      "longitude": -111.660838,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/315",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP14",
+      "name": "Wyview Park",
+      "latitude": 40.261052,
+      "longitude": -111.661231,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/318",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP15",
+      "name": "Wyview Park",
+      "latitude": 40.261598,
+      "longitude": -111.661059,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/321",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP16",
+      "name": "Wyview Park",
+      "latitude": 40.26156,
+      "longitude": -111.660622,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/319",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP17",
+      "name": "Wyview Park",
+      "latitude": 40.261994,
+      "longitude": -111.660722,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/322",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP18",
+      "name": "Wyview Park",
+      "latitude": 40.26233,
+      "longitude": -111.660869,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/327",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP19",
+      "name": "Wyview Park",
+      "latitude": 40.262264,
+      "longitude": -111.660588,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/325",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP20",
+      "name": "Wyview Park",
+      "latitude": 40.26274,
+      "longitude": -111.6607,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/331",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP21",
+      "name": "Wyview Park",
+      "latitude": 40.261993,
+      "longitude": -111.659932,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/323",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP22",
+      "name": "Wyview Park",
+      "latitude": 40.262353,
+      "longitude": -111.660038,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/326",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP23",
+      "name": "Wyview Park",
+      "latitude": 40.262718,
+      "longitude": -111.659938,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/330",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP24",
+      "name": "Wyview Park",
+      "latitude": 40.262134,
+      "longitude": -111.659539,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/324",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP25",
+      "name": "Wyview Park",
+      "latitude": 40.262579,
+      "longitude": -111.659548,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/329",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP26",
+      "name": "Wyview Park",
+      "latitude": 40.262443,
+      "longitude": -111.658976,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/328",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP27",
+      "name": "Wyview Park",
+      "latitude": 40.262918,
+      "longitude": -111.659093,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/332",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP28",
+      "name": "Wyview Park",
+      "latitude": 40.263145,
+      "longitude": -111.659651,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/333",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP29",
+      "name": "Wyview Park",
+      "latitude": 40.263158,
+      "longitude": -111.660253,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/334",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WP30",
+      "name": "Wyview Park",
+      "latitude": 40.263179,
+      "longitude": -111.660846,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/335",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WPCP",
+      "name": "Wyview Park",
+      "latitude": 40.261071,
+      "longitude": -111.659744,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/317",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WPMB",
+      "name": "Wyview Park",
+      "latitude": 40.260557,
+      "longitude": -111.661091,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/311",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WPMP",
+      "name": "Wyview Park",
+      "latitude": 40.261464,
+      "longitude": -111.65999,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/320",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WSC",
+      "name": "WILKINSON (ERNEST L) STUDENT CENTER",
+      "latitude": 40.248591,
+      "longitude": -111.647346,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/80",
+      "verified_on": "2026-11-16"
+    },
+    {
+      "building_code": "WVB",
+      "name": "WEST VIEW BUILDING",
+      "latitude": 40.2489,
+      "longitude": -111.652208,
+      "source_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/BYU_Campus_Buildings/FeatureServer/0/223",
+      "verified_on": "2026-11-16"
+    }
+  ]
+}

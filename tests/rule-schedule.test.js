@@ -96,3 +96,11 @@ test("only the top status changes with the user's permit; the daily rules are id
   assert.equal(schedule(a),schedule(y));
   assert.match(a,/label for="rules-day"/);
 });
+
+test('24 hour blocks preserve rules that change inside an hour', async () => {
+  const { hourBlocks } = await import('../js/components/rule-schedule.js');
+  const blocks = hourBlocks([{ start: 0, end: 90, kind: 'open' }, { start: 90, end: 1440, kind: 'closed' }]);
+  assert.equal(blocks.length, 24);
+  assert.deepEqual(blocks[1], [{kind:'open',start:0,end:30},{kind:'closed',start:30,end:60}]);
+  assert.equal((ruleScheduleHtml(lot1A, 1, permits).match(/class="hour-block"/g) || []).length, 24);
+});
