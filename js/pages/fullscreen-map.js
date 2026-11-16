@@ -277,6 +277,16 @@ const SEARCH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="fals
 const MIC_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 const GO_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+export function resetMapSearch() {
+  const input = document.getElementById("map-search-text"), status = document.getElementById("map-search-status");
+  if (input) input.value = "";
+  if (status) {
+    status.textContent = "";
+    status.classList.remove("warn");
+    status.hidden = true;
+  }
+}
+
 function buildSearch() {
   const nlForm = document.getElementById("nl-form"), nlText = document.getElementById("nl-text");
   const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
@@ -312,7 +322,12 @@ function buildSearch() {
     if (!text) { status.hidden = false; status.textContent = "Type or say something like “class at 3 pm at the JKB”."; input.focus(); return; }
     setSheet("half");
     nlText.value = text;
-    const send = () => nlForm.requestSubmit ? nlForm.requestSubmit() : nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
+    const version = state.authVersion;
+    const send = () => {
+      if (version !== state.authVersion) return;
+      if (nlForm.requestSubmit) nlForm.requestSubmit();
+      else nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
+    };
     // Open Find first (it redraws its fields), then let the existing form read the text.
     if (location.hash === "#find") send(); else { window.addEventListener("hashchange", send, { once: true }); location.hash = "#find"; }
   });

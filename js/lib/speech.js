@@ -51,28 +51,42 @@ export const speechErrorText = (code) => ERROR_TEXT[code] || "Voice input didn't
  */
 export function createSpeech({ win = globalThis.window, onTranscript = () => {}, onAudio = () => {}, onState = () => {}, onError = () => {}, maxMs = MAX_RECORDING_MS } = {}) {
   const mode = detectSpeechMode(win);
-  let listening = false, recognition = null, recorder = null, stream = null, timer = null;
+  let listening = false, recognition = null, recorder = null, stream = null, timer = null, generation = 0;
 
   const setState = (next) => { listening = next === "listening"; onState(next); };
-  const releaseStream = () => { stream?.getTracks?.().forEach((track) => track.stop()); stream = null; };
+  const stopTracks = (media) => media?.getTracks?.().forEach((track) => track.stop());
+  const releaseStream = () => { stopTracks(stream); stream = null; };
 
-  function startRecognition() {
+  function startRecognition(version) {
     const Ctor = recognitionCtor(win);
-    recognition = new Ctor();
-    recognition.lang = "en-US";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
-    recognition.onresult = (event) => {
+    const active = recognition = new Ctor();
+    const current = () => version === generation && recognition === active;
+    active.lang = "en-US";
+    active.interimResults = true;
+    active.continuous = false;
+    active.maxAlternatives = 1;
+    active.onresult = (event) => {
+      if (!current()) return;
       let text = "", final = true;
       for (const result of Array.from(event.results)) { text += result[0].transcript; if (!result.isFinal) final = false; }
       onTranscript(text.trim(), final);
     };
-    recognition.onerror = (event) => { onError(speechErrorText(event.error)); setState("idle"); };
-    recognition.onend = () => { clearTimeout(timer); recognition = null; if (listening) setState("idle"); };
+    active.onerror = (event) => {
+      if (!current()) return;
+      clearTimeout(timer);
+      recognition = null;
+      onError(speechErrorText(event.error));
+      setState("idle");
+    };
+    active.onend = () => {
+      if (!current()) return;
+      clearTimeout(timer);
+      recognition = null;
+      if (listening) setState("idle");
+    };
     setState("listening");
     try {
-      recognition.start();
+      active.start();
     } catch {
       recognition = null;
       setState("idle");
@@ -82,37 +96,52 @@ export function createSpeech({ win = globalThis.window, onTranscript = () => {},
     timer = setTimeout(() => stop(), maxMs);
   }
 
-  async function startRecorder() {
+  async function startRecorder(version) {
     setState("listening");
+    let media;
     try {
-      stream = await win.navigator.mediaDevices.getUserMedia({ audio: true });
+      media = await win.navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (error) {
+      if (version !== generation) return;
       setState("idle");
       return onError(speechErrorText(error?.name === "NotFoundError" ? "audio-capture" : "not-allowed"));
     }
-    if (!listening) return releaseStream(); // stopped while the permission prompt was open
+    if (version !== generation || !listening) return stopTracks(media);
+    stream = media;
     const mimeType = pickRecorderType(win.MediaRecorder);
     const chunks = [];
-    recorder = mimeType ? new win.MediaRecorder(stream, { mimeType }) : new win.MediaRecorder(stream);
-    recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
-    recorder.onstop = async () => {
-      clearTimeout(timer);
-      releaseStream();
-      const type = recorder?.mimeType || mimeType || "audio/mp4";
+    try {
+      const active = recorder = mimeType ? new win.MediaRecorder(stream, { mimeType }) : new win.MediaRecorder(stream);
+      active.ondataavailable = (event) => { if (version === generation && event.data?.size) chunks.push(event.data); };
+      active.onstop = async () => {
+        if (version !== generation || recorder !== active) return;
+        clearTimeout(timer);
+        releaseStream();
+        const type = active.mimeType || mimeType || "audio/mp4";
+        recorder = null;
+        if (!chunks.length) return setState("idle");
+        setState("processing");
+        try {
+          const data_base64 = await blobToBase64(new Blob(chunks, { type }));
+          if (version === generation) onAudio({ data_base64, mime_type: type });
+        } catch {
+          if (version === generation) { onError(speechErrorText()); setState("idle"); }
+        }
+      };
+      active.start();
+      timer = setTimeout(() => stop(), maxMs);
+    } catch {
       recorder = null;
-      if (!chunks.length) return setState("idle");
-      setState("processing");
-      try {
-        onAudio({ data_base64: await blobToBase64(new Blob(chunks, { type })), mime_type: type });
-      } catch { onError(speechErrorText()); setState("idle"); }
-    };
-    recorder.start();
-    timer = setTimeout(() => stop(), maxMs);
+      releaseStream();
+      onError(speechErrorText());
+      setState("idle");
+    }
   }
 
   function start() {
     if (listening || mode === "none") return;
-    if (mode === "recognition") startRecognition(); else void startRecorder();
+    const version = ++generation;
+    if (mode === "recognition") startRecognition(version); else void startRecorder(version);
   }
 
   function stop() {
@@ -124,8 +153,23 @@ export function createSpeech({ win = globalThis.window, onTranscript = () => {},
       setTimeout(() => { if (recognition === active) { recognition = null; if (listening) setState("idle"); } }, 1500);
     }
     else if (recorder && recorder.state !== "inactive") recorder.stop();
-    else { releaseStream(); if (listening) setState("idle"); }
+    else if (!recorder && listening) cancel(); // Permission may still be pending.
   }
 
-  return { mode, get listening() { return listening; }, start, stop, toggle() { if (listening) stop(); else start(); }, done() { setState("idle"); } };
+  // A normal stop submits the final result. Account changes must discard it instead.
+  function cancel() {
+    generation++;
+    clearTimeout(timer);
+    const oldRecognition = recognition, oldRecorder = recorder;
+    recognition = recorder = null;
+    try {
+      if (oldRecognition?.abort) oldRecognition.abort();
+      else oldRecognition?.stop();
+    } catch { /* already stopped */ }
+    try { if (oldRecorder && oldRecorder.state !== "inactive") oldRecorder.stop(); } catch { /* already stopped */ }
+    releaseStream();
+    setState("idle");
+  }
+
+  return { mode, get listening() { return listening; }, start, stop, cancel, toggle() { if (listening) stop(); else start(); }, done() { setState("idle"); } };
 }

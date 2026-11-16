@@ -219,6 +219,7 @@ async function onStart(e) {
         return;
       }
     } catch { /* Keep the original failure and entered preferences visible. */ }
+    if (version !== state.authVersion) return;
     timerStatus(`Could not start the timer: ${err.message}`, true);
   } finally {
     mutation=false;

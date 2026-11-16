@@ -71,3 +71,26 @@ test('signed in: a failed account save keeps the choice on this device and does 
     state.user = saved.user; console.error = err;
   }
 });
+
+test('device permit fallbacks stay in their account or guest scope', async () => {
+  const { loadSavedPermit, savePermit } = await import('../js/lib/storage.js');
+  const original = globalThis.localStorage;
+  const values = new Map([['provoParking.permitId', '42']]);
+  globalThis.localStorage = {
+    getItem: key => values.get(key),
+    setItem: (key, value) => values.set(key, value),
+    removeItem: key => values.delete(key),
+  };
+  try {
+    assert.equal(loadSavedPermit(), null);
+    savePermit(2, 18);
+    assert.equal(loadSavedPermit(19), null);
+    assert.equal(loadSavedPermit(), null);
+    savePermit(3);
+    assert.equal(loadSavedPermit(), 3);
+    assert.equal(loadSavedPermit(18), 2);
+  } finally {
+    if (original === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = original;
+  }
+});

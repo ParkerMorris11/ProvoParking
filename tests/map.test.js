@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { getMapsApiKey, mapsScriptUrl, loadGoogleMaps } from '../js/lib/google-maps.js';
-import { byuShape, cityShape, outerRings, permitCategory, boundsFromCorners, withAlpha } from '../js/domain/map-geometry.js';
+import { CAMPUS_CENTER, byuShape, cityShape, outerRings, permitCategory, boundsFromCorners, withAlpha } from '../js/domain/map-geometry.js';
 import { createMap2D } from '../js/pages/map-2d.js';
 import { createMap3D } from '../js/pages/map-3d.js';
 import { lotCardHtml } from '../js/pages/map.js';
@@ -112,7 +112,7 @@ function fakeMaps2D() {
   };
   const lib = {
     Map: class { constructor(el, options) { this.options = options; made.maps.push(this); this.zoom = options.zoom; }
-      addListener(name, fn) { (this.listeners ??= {})[name] = fn; } getZoom() { return this.zoom; } setZoom(z) { this.zoom = z; } panTo(p) { this.center = p; }
+      addListener(name, fn) { (this.listeners ??= {})[name] = fn; } getZoom() { return this.zoom; } setZoom(z) { this.zoom = z; } panTo(p) { this.center = p; } setCenter(p) { this.center = p; }
       setOptions(o) { Object.assign(this.options, o); } getCenter() { return { lat: () => 40.25, lng: () => -111.65 }; } },
     Polygon: item(made.polygons), Circle: item(made.circles),
     OverlayView: class {
@@ -151,6 +151,15 @@ test('2D view starts with road map styling and supports dark mode', () => {
 
 });
 
+test('2D camera reset returns a precise view to the public starting location', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  const view = createMap2D({ maps, lib, container: {} });
+  view.focus({ lat: 42, lng: -110 }, 19);
+  view.resetCamera();
+  assert.deepEqual(made.maps[0].center, CAMPUS_CENTER);
+  assert.equal(made.maps[0].getZoom(), 15);
+});
+
 test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () => {
   const children = [];
   const events = {};
@@ -170,6 +179,13 @@ test('3D view builds a hybrid, tilted Photorealistic map and extrudes lots', () 
   view.zoomBy(1);
   assert.equal(events.map.range, 1200);
   view.zoomBy(-1);
+  assert.equal(events.map.range, 2400);
+  let stopped = false;
+  events.map.stopCameraAnimation = () => { stopped = true; };
+  view.focus({ lat: 42, lng: -110 }, 19);
+  view.resetCamera();
+  assert.equal(stopped, true);
+  assert.deepEqual(view.getView(), CAMPUS_CENTER);
   assert.equal(events.map.range, 2400);
   const poly = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
   view.setShapes([poly]);

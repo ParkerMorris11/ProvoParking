@@ -44,6 +44,8 @@ export class ParseFindError extends Error {
 const FRIENDLY = {
   not_configured: "Plain-language search isn't set up yet. Use the form below.",
   origin_not_allowed: "Plain-language search isn't available from this address. Use the form below.",
+  quota_exhausted: "Plain-language search is busy. Try again later or use the form below.",
+  quota_unavailable: "Plain-language search is temporarily unavailable. Use the form below.",
   too_large: "That recording was too long. Try a shorter one, or type it.",
 };
 
@@ -53,11 +55,13 @@ const RETRY_CODES = new Set(["model_unavailable", "bad_model_output"]);
 export const CLIENT_RETRY_DELAY_MS = 2500;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function requestParseFind(db, input, lists, { sleep = wait, retries = 1 } = {}) {
+export async function requestParseFind(db, input, lists, { sleep = wait, retries = 1, signal } = {}) {
   if (!db?.functions?.invoke) throw new ParseFindError("offline", "Plain-language search needs a connection. Use the form below.");
   const body = buildParseRequest({ ...input, ...lists });
   for (let attempt = 0; ; attempt++) {
+    signal?.throwIfAborted();
     const { data, error } = await db.functions.invoke(PARSE_FIND_FUNCTION, { body });
+    signal?.throwIfAborted();
     if (!error) return normalizeParsed(data, lists);
     let code = "failed";
     try { code = (await error.context?.json?.())?.error || code; } catch { /* body wasn't JSON */ }

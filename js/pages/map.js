@@ -186,6 +186,18 @@ export function stopMapLocation() {
   tracker?.stop();
 }
 
+export function resetPersonalMap() {
+  stopMapLocation();
+  centeredDestinationId = undefined;
+  selectedKey = null;
+  hideCard();
+  for (const view of Object.values(views)) {
+    view.setSelected?.(null);
+    view.setUser(null);
+    view.resetCamera();
+  }
+}
+
 // routine: the everyday "N matching mapped boundaries" count. The map home already shows the same
 // count in its status tile, so it hides routine messages there; warnings and "All lots" still show.
 function setMapStatus(message, { routine = false } = {}) {
@@ -238,7 +250,7 @@ function syncAllLots() {
 }
 
 // ---- 2D / 3D -----------------------------------------------------------------------------------
-async function ensureView(next, center) {
+async function ensureView(next, center, version) {
   if (views[next]) return views[next];
   const container = document.createElement("div");
   container.className = `map-layer map-layer-${next}`;
@@ -246,10 +258,10 @@ async function ensureView(next, center) {
   layers[next] = container;
   if (next === "2d") {
     const lib = await maps.importLibrary("maps");
-    views[next] = createMap2D({ maps, lib, container, center, dark: isDark(), onSelect: selectShape });
+    views[next] = createMap2D({ maps, lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape });
   } else {
     const lib = await maps.importLibrary("maps3d");
-    views[next] = createMap3D({ lib, container, center, dark: isDark(), onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
+    views[next] = createMap3D({ lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
   }
   views[next].setStyle(mapStyle);
   return views[next];
@@ -270,15 +282,16 @@ function syncToggle() {
 
 export async function setMode(next, failureMessage = "") {
   if (!maps || (next === mode && views[next])) return;
+  const version = state.authVersion;
   const center = activeView()?.getView() ?? CAMPUS_CENTER;
   try {
-    const view = await ensureView(next, center);
+    const view = await ensureView(next, center, version);
     if (mode !== next) views[mode]?.hide();
     mode = next;
     view.show();
     view.setShapes(shapes);
     view.setUser(latestPosition ? { lat: latestPosition.latitude, lng: latestPosition.longitude } : null, latestPosition?.accuracy, latestPosition?.heading, latestPosition?.speed);
-    if (next === "3d") view.focus(center, 16);
+    if (next === "3d" && version === state.authVersion) view.focus(center, 16);
     hideCard();
     setMapStatus(failureMessage);
   } catch (error) {

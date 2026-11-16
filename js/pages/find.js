@@ -54,31 +54,39 @@ function renderPermitInfo() {
 
 // ---- Plain-language / voice search ---------------------------------------------------------------------
 // Fills the form below and stops. The person reviews it and presses "Show parking areas" themselves.
+let resetPlainLanguage;
+export function resetFindSearch() { resetPlainLanguage?.(); }
+
 function initPlainLanguage({ choosePermit }) {
   const form = $("nl-form"), input = $("nl-text"), mic = $("nl-mic"), go = $("nl-go"), status = $("nl-status");
   if (!form) return;
   const say = (message, warn = false) => { status.textContent = message; status.classList.toggle("warn", warn); };
-  let busy = false;
+  let pending = null;
 
   async function run(request) {
-    if (busy) return;
-    busy = true;
-    go.disabled = true;
+    if (pending) return;
+    const controller = pending = new AbortController();
+    const version = state.authVersion;
+    const current = () => pending === controller && version === state.authVersion;
+    go.disabled = mic.disabled = true;
     say("Reading that…");
     try {
       const lists = { permits: state.permits, destinations: state.destinations };
-      const parsed = await requestParseFind(state.db, request, lists);
+      const parsed = await requestParseFind(state.db, request, lists, { signal: controller.signal });
+      if (!current()) return;
       const els = { permit: $("permit-select"), destination: $("find-destination"), now: $("arrive-now"), day: $("arrive-day"), time: $("arrive-time") };
       const result = applyParsedToForm(parsed, els, { ...lists, choosePermit, getPermitId: () => state.find.permitId });
       syncTimeControls();
       renderPermitInfo();
       say([result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].join(" "), result.needsReview || result.warnings.length > 0);
     } catch (error) {
-      say(error.message || "I couldn't read that. Use the form below.", true);
+      if (current()) say(error.message || "I couldn't read that. Use the form below.", true);
     } finally {
-      busy = false;
-      go.disabled = false;
-      speech.done();
+      if (current()) {
+        pending = null;
+        go.disabled = mic.disabled = false;
+        speech.done();
+      }
     }
   }
 
@@ -94,6 +102,14 @@ function initPlainLanguage({ choosePermit }) {
       else if (next === "idle" && status.textContent.startsWith("Listening")) say("I didn't catch anything. Try again, or type it.", true);
     },
   });
+  resetPlainLanguage = () => {
+    pending?.abort();
+    pending = null;
+    speech.cancel();
+    input.value = "";
+    go.disabled = mic.disabled = false;
+    say("");
+  };
   mic.hidden = speech.mode === "none";
   mic.addEventListener("click", () => speech.toggle());
   form.addEventListener("submit", (e) => {
@@ -110,7 +126,7 @@ export function applyPermitChoice(permitId, refresh = () => {}) {
   const id = Number(permitId);
   if (!state.permits.some((p) => p.permit_id === id)) return false;
   state.find.permitId = id;
-  savePermit(id);
+  savePermit(id, state.user?.userId);
   // Keep the Find form in step when the permit is picked elsewhere (the map's permit chip), so
   // "Show parking areas" doesn't ask for a permit the person already chose.
   const select = typeof document !== "undefined" ? document.getElementById("permit-select") : null;
@@ -131,7 +147,9 @@ export function saveToAccount(id, save = setAccountPermit) {
     .then(() => { if (state.user === user) user.permitIds = [id]; return true; })
     .catch((err) => {
       console.error(err);
-      try { setStatus("Couldn't save your permit to your account. It's still set on this device.", true); } catch { /* no page */ }
+      if (state.user === user) {
+        try { setStatus("Couldn't save your permit to your account. It's still set on this device.", true); } catch { /* no page */ }
+      }
       return false;
     });
 }

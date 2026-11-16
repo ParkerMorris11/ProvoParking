@@ -161,3 +161,16 @@ test('requestParseFind gives up after one retry and does not retry errors that w
   await assert.rejects(requestParseFind(db2, { text: 'x' }, lists, { sleep: async () => {} }), /isn't set up/);
   assert.equal(calls, 1);
 });
+
+test('sign-out during the client retry delay does not resend the previous trip', async () => {
+  let calls = 0;
+  const controller = new AbortController();
+  const db = { functions: { async invoke() {
+    calls++;
+    return { error: { context: { json: async () => ({ error: 'model_unavailable' }) } } };
+  } } };
+  await assert.rejects(requestParseFind(db, { text: 'Trip to the library' }, lists, {
+    signal: controller.signal, sleep: async () => controller.abort(),
+  }), { name: 'AbortError' });
+  assert.equal(calls, 1);
+});

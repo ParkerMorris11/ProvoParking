@@ -134,3 +134,19 @@ test('speech recognition that throws on start reports an error instead of hangin
   assert.equal(speech.listening, false);
   assert.match(errors[0], /Type instead/);
 });
+
+test('cancel releases a microphone granted after the account changed', async () => {
+  let grant, released = false;
+  class MediaRecorder { constructor() { assert.fail('discarded permission cannot start a recorder'); } }
+  const getUserMedia = () => new Promise(resolve => { grant = resolve; });
+  const speech = createSpeech({
+    win: { MediaRecorder, navigator: { userAgent: IPHONE, mediaDevices: { getUserMedia } } },
+    onAudio: () => assert.fail('discarded audio cannot be submitted'),
+  });
+  speech.start();
+  speech.cancel();
+  grant({ getTracks: () => [{ stop: () => { released = true; } }] });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(released, true);
+  assert.equal(speech.listening, false);
+});

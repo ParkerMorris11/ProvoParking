@@ -134,6 +134,10 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       userHeading = Number.isFinite(heading) && !(Number.isFinite(speed) && speed < 0.3) ? heading : null;
       drawUser(); startPulse();
     },
+    resetCamera() {
+      map.stopCameraAnimation?.();
+      Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });
+    },
     focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level) }); },
     fitBounds(bounds) {
       const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
