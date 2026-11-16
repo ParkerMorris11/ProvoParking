@@ -10,6 +10,7 @@
   --label: #3e5a78; --border-strong: #b3c3d6; --hover: #e8eef5; --surface-2: #f4f7fb;
   --field-bg: #ffffff; --card-glass: #fffffff2;
   --glass: rgba(255, 255, 255, .72); --glass-strong: rgba(255, 255, 255, .88); --glass-border: rgba(0, 46, 93, .12); --glass-shadow: 0 6px 22px rgba(0, 46, 93, .18); --glass-filter: blur(18px) saturate(1.7); --ok-tint: #e8f5ed; --city: #7a4fb5;
+  --sg-car: #0a5cc2; --sg-fav: #d1294b; --sg-lot: #0062B8; --sg-lots: #5b45c4; --sg-find: #1f7a45; --sg-help: #5e6773; /* round icon fills on the map sheet (white icons on top) */
   --warn-tint: #fff3dc; --warn-line: #f3dcb0; --warn-ink: #5c3600; --err-line: #f2b8c1; --err-ink: #8a0a1f;
   color-scheme: light;
   --radius: 15px; --radius-lg: 22px;
@@ -474,6 +475,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
     --label: #b8c6d8; --border-strong: #3c5773; --hover: #14324c; --surface-2: #102235;
     --field-bg: #0a1624; --card-glass: #0d1c2ef0;
     --glass: rgba(13, 28, 46, .66); --glass-strong: rgba(13, 28, 46, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
+    --sg-car: #1a6fd6; --sg-fav: #d63c5b; --sg-lot: #1d6fc0; --sg-lots: #6c58d4; --sg-find: #24854d; --sg-help: #6b7480;
     --warn-tint: #3a2c13; --warn-line: #6b4f1d; --warn-ink: #f6d28f; --err-line: #6c2c3a; --err-ink: #ffb8c3;
     color-scheme: dark;
   }
@@ -486,6 +488,7 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
     --label: #b8c6d8; --border-strong: #3c5773; --hover: #14324c; --surface-2: #102235;
     --field-bg: #0a1624; --card-glass: #0d1c2ef0;
     --glass: rgba(13, 28, 46, .66); --glass-strong: rgba(13, 28, 46, .86); --glass-border: rgba(255, 255, 255, .14); --glass-shadow: 0 6px 22px rgba(0, 0, 0, .45); --ok-tint: #173a27; --city: #b892ee;
+    --sg-car: #1a6fd6; --sg-fav: #d63c5b; --sg-lot: #1d6fc0; --sg-lots: #6c58d4; --sg-find: #24854d; --sg-help: #6b7480;
     --warn-tint: #3a2c13; --warn-line: #6b4f1d; --warn-ink: #f6d28f; --err-line: #6c2c3a; --err-ink: #ffb8c3;
     color-scheme: dark;
 }
