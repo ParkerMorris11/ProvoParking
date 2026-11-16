@@ -1,5 +1,5 @@
 // Quick-guide dialog (#help-modal): permit colors, the 2D/3D switch, live location and directions.
-// Opened by any element with [data-help-open] (the "?" button on the map). The legend is copied from the
+// Opened by any element with [data-help-open] (Quick guide in the map's settings gear). The legend is copied from the
 // map's own #map-legend each time, so the colors here can never drift from the map.
 let dialog;
 
@@ -8,7 +8,8 @@ function open(trigger) {
   const copy = document.getElementById("help-legend");
   if (legend && copy) copy.innerHTML = legend.innerHTML;
   if (typeof dialog.showModal === "function") dialog.showModal(); else dialog.setAttribute("open", "");
-  dialog.returnTarget = trigger;
+  // A trigger inside a menu that closes can name a steadier element to get focus back (data-help-return).
+  dialog.returnTarget = document.getElementById(trigger?.dataset?.helpReturn || "") || trigger;
   document.getElementById("help-modal-title")?.focus();
 }
 
