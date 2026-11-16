@@ -180,8 +180,10 @@ function buildSearch() {
     `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
-  const account = el("button", { type: "button", class: "map-search-btn map-account", "aria-label": "Guide and account" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>');
+  const account = el("button", { type: "button", class: "map-search-btn map-account", "aria-label": "Account, sign in and guide" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>');
   account.addEventListener("click", () => {
+    // Guests: go straight to sign in / create account (the account button lives on the hidden header otherwise).
+    if (!state.user) return document.getElementById("account-action")?.click();
     if (location.hash === "#help") { setSheet("half"); document.getElementById("account-action")?.focus(); }
     else location.hash = "#help";
   });

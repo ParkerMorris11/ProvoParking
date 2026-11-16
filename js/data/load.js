@@ -8,6 +8,14 @@ import { syncParkingClock } from "../lib/server-clock.js";
 // Hide it from both pickers without deleting permits, rules, or existing account links.
 const selectablePermits = (permits) => permits.filter((p) => p.permit_code !== "PP");
 
+// Nicknames come from a newer column. If the database has not been migrated yet (Postgres 42703,
+// undefined column), load favorites without nicknames instead of failing the whole app.
+async function loadFavoriteRows(db, userId) {
+  const res = await db.from("favorite_area").select("area_id, nickname").eq("user_id", userId);
+  if (res.error?.code === "42703") return db.from("favorite_area").select("area_id").eq("user_id", userId);
+  return res;
+}
+
 export async function loadData() {
   const db = state.db;
   const version = state.authVersion;
@@ -15,7 +23,7 @@ export async function loadData() {
   const none = Promise.resolve({ data: [], error: null });
   const [areasRes, favRes, permitRes, ruleRes, towRes, sessRes, destRes] = await Promise.all([
     db.from("parking_area").select("area_id, area_name, lot_code, operator, latitude, longitude, total_spaces, est_available_spaces, availability_updated_at, is_free, tow_company_id, is_sample_data, source_feature_id").order("area_name"),
-    userId ? db.from("favorite_area").select("area_id").eq("user_id", userId) : none,
+    userId ? loadFavoriteRows(db, userId) : none,
     db.from("permit").select("permit_id, permit_code, permit_name, issuer, description, cost_note, source_url, last_verified_on").order("permit_code"),
     db.from("parking_rule").select("rule_id, area_id, permit_id, days_of_week, start_time, end_time, max_stay_minutes, blocked_start, blocked_end, source_url, last_verified_on, rule_note"),
     db.from("tow_company").select("tow_company_id, company_name, phone, is_sample_data"),
@@ -29,6 +37,7 @@ export async function loadData() {
   state.permits = selectablePermits(permitRes.data);
   state.destinations = destRes.data;
   state.favoriteIds = new Set(favRes.data.map((f) => f.area_id));
+  state.favoriteNames = new Map(favRes.data.filter((f) => f.nickname).map((f) => [f.area_id, f.nickname]));
   state.towById = new Map(towRes.data.map((t) => [t.tow_company_id, t]));
   state.rulesByArea = new Map();
   for (const r of ruleRes.data) {
