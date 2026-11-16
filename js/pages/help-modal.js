@@ -1,5 +1,5 @@
 // Quick-guide dialog (#help-modal): permit colors, the 2D/3D switch, live location and directions.
-// Opened by any element with [data-help-open] (Quick guide in the map's settings gear). The legend is copied from the
+// Opened by any element with [data-help-open] (Quick guide in the profile menu beside the map search bar). The legend is copied from the
 // map's own #map-legend each time, so the colors here can never drift from the map.
 let dialog;
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { chipText, sheetTitle } from '../js/pages/fullscreen-map.js';
+import { chipText, sheetTitle, suggestionRows, matchText } from '../js/pages/fullscreen-map.js';
 
 const permits = [
   { permit_id: 1, permit_code: 'Y', permit_name: 'Y Undergraduate' },
@@ -72,9 +72,39 @@ test('floating map controls use the shared frosted-glass tokens in light and dar
   const base = await readFile(new URL('../css/styles.css', import.meta.url), 'utf8');
   const map = await readFile(new URL('../css/fullscreen-map.css', import.meta.url), 'utf8');
   assert.equal((base.match(/--glass-strong:/g) || []).length >= 4, true, 'light, two dark blocks, and fallbacks define the tokens');
-  for (const selector of ['.permit-chip', '.map-search', '.map-help', '.fs-home .map-mode', '.home-sheet', '.fs-home .location-button.map-fab']) {
+  for (const selector of ['.permit-chip', '.map-search', '.fs-home .map-mode', '.home-sheet', '.fs-home .location-button.map-fab']) {
     const start = map.indexOf(`\n${selector} {`);
     const rule = start < 0 ? '' : map.slice(start, map.indexOf('}', start));
     assert.ok(rule && /backdrop-filter/.test(rule), `${selector} is frosted`);
   }
+});
+
+test('suggestions list the parked car, then up to two favorites, then nearby legal lots (five rows at most)', () => {
+  const areaById = new Map([1, 2, 3, 4, 5, 6, 7].map(id => [id, { area_id: id, area_name: `Lot ${id}` }]));
+  const describe = () => 'Allowed now';
+  const rows = suggestionRows({
+    session: { area_id: 2, leave_by: new Date(Date.now() + 90 * 60000).toISOString() },
+    favorites: [{ id: 3, nickname: 'Class' }, { id: 4, nickname: '' }, { id: 5, nickname: '' }],
+    nearby: [3, 6, 7, 1],
+    areaById, describe,
+  });
+  assert.deepEqual(rows.map(r => r.title), ['Parked car', 'Class', 'Lot 4', 'Lot 6', 'Lot 7']);
+  assert.match(rows[0].sub, /^Lot 2 · 1 hr 30 min left$/);
+  assert.equal(rows[0].href, '#car');
+  assert.equal(rows[1].href, '#area/3');
+  assert.equal(rows[1].sub, 'Favorite · Allowed now');
+});
+
+test('guests with no favorites get up to three nearby lots; the tile counts open areas', () => {
+  const areaById = new Map([1, 2, 3, 4].map(id => [id, { area_id: id, area_name: `Lot ${id}` }]));
+  const rows = suggestionRows({ session: null, favorites: [], nearby: [4, 3, 2, 1], areaById, describe: () => 'Allowed now' });
+  assert.deepEqual(rows.map(r => r.title), ['Lot 4', 'Lot 3', 'Lot 2']);
+  assert.equal(matchText(1), '1 area open');
+  assert.equal(matchText(33), '33 areas open');
+});
+
+test('the status tile never shows a bare "0 areas open"', () => {
+  assert.equal(matchText(0, false), 'Choose a permit');
+  assert.equal(matchText(0, true, { day: 6 }), 'Weekend: check signs');
+  assert.equal(matchText(0, true, { day: 2 }), 'No lots match now');
 });

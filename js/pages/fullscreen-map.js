@@ -1,16 +1,22 @@
 // The map stays mounted while existing screens move through one floating drawer.
-// Desktop uses a collapsible glass sidebar; phones keep the same peek / half / full drag behavior.
+// Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
+// and account button, a Suggestions card (parked car, favorites, nearby legal lots), a row of round
+// shortcuts to the other screens, a status tile in the top-left corner (permit + time + matching count)
+// and small round map controls stacked in glass pills on the right.
+// Desktop uses the same sheet as a floating left sidebar; phones drag it between peek / half / full.
 // Moving the original nodes preserves their ids, form values and event listeners.
-import { state } from "../state.js";
+import { state, rulesFor } from "../state.js";
 import { DAY_NAMES, escapeHtml, fmtTime } from "../lib/format.js";
 import { parkingSelection, eligibleAreas } from "../domain/parking-results.js";
+import { evaluate } from "../domain/eligibility.js";
+import { parkingNow } from "../lib/server-clock.js";
 import { initMap, refreshMap, toggleMapStyle, zoomMap } from "./map.js";
 
 const STATES = ["peek", "half", "full"];
 const DESKTOP = "(min-width: 601px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
-let view, sheet, handle, body, chip, ready = false, applyPermit = () => false;
+let view, sheet, handle, head, body, chip, suggestions, routeBar, ready = false, applyPermit = () => false;
 
 const isDesktop = () => Boolean(window.matchMedia?.(DESKTOP).matches);
 
@@ -21,20 +27,29 @@ function el(tag, attrs = {}, html = "") {
   return node;
 }
 
-// ---- Settings gear (map rail) -------------------------------------------------------------------
-// One gear holds the less-used things: the quick guide, the Guide & account page, sign in / log out,
-// and the admin dashboard (admin.html has its own admin sign-in, so the link alone grants nothing).
-// The person button in the search bar stays as the always-visible way to sign up.
-function buildSettingsMenu() {
-  const button = el("button", { type: "button", class: "map-help", id: "map-settings", "aria-expanded": "false", "aria-controls": "map-settings-menu", "aria-label": "Settings", title: "Settings" },
-    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>');
-  const menu = el("div", { class: "map-settings-menu", id: "map-settings-menu", role: "group", "aria-label": "Settings" },
+// ---- Account menu (the round profile button beside the search bar) --------------------------------
+// Like the profile button in other map apps, it holds the less-used things: sign up / log in (first, and
+// styled as the main action for guests), the quick guide, the Guide & account page, and the admin dashboard
+// (admin.html has its own admin sign-in, so the link alone grants nothing). The map rail stays map-only.
+function buildAccountMenu(button) {
+  const menu = el("div", { class: "map-settings-menu", id: "map-settings-menu", role: "group", "aria-label": "Account and settings" },
     '<p class="map-settings-who" id="map-settings-who"></p>' +
     '<button type="button" class="map-settings-item" id="map-settings-account"></button>' +
-    '<button type="button" class="map-settings-item" data-help-open data-help-return="map-settings" aria-haspopup="dialog">Quick guide</button>' +
+    '<button type="button" class="map-settings-item" data-help-open data-help-return="map-account" aria-haspopup="dialog">Quick guide</button>' +
     '<a class="map-settings-item" href="#help">Help &amp; account page</a>' +
     '<a class="map-settings-item" href="admin.html">Admin dashboard <span class="map-settings-note">team only</span></a>');
   menu.hidden = true;
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-controls", "map-settings-menu");
+  // The menu lives outside the sheet (which clips its content), placed next to the button: above it when the
+  // button is in the lower half of the screen (phone sheet lowered), otherwise below it.
+  const place = () => {
+    const r = button.getBoundingClientRect();
+    const below = r.top < window.innerHeight / 2;
+    menu.style.left = `${Math.max(8, Math.min(r.right - 248, window.innerWidth - 256))}px`;
+    menu.style.top = below ? `${r.bottom + 8}px` : "auto";
+    menu.style.bottom = below ? "auto" : `${window.innerHeight - r.top + 8}px`;
+  };
   const setOpen = (open, { focusButton = false } = {}) => {
     menu.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
@@ -43,8 +58,11 @@ function buildSettingsMenu() {
       const name = document.getElementById("account-name")?.textContent.trim();
       const action = document.getElementById("account-action")?.textContent.trim() || "Sign up";
       menu.querySelector("#map-settings-who").textContent = name || "Browsing as guest";
-      menu.querySelector("#map-settings-account").textContent = action === "Sign up" ? "Sign up or log in" : action;
-      menu.querySelector(".map-settings-item")?.focus();
+      const accountItem = menu.querySelector("#map-settings-account");
+      accountItem.textContent = action === "Sign up" ? "Sign up or log in" : action;
+      accountItem.classList.toggle("primary-item", !state.user);
+      place();
+      accountItem.focus();
     } else if (focusButton) button.focus();
   };
   button.addEventListener("click", () => setOpen(menu.hidden));
@@ -56,10 +74,12 @@ function buildSettingsMenu() {
   });
   menu.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); setOpen(false, { focusButton: true }); } });
   document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && !button.contains(e.target)) setOpen(false); });
-  return { button, menu };
+  window.addEventListener("resize", () => { if (!menu.hidden) place(); });
+  return menu;
 }
 
 // ---- Sheet position -------------------------------------------------------------------------
+const HANDLE_LABELS = { peek: "Show suggestions", half: "Expand the parking sheet", full: "Lower the parking sheet" };
 export function setSheet(next) {
   if (!sheet || !STATES.includes(next)) return;
   sheet.dataset.state = next;
@@ -68,7 +88,7 @@ export function setSheet(next) {
   document.querySelector(".fs-shell")?.classList.toggle("sidebar-open", open);
   document.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.setAttribute("aria-expanded", String(open)));
   handle.setAttribute("aria-expanded", String(open));
-  sheet.querySelector(".sheet-action").textContent = next === "peek" ? "Open" : "Close";
+  handle.setAttribute("aria-label", HANDLE_LABELS[next]);
   // Collapsed content stays out of the keyboard focus order on every screen size.
   body.toggleAttribute("inert", !open);
 }
@@ -107,25 +127,95 @@ export function sheetTitle(count, hasPermit, selection = {}) {
   return `${count} ${noun} ${hasPermit ? "your permit" : "for everyone"}`;
 }
 
+// Second line of the status tile, e.g. "33 areas open". Never a bare "0" (same rule as sheetTitle).
+export function matchText(count, hasPermit = true, selection = {}) {
+  if (!count && !hasPermit) return "Choose a permit";
+  if (!count) return selection.day === 0 || selection.day === 6 ? "Weekend: check signs" : "No lots match now";
+  return `${count} ${count === 1 ? "area" : "areas"} open`;
+}
+
 function updateChrome() {
   if (!chip) return;
   try {
     const info = chipText(state.find, state.permits || []);
-    chip.querySelector(".chip-code").textContent = info.code;
-    chip.querySelector(".chip-text").textContent = info.text;
-    chip.setAttribute("aria-label", info.label);
     const selection = parkingSelection(state.find);
     const count = eligibleAreas(state.areas || [], state.rulesByArea || new Map(), selection).length;
-    sheet.querySelector(".sheet-title").textContent = state.currentView === "areas" ? sheetTitle(count, Boolean(state.find.permitId), selection) : (ROUTE_TITLES[state.currentView] || "Explore Provo");
+    chip.querySelector(".chip-code").textContent = info.code;
+    chip.querySelector(".chip-text").textContent = info.text;
+    const hasPermit = Boolean(state.find.permitId);
+    chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection);
+    chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
+    const home = state.currentView === "areas";
+    routeBar.hidden = home;
+    suggestions.hidden = !home;
+    if (home) renderSuggestions(selection, sheetTitle(count, hasPermit, selection));
   } catch (err) {
-    console.error("[fullscreen-map] could not update the permit chip", err);
+    console.error("[fullscreen-map] could not update the map chrome", err);
   }
+}
+
+// ---- Suggestions card -------------------------------------------------------------------------
+// Up to five rows: the parked car (when a timer runs), up to two favorites, then the first legal lots
+// in the same order as the list below (which already sorts by distance when location or a building is set).
+const ICONS = {
+  car: '<path d="m5 11 1.6-4.3A2 2 0 0 1 8.5 5.4h7a2 2 0 0 1 1.9 1.3L19 11m-14 0h14m-14 0v6h14v-6M7.5 17v2m9-2v2M8 14h.01M16 14h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  heart: '<path d="M12 20s-7-4.3-7-9.6A4 4 0 0 1 12 8a4 4 0 0 1 7 2.4C19 15.7 12 20 12 20Z" fill="currentColor"/>',
+  lot: '<path d="M9.5 17V7h3.2a3 3 0 0 1 0 6H9.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+};
+const CHEVRON = '<svg class="sg-chevron" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m9.5 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function timeLeft(session) {
+  const ms = new Date(session.leave_by).getTime() - parkingNow();
+  if (!Number.isFinite(ms)) return "Timer running";
+  if (ms <= 0) return "Time is up";
+  const minutes = Math.ceil(ms / 60000), h = Math.floor(minutes / 60), m = minutes % 60;
+  return `${h ? `${h} hr ` : ""}${m} min left`;
+}
+
+const KIND_TEXT = { ok: "Allowed now", limit: "Allowed, with limits", blocked: "Not allowed now", no: "Not allowed now" };
+function ruleText(areaId, selection) {
+  const kind = evaluate(rulesFor(areaId), selection.permitId, selection.day, selection.time).kind;
+  return KIND_TEXT[kind] || "Check the rules";
+}
+
+export function suggestionRows({ session, favorites, nearby, areaById, describe }) {
+  const rows = [];
+  if (session) {
+    const area = areaById.get(session.area_id);
+    rows.push({ icon: "car", tone: "car", href: "#car", title: "Parked car", sub: [area?.area_name, timeLeft(session)].filter(Boolean).join(" · ") });
+  }
+  for (const fav of favorites.slice(0, 2)) {
+    const area = areaById.get(fav.id);
+    if (area) rows.push({ icon: "heart", tone: "fav", href: `#area/${area.area_id}`, title: fav.nickname || area.area_name, sub: `Favorite · ${describe(area.area_id)}`, id: area.area_id });
+  }
+  const shown = new Set(rows.map(r => r.id));
+  for (const id of nearby) {
+    if (rows.length >= 5 || rows.filter(r => r.icon === "lot").length >= 3) break;
+    const area = areaById.get(id);
+    if (!area || shown.has(id)) continue;
+    shown.add(id);
+    rows.push({ icon: "lot", tone: "lot", href: `#area/${id}`, title: area.area_name, sub: describe(id), id });
+  }
+  return rows;
+}
+
+function renderSuggestions(selection, emptyText) {
+  const areaById = new Map((state.areas || []).map(a => [a.area_id, a]));
+  const favorites = [...(state.favoriteIds || [])].map(id => ({ id, nickname: state.favoriteNames?.get(id) || "" }));
+  const nearby = [...document.querySelectorAll('#area-list a[href^="#area/"]')].map(a => Number(a.getAttribute("href").split("/")[1]));
+  const rows = suggestionRows({ session: state.activeSession, favorites, nearby, areaById, describe: id => ruleText(id, selection) });
+  const html = rows.length ? rows.map(r =>
+    `<li><a class="sg-row" href="${r.href}"><span class="sg-icon sg-${r.tone}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${ICONS[r.icon]}</svg></span>` +
+    `<span class="sg-text"><span class="sg-title">${escapeHtml(r.title)}</span><span class="sg-sub">${escapeHtml(r.sub)}</span></span>${CHEVRON}</a></li>`).join("")
+    : `<li class="sg-empty">${escapeHtml(emptyText)}</li>`;
+  const list = suggestions.querySelector(".sg-list");
+  if (list.dataset.html !== html) { list.innerHTML = html; list.dataset.html = html; }
 }
 
 // areas.js rewrites #areas-summary and #areas-count on every render (permit change, clock tick,
 // search, favorites). Watching them keeps the chip and title in step without editing areas.js.
 function observeRenders() {
-  const watch = ["areas-summary", "areas-count"].map(id => document.getElementById(id)).filter(Boolean);
+  const watch = ["areas-summary", "areas-count", "area-list"].map(id => document.getElementById(id)).filter(Boolean);
   const observer = new MutationObserver(updateChrome);
   for (const node of watch) observer.observe(node, { childList: true, characterData: true, subtree: true });
 }
@@ -134,18 +224,20 @@ function observeRenders() {
 function initDrag() {
   let startY = null, startOffset = 0, moved = false, height = 0;
   const offsetFor = (s) => {
-    const peek = handle.offsetHeight;
+    const peek = head.offsetTop + head.offsetHeight;
     return s === "full" ? 0 : s === "half" ? height * 0.45 : height - peek;
   };
-  handle.addEventListener("pointerdown", (e) => {
-    if (isDesktop() || e.button > 0) return;
+  const grab = (e) => {
+    if (isDesktop() || e.button > 0 || (e.currentTarget === head && e.target.closest("input, button, a"))) return;
     height = sheet.offsetHeight;
     startY = e.clientY;
     startOffset = offsetFor(sheet.dataset.state);
     moved = false;
-    handle.setPointerCapture?.(e.pointerId);
-  });
-  handle.addEventListener("pointermove", (e) => {
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  handle.addEventListener("pointerdown", grab);
+  head.addEventListener("pointerdown", grab);
+  const drag = (e) => {
     if (startY == null) return;
     const dy = e.clientY - startY;
     if (Math.abs(dy) > 6) moved = true;
@@ -153,7 +245,9 @@ function initDrag() {
     const y = Math.min(Math.max(startOffset + dy, 0), offsetFor("peek"));
     sheet.classList.add("dragging");
     sheet.style.setProperty("--drag-y", `${y}px`);
-  });
+  };
+  handle.addEventListener("pointermove", drag);
+  head.addEventListener("pointermove", drag);
   const end = (e) => {
     if (startY == null) return;
     const dy = e.clientY - startY;
@@ -163,10 +257,12 @@ function initDrag() {
     const y = Math.min(Math.max(startOffset + dy, 0), offsetFor("peek"));
     const nearest = STATES.reduce((best, s) => (Math.abs(offsetFor(s) - y) < Math.abs(offsetFor(best) - y) ? s : best), "peek");
     setSheet(nearest);
-    handle.dataset.dragged = "1"; // swallow the click that follows a drag
+    const node = e.currentTarget;
+    node.dataset.dragged = "1"; // swallow the click that follows a drag
+    if (node === head) setTimeout(() => delete head.dataset.dragged, 0);
   };
-  handle.addEventListener("pointerup", end);
-  handle.addEventListener("pointercancel", end);
+  for (const node of [handle, head]) { node.addEventListener("pointerup", end); node.addEventListener("pointercancel", end); }
+  head.addEventListener("click", (e) => { if (head.dataset.dragged) { e.preventDefault(); e.stopPropagation(); } }, true);
   handle.addEventListener("click", () => {
     if (handle.dataset.dragged) { delete handle.dataset.dragged; return; }
     if (isDesktop()) { setSheet("peek"); document.getElementById("sidebar-toggle")?.focus(); return; }
@@ -186,20 +282,29 @@ function buildSearch() {
   const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
   if (!nlForm || !nlText) return null;
   const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking in plain language" },
-    `<button type="button" class="map-search-btn" data-sidebar-toggle aria-expanded="false" aria-controls="home-sheet" aria-label="Open navigation and parking drawer">${SEARCH_ICON}</button>` +
+    `<span class="map-search-icon">${SEARCH_ICON}</span>` +
     `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Fill in the Find form" title="Fill in the Find form">${GO_ICON}</button>`);
-  const account = el("button", { type: "button", class: "map-search-btn map-account", "aria-label": "Account, sign in and guide" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>');
-  account.addEventListener("click", () => {
-    // Guests: go straight to sign in / create account (the account button lives on the hidden header otherwise).
-    if (!state.user) return document.getElementById("account-action")?.click();
-    if (location.hash === "#help") { setSheet("half"); document.getElementById("account-action")?.focus(); }
-    else location.hash = "#help";
-  });
-  bar.append(account);
+  // Round account button beside the search bar: initials when signed in, a person icon for guests.
+  const account = el("button", { type: "button", class: "map-account", id: "map-account", "aria-label": "Account and settings: sign up or log in" },
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span class="map-account-initials"></span>');
+  const syncAccount = () => {
+    const name = (state.user?.displayName || state.user?.email || "").trim();
+    const initials = name.split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
+    account.classList.toggle("has-initials", Boolean(state.user && initials));
+    account.querySelector(".map-account-initials").textContent = state.user ? initials : "";
+    // The accessible name starts with the visible initials (Lighthouse "label-content-name-mismatch").
+    account.setAttribute("aria-label", state.user ? `${initials ? `${initials}, ` : ""}account and settings${name ? ` for ${name}` : ""}` : "Account and settings: sign up or log in");
+    account.title = state.user ? "Account and settings" : "Sign up or log in";
+  };
+  const accountName = document.getElementById("account-name");
+  if (accountName) new MutationObserver(syncAccount).observe(accountName, { childList: true, characterData: true, subtree: true });
+  syncAccount();
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
   const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
+  // Like other map apps, starting a search raises the sheet so suggestions and results have room.
+  input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); });
 
   bar.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -234,7 +339,7 @@ function buildSearch() {
     new MutationObserver(syncStatus).observe(nlStatus, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["class"] });
     status.hidden = true;
   }
-  return { bar, status };
+  return { bar, status, account };
 }
 
 // ---- Permit popover (the permit chip) --------------------------------------------------------------
@@ -267,6 +372,9 @@ function buildPermitPopover() {
 }
 
 // ---- Building the layout ----------------------------------------------------------------------
+const CLOSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
+const LAYERS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+
 function build() {
   view = document.getElementById("view-areas");
   const stage = view?.querySelector(".map-stage");
@@ -275,50 +383,54 @@ function build() {
   const locate = document.getElementById("locate-me");
   if (!view || !stage || !results || !mapEl || !locate) throw new Error("Areas screen markup not found");
 
-  // Map area: the stage moves to the top of the screen; chip + location button float on it.
   const mapWrap = el("div", { class: "fs-map" });
-  chip = el("a", { href: "#find", class: "permit-chip", id: "permit-chip", "aria-label": "Change permit or time" },
-    `<span class="chip-code" aria-hidden="true">P</span> <span class="chip-text">Choose permit</span>` +
+
+  // Top-left status tile (like a weather tile): permit code + time, and how many areas are open.
+  // Its accessible name is its visible text plus a hidden hint, so spoken and visible words always match.
+  chip = el("a", { href: "#find", class: "permit-chip", id: "permit-chip" },
+    `<span class="chip-code">P</span> <span class="chip-lines"><span class="chip-text">Choose permit</span> <span class="chip-sub"></span></span><span class="visually-hidden chip-hint">. Change permit or time</span>` +
     `<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+  const tile = el("div", { class: "map-tile" });
+  tile.append(chip, buildPermitPopover());
+
+  // Right side: one glass pill of map-only controls (style, 2D/3D, location, zoom on laptops, dark mode).
+  // Account, help and settings live behind the profile button beside the search bar.
   locate.classList.add("map-fab");
   locate.setAttribute("aria-label", "Use my location");
   locate.title = "Use my location";
-  stage.append(locate);
-  // Floating controls over the map. Top stack: search bar, then a row with the permit chip and the 2D/3D
-  // switch, then the search status and permit popover. Bottom right: "?" guide button above the location button.
-  const search = buildSearch();
-  const top = el("div", { class: "map-top", id: "map-top" });
-  const row = el("div", { class: "map-top-row" });
-  row.append(chip);
-  const modeSwitch = stage.querySelector(".map-mode");
-  if (search) top.append(search.bar);
-  if (search) top.append(search.status);
-  row.append(buildPermitPopover());
-  const settings = buildSettingsMenu();
-  const controls = el("div", { class: "map-controls", role: "group", "aria-label": "Map controls" });
-  const style = el("button", { type: "button", id: "map-style", "aria-pressed": "false", "aria-label": "Switch to satellite with labels", title: "Switch to satellite with labels" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>');
+  const style = el("button", { type: "button", id: "map-style", "aria-pressed": "false", "aria-label": "Switch to satellite with labels", title: "Switch to satellite with labels" }, LAYERS_ICON);
   style.addEventListener("click", () => void toggleMapStyle());
-  controls.append(style, locate);
+  const mapPill = el("div", { class: "map-controls", role: "group", "aria-label": "Map controls" });
+  mapPill.append(style);
+  // 2D / 3D is one round button: map.js shows only the view you can switch to and moves focus.
+  const modeSwitch = stage.querySelector(".map-mode");
+  if (modeSwitch) mapPill.append(modeSwitch);
+  mapPill.append(locate);
   // Zoom icons are SVGs (not "+"/"−" text) so every button in the rail has the same icon size and weight.
   for (const [id, label, delta, path] of [["map-zoom-in", "Zoom in", 1, "M12 5v14M5 12h14"], ["map-zoom-out", "Zoom out", -1, "M5 12h14"]]) {
-    const zoom = el("button", { type: "button", id, "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
+    const zoom = el("button", { type: "button", id, class: "map-zoom", "aria-label": label, title: label }, `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`);
     zoom.addEventListener("click", () => zoomMap(delta));
-    controls.append(zoom);
+    mapPill.append(zoom);
   }
-  if (modeSwitch) controls.append(modeSwitch);
   // Dark mode lives in the rail too. js/theme.js handles the click (delegated on .theme-toggle) and saves the choice.
   const darkNow = document.documentElement.getAttribute("data-theme-active") === "dark";
   const theme = el("button", { type: "button", class: "theme-toggle", id: "map-theme", "aria-label": "Dark mode", "aria-pressed": darkNow ? "true" : "false", title: darkNow ? "Switch to light mode" : "Switch to dark mode" },
     '<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>' +
     '<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>');
-  controls.append(theme, settings.button, settings.menu);
-  stage.append(top, controls);
+  mapPill.append(theme);
+  const rail = el("div", { class: "map-rail" });
+  rail.append(mapPill);
+  stage.append(tile, rail);
   mapWrap.append(stage);
 
-  // Sheet: handle + body. Everything that was beside or under the map goes in the body, in order.
+  // The sheet: grabber, then the search row (always visible), then everything else.
+  const search = buildSearch();
   sheet = el("div", { class: "home-sheet", id: "home-sheet", "data-state": "peek" });
-  handle = el("button", { type: "button", class: "sheet-handle", id: "sheet-handle", "aria-expanded": "false", "aria-controls": "sheet-body" },
-    `<span class="sheet-grip" aria-hidden="true"></span><span class="sheet-title">Loading parking…</span><span class="sheet-action">Show list</span>`);
+  handle = el("button", { type: "button", class: "sheet-handle", id: "sheet-handle", "aria-expanded": "false", "aria-controls": "sheet-body", "aria-label": HANDLE_LABELS.peek },
+    `<span class="sheet-grip" aria-hidden="true"></span>`);
+  head = el("div", { class: "sheet-head" });
+  const searchRow = el("div", { class: "sheet-search-row" });
+  if (search) { searchRow.append(search.bar, search.account); head.append(searchRow, search.status); }
   body = el("div", { class: "sheet-body", id: "sheet-body", role: "region", "aria-label": "Parking list" });
 
   // Fine print: the long notes fold into one line with an (i) button. Same text, same ids.
@@ -343,32 +455,43 @@ function build() {
   const heading = view.querySelector(".results-heading");
   toolbar?.classList.add("fs-tools");
 
-  body.append(fine);
-  if (toolbar) body.append(toolbar);
-  if (toolbarStatus) body.append(toolbarStatus);
-  // The results column keeps its own markup (nearby, search, sort, cards); only the notes moved out.
-  body.append(results);
+  // The Areas screen keeps its own content (nearby, search, sort, cards); it just moves into the sheet.
+  const areasContent = [results];
   if (heading) results.querySelector(".nearby-panel")?.after(heading);
-  if (mapKey) body.append(mapKey);
-  if (cityLots) body.append(cityLots);
-  // Navigation and account controls keep their original ids and delegated click handlers.
+  areasContent.push(...[toolbar, toolbarStatus, mapKey, cityLots, fine].filter(Boolean));
+  view.querySelector(".parking-workspace")?.remove();
+  view.append(...areasContent);
+
+  // Suggestions card (home only).
+  suggestions = el("section", { class: "sg-card", id: "sheet-suggestions", "aria-labelledby": "sg-heading" },
+    `<h2 class="sheet-section-title" id="sg-heading">Suggestions</h2><ul class="sg-list"></ul>`);
+
+  // Round shortcuts to the other screens (the original tab buttons, restyled). My Car joins them.
   const nav = document.getElementById("app-nav");
-  const carTab = el("button", { type: "button", class: "tab", "data-view": "car" }, '<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 10 2-5h12l2 5v8H4v-8Zm0 0h16M7 18v3m10-3v3M7 14h2m6 0h2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>My Car</span>');
+  const carTab = el("button", { type: "button", class: "tab", "data-view": "car" }, '<svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m4 10 2-5h12l2 5v8H4v-8Zm0 0h16M7 18v3m10-3v3M7 14h2m6 0h2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="tab-label">My Car</span>');
   document.getElementById("tab-list").append(carTab);
+  const navTitle = el("h2", { class: "sheet-section-title", id: "nav-heading" }, "Browse");
+  nav.setAttribute("aria-labelledby", "nav-heading");
+  nav.prepend(navTitle);
+
+  // Other screens get a bar with a round close button that returns to the map home.
+  // (Each screen's own h2 is its title, so the bar only holds the button.)
+  routeBar = el("div", { class: "route-bar", hidden: "" });
+  const close = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
+  routeBar.append(close);
+
   const accountBar = document.querySelector(".account-bar");
   const accountSection = el("section", { class: "drawer-account", "aria-label": "Your account" });
   accountSection.append(accountBar);
   document.getElementById("view-help").prepend(accountSection);
-  const areasContent = [...body.children];
-  view.querySelector(".parking-workspace")?.remove();
-  view.append(...areasContent);
-  body.append(nav, row, document.getElementById("status"));
+  body.append(routeBar, suggestions, nav, document.getElementById("status"));
   for (const name of ["find", "areas", "lots", "area", "favorites", "help"]) body.append(document.getElementById(`view-${name}`));
-  sheet.append(handle, body);
+  sheet.append(handle, head, body);
 
   const shell = el("div", { class: "fs-shell fs-home" });
-  const toggle = el("button", { type: "button", id: "sidebar-toggle", class: "sidebar-toggle", "data-sidebar-toggle": "", "aria-expanded": "false", "aria-controls": "home-sheet", "aria-label": "Toggle parking sidebar", title: "Toggle sidebar" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.8"/></svg>');
+  const toggle = el("button", { type: "button", id: "sidebar-toggle", class: "sidebar-toggle", "data-sidebar-toggle": "", "aria-expanded": "false", "aria-controls": "sheet-body", "aria-label": "Show or hide the parking sidebar", title: "Show or hide the sidebar" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.8"/></svg>');
   shell.append(mapWrap, sheet, toggle);
+  if (search) shell.append(buildAccountMenu(search.account));
   document.getElementById("app-main").append(shell);
   shell.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.addEventListener("click", () => setSheet(sheet.dataset.state === "peek" ? "half" : "peek")));
   view.classList.add("fs-home");
@@ -376,7 +499,6 @@ function build() {
 
   // The original page heading stays for screen readers and for focus when the screen opens.
   view.querySelector(".areas-heading")?.classList.add("fs-heading");
-  view.querySelector(".parking-workspace")?.remove(); // now empty: its children moved above
 
   initDrag();
 
@@ -385,30 +507,30 @@ function build() {
     if (!isDesktop() && e.target.closest("[data-map-area], [data-nearby-index], #map-reset, #map-downtown, #map-provo, .map-tools button:not(#locate-me)")) setSheet("peek");
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("dialog[open]") && document.getElementById("car-sheet")?.hidden && sheet.dataset.state !== "peek") { setSheet("peek"); document.querySelector("[data-sidebar-toggle]")?.focus(); }
+    if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector("dialog[open]") && document.getElementById("car-sheet")?.hidden && sheet.dataset.state !== "peek") { setSheet("peek"); (isDesktop() ? toggle : handle).focus(); }
   });
-  // A quick tap on the map (not a pan) lowers a full sheet, like other map apps.
+  // A quick tap on the map (not a pan) lowers a raised sheet, like other map apps.
   let down = null;
   mapEl.addEventListener("pointerdown", (e) => { down = { x: e.clientX, y: e.clientY, t: Date.now() }; });
   mapEl.addEventListener("pointerup", (e) => {
     if (!down || isDesktop()) return;
     const still = Math.hypot(e.clientX - down.x, e.clientY - down.y) < 8 && Date.now() - down.t < 350;
     down = null;
-    if (still && sheet.dataset.state === "full") setSheet("peek");
+    if (still && sheet.dataset.state !== "peek") setSheet("peek");
   });
   // The map must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
   if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshMap()).observe(mapEl);
-  window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet("peek"));
+  window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet(isDesktop() ? "half" : "peek"));
   observeRenders();
   syncFullscreenRoute(state.currentView || "areas");
   if (state.currentView) void initMap();
 }
 
-const ROUTE_TITLES = { find: "Find parking", lots: "All parking lots", area: "Lot details", favorites: "Your favorites", help: "Guide & account" };
 
 // Called after the router selects a screen. The canvas is a sibling of the drawer, never a route.
 export function syncFullscreenRoute(name) {
   if (!sheet) return false;
+  // Phones open on the map with the sheet lowered; laptops keep the sidebar open.
   setSheet(name === "areas" && !isDesktop() ? "peek" : "half");
   updateChrome();
   refreshMap();
