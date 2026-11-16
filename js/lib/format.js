@@ -63,3 +63,16 @@ export function appleDirectionsUrl(area, travelmode = "walking") {
   if (!point) return null;
   return `https://maps.apple.com/?daddr=${encodeURIComponent(`${point.latitude},${point.longitude}`)}&dirflg=${travelmode === "driving" ? "d" : "w"}`;
 }
+
+// iPhone and iPad (iPadOS reports "Macintosh" but has touch) open Apple Maps; everything else opens Google Maps.
+export function isAppleMobile(nav = globalThis.navigator) {
+  const ua = nav?.userAgent || "";
+  return /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && (nav?.maxTouchPoints || 0) > 1);
+}
+
+/** One directions link for the device: Apple Maps on iOS, Google Maps elsewhere. Null when the lot has no location. */
+export function deviceDirections(area, travelmode = "driving", nav = globalThis.navigator) {
+  const apple = isAppleMobile(nav);
+  const url = apple ? appleDirectionsUrl(area, travelmode) : directionsUrl(area, travelmode);
+  return url ? { url, app: apple ? "Apple Maps" : "Google Maps" } : null;
+}

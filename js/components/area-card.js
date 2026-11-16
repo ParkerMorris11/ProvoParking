@@ -19,11 +19,16 @@ export function evaluateArea(area) {
   return evaluate(rulesFor(area.area_id), permitId, day, time);
 }
 
+// Drawn as SVG (not the ♡ text glyph) so it sits dead center and matches the directions button.
+// Outline when not saved; CSS fills it when aria-pressed="true".
+const HEART_ICON = `<svg class="icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M12 20.3s-7.6-4.6-9.2-9.4C1.7 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.5 3.1 4.4 6.4-1.6 4.8-9.2 9.4-9.2 9.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+export const DIRECTIONS_ICON = `<svg class="icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M20.5 3.5 3.8 10.6c-.6.3-.6 1.2.1 1.4l6.6 1.5 1.5 6.6c.2.7 1.1.7 1.4.1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+
 export function heartHtml(area) {
   const saved = state.favoriteIds.has(area.area_id);
   const label = saved ? `Remove ${area.area_name} from favorites` : `Save ${area.area_name} to favorites`;
   return `<button type="button" class="heart" data-area-id="${area.area_id}"
-              aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${saved ? "♥" : "♡"}</button>`;
+              aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${HEART_ICON}</button>`;
 }
 
 export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
