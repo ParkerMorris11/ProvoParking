@@ -56,6 +56,8 @@ window.addEventListener("pagehide", () => parkingClock.stop());
 function renderAccountBar() {
   $("account-name").textContent = state.user ? state.user.displayName : "Browsing as guest";
   $("account-action").textContent = state.user ? "Log out" : "Sign up";
+  const email = $("account-email");
+  if (email) { email.textContent = state.user?.email || ""; email.hidden = !state.user?.email; }
 }
 
 function choosePermit() {

@@ -262,6 +262,10 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .drawer-account { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
 .fs-shell .account-bar { display: flex; flex-wrap: wrap; gap: 8px; }
 .fs-shell .account-name { display: block; flex: 1; font-size: .8rem; }
+.fs-shell .drawer-account .account-email { display: block; flex-basis: 100%; font-size: .8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.fs-shell .drawer-account .account-email[hidden] { display: none; }
+.fs-shell .drawer-account .account-permit { display: flex; flex-direction: column; gap: 4px; flex-basis: 100%; margin-top: 6px; font-size: .8rem; font-weight: 600; white-space: normal; }
+.fs-shell .drawer-account .account-permit select { font-size: 1rem; min-height: 44px; }
 .sidebar-toggle { display: none; }
 .has-fs-home .car-fab { right: 16px; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
 .has-fs-home:has(.sidebar-open) .car-fab { z-index: 0; }
@@ -292,6 +296,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 }
 @media (max-width: 600px) {
   .fs-shell .home-sheet[data-state="full"] { --sheet-y: 0px; }
+  /* At half height the bottom 46% of the sheet sits below the screen, so pad the scroll area by that much:
+     otherwise the end of a long screen (Find's arrival time and "Show parking areas") can't be scrolled into view. */
+  .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46vh + 28px); padding-bottom: calc(46dvh + 28px); }
   .fs-shell.sidebar-open .map-rail, .fs-shell.sidebar-open .map-tile { opacity: 0; pointer-events: none; transition: opacity .2s; }
   .has-fs-home:has(.sidebar-open) .car-fab { visibility: hidden; }
   .fs-shell.sidebar-open .map-status { display: none; }

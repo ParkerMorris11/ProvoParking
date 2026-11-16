@@ -23,3 +23,51 @@ test('choosing a permit applies it at once and refreshes the lists and map', () 
     state.find = saved.find;
   }
 });
+
+test('a permit picked on the map chip also shows on the Find form', () => {
+  const saved = { permits: state.permits, find: { ...state.find }, document: globalThis.document };
+  state.permits = [{ permit_id: 1, permit_code: 'Y' }, { permit_id: 2, permit_code: 'G', description: 'Grad' }];
+  const els = { 'permit-select': { value: '' }, 'permit-info': { innerHTML: '' } };
+  globalThis.document = { getElementById: (id) => els[id] ?? null };
+  try {
+    assert.equal(applyPermitChoice('2'), true);
+    assert.equal(els['permit-select'].value, '2');
+    assert.match(els['permit-info'].innerHTML, /Grad/);
+  } finally {
+    state.permits = saved.permits;
+    state.find = saved.find;
+    if (saved.document === undefined) delete globalThis.document; else globalThis.document = saved.document;
+  }
+});
+
+test('signed in: a new permit choice is saved to the account so a reload keeps it', async () => {
+  const { saveToAccount } = await import('../js/pages/find.js');
+  const saved = { user: state.user };
+  const calls = [];
+  try {
+    state.user = { userId: 18, permitIds: [1] };
+    const ok = await saveToAccount(2, async (userId, permitId) => { calls.push([userId, permitId]); });
+    assert.equal(ok, true);
+    assert.deepEqual(calls, [[18, 2]]);
+    assert.deepEqual(state.user.permitIds, [2]);
+    assert.equal(saveToAccount(2, async () => assert.fail('already saved')), null, 'no write when nothing changed');
+    state.user = null;
+    assert.equal(saveToAccount(1, async () => assert.fail('guests have no account')), null);
+  } finally {
+    state.user = saved.user;
+  }
+});
+
+test('signed in: a failed account save keeps the choice on this device and does not throw', async () => {
+  const { saveToAccount } = await import('../js/pages/find.js');
+  const saved = { user: state.user };
+  const err = console.error; console.error = () => {};
+  try {
+    state.user = { userId: 18, permitIds: [1] };
+    const ok = await saveToAccount(2, async () => { throw new Error('offline'); });
+    assert.equal(ok, false);
+    assert.deepEqual(state.user.permitIds, [1]);
+  } finally {
+    state.user = saved.user; console.error = err;
+  }
+});

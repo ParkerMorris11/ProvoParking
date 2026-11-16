@@ -79,7 +79,7 @@ function initLocation() {
     button.setAttribute("aria-pressed", String(active));
     document.getElementById("location-status").textContent = update.message;
     const toolbarStatus = document.getElementById("location-toolbar-status");
-    if (toolbarStatus) toolbarStatus.textContent = update.message;
+    if (toolbarStatus) { toolbarStatus.textContent = update.message; toolbarStatus.dataset.status = update.status; }
     document.getElementById("location-status").classList.toggle("is-live", update.status === "live");
     if (latestPosition) {
       const point = { lat: latestPosition.latitude, lng: latestPosition.longitude };

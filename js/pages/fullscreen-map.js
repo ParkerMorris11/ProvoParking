@@ -523,6 +523,19 @@ function build() {
   // The map must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
   if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshMap()).observe(mapEl);
   window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet(isDesktop() ? "half" : "peek"));
+
+  // Errors are written inside the sheet. On phones with the sheet lowered nobody would see them, so a
+  // load failure or a location error raises the sheet and scrolls the message into view.
+  const raiseFor = (node) => {
+    if (isDesktop() || sheet.dataset.state !== "peek") return;
+    setSheet("half");
+    requestAnimationFrame(() => node.scrollIntoView?.({ block: "nearest" }));
+  };
+  const appStatus = document.getElementById("status");
+  if (appStatus) new MutationObserver(() => { if (appStatus.classList.contains("error") && appStatus.textContent.trim()) raiseFor(appStatus); })
+    .observe(appStatus, { attributes: true, attributeFilter: ["class"], childList: true, characterData: true, subtree: true });
+  if (toolbarStatus) new MutationObserver(() => { if (toolbarStatus.dataset.status === "error") raiseFor(toolbarStatus); })
+    .observe(toolbarStatus, { attributes: true, attributeFilter: ["data-status"], childList: true });
   observeRenders();
   syncFullscreenRoute(state.currentView || "areas");
   if (state.currentView) void initMap();

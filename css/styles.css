@@ -790,3 +790,6 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 @media (prefers-reduced-motion: reduce) { .undo-bar { animation: none; } }
 @media (max-width: 600px) { .undo-bar { left: 16px; right: 84px; transform: none; width: auto; max-width: none; justify-content: space-between; bottom: calc(var(--bottom-nav, 64px) + 12px); } @keyframes undo-in { from { opacity: 0; } } }
 @media (max-width: 480px) { .fav-row { gap: 4px; padding-right: 8px; } .fav-main { gap: 10px; } .fav-pin { width: 34px; height: 34px; font-size: 1rem; } .fav-go-btn { width: 44px; height: 44px; } .fav-more-btn { width: 40px; } }
+
+/* Account details (email, permit) only show where the account bar sits in the Help / account page. */
+.account-email, .account-permit { display: none; }

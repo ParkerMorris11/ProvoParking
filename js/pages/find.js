@@ -6,6 +6,7 @@ import { savePermit } from "../lib/storage.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { requestParseFind, applyParsedToForm } from "../data/parse-find.js";
 import { createSpeech } from "../lib/speech.js";
+import { setAccountPermit } from "../data/auth.js";
 
 export function renderFind() {
   renderDestinationOptions("find-destination", state.find.destinationId, "No specific building");
@@ -13,6 +14,7 @@ export function renderFind() {
   sel.innerHTML = `<option value="">Choose a permit…</option>` +
     state.permits.map((p) => `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
   sel.value = state.find.permitId ?? "";
+  renderAccountPermit();
   const selection = parkingSelection(state.find);
   $("arrive-day").value = String(selection.day);
   $("arrive-time").value = selection.time;
@@ -31,6 +33,15 @@ export function syncTimeControls() {
   const live = $("arrive-now").checked;
   $("arrive-day").disabled = live;
   $("arrive-time").disabled = live;
+}
+
+// "Your permit" on the account page: the same choice as the map chip and Find, shown with the account.
+export function renderAccountPermit() {
+  const select = typeof document !== "undefined" ? document.getElementById("account-permit") : null;
+  if (!select) return;
+  select.innerHTML = `<option value="">Choose a permit…</option>` +
+    state.permits.map((p) => `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
+  select.value = state.find.permitId ?? "";
 }
 
 function renderPermitInfo() {
@@ -100,12 +111,34 @@ export function applyPermitChoice(permitId, refresh = () => {}) {
   if (!state.permits.some((p) => p.permit_id === id)) return false;
   state.find.permitId = id;
   savePermit(id);
+  // Keep the Find form in step when the permit is picked elsewhere (the map's permit chip), so
+  // "Show parking areas" doesn't ask for a permit the person already chose.
+  const select = typeof document !== "undefined" ? document.getElementById("permit-select") : null;
+  if (select && select.value !== String(id)) { select.value = String(id); renderPermitInfo(); }
+  const accountSelect = typeof document !== "undefined" ? document.getElementById("account-permit") : null;
+  if (accountSelect && accountSelect.value !== String(id)) accountSelect.value = String(id);
+  saveToAccount(id);
   refresh();
   return true;
 }
 
+// Signed in: keep the choice on the account too, so a reload or another device doesn't switch back to
+// the permit picked at sign-up. The device copy (savePermit) already holds it if this fails.
+export function saveToAccount(id, save = setAccountPermit) {
+  const user = state.user;
+  if (!user?.userId || (user.permitIds?.length === 1 && user.permitIds[0] === id)) return null;
+  return save(user.userId, id)
+    .then(() => { if (state.user === user) user.permitIds = [id]; return true; })
+    .catch((err) => {
+      console.error(err);
+      try { setStatus("Couldn't save your permit to your account. It's still set on this device.", true); } catch { /* no page */ }
+      return false;
+    });
+}
+
 export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
   initPlainLanguage({ choosePermit });
+  $("account-permit")?.addEventListener("change", (e) => applyPermitChoice(e.target.value, refresh));
   $("permit-select").addEventListener("change", () => {
     renderPermitInfo();
     applyPermitChoice($("permit-select").value, refresh);
@@ -119,11 +152,10 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     const destinationId = Number($("find-destination").value);
     state.find.destinationId = state.destinations.some(d => d.destination_id === destinationId) ? destinationId : null;
     if (state.find.destinationId) $("area-sort").value = "destination";
-    state.find.permitId = id;
+    applyPermitChoice(id);
     state.find.live = $("arrive-now").checked;
     state.find.day = Number($("arrive-day").value);
     state.find.time = $("arrive-time").value || nowHHMM();
-    savePermit(id);
     const selection = parkingSelection(state.find);
     setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
     go("#areas");
