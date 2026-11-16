@@ -35,20 +35,22 @@ test('missing and invalid destinations never produce misleading directions links
   assert.ok(directionsUrl({ latitude: 0, longitude: 0 }, 'driving'));
 });
 
-test('favorites render a separate directions button per saved lot and update after removal', async () => {
+test('favorites render a simple row with one directions menu per saved lot and update after removal', async () => {
   const fields = { 'fav-list': {}, 'fav-empty': {}, 'fav-count': {}, status: { classList: { toggle() {} } } };
   const previousDocument = globalThis.document;
   const previousState = { ...state };
   globalThis.document = { getElementById: id => fields[id], querySelector: () => null };
   Object.assign(state, {
-    areas: lots, favoriteIds: new Set([1, 2]), rulesByArea: new Map(),
+    areas: lots, favoriteIds: new Set([1, 2]), favoriteNames: new Map(), rulesByArea: new Map(),
     user: { userId: 99 }, db: { from: () => ({ delete: () => ({ eq: () => ({ eq: () => ({ select: async () => ({ data: [{ area_id: 1 }], error: null }) }) }) }) }) },
   });
   try {
     renderFavorites();
     const html = fields['fav-list'].innerHTML;
-    assert.equal((html.match(/class="secondary"/g) || []).length, 2);
-    assert.equal((html.match(/class="heart"/g) || []).length, 2);
+    assert.equal((html.match(/class="fav-go-btn" href="https:\/\/www\.google\.com\/maps\/dir\//g) || []).length, 2, 'Go links straight to Google Maps');
+    assert.equal((html.match(/class="heart"/g) || []).length, 0, 'the one-tap heart is replaced by the ⋯ menu');
+    assert.equal((html.match(/data-fav-remove=/g) || []).length, 2);
+    assert.doesNotMatch(html, /maps\.apple\.com/);
     for (const lot of lots.slice(0, 2)) {
       assert.ok(html.includes(directionsUrl(lot, 'driving').replaceAll('&', '&amp;')));
       assert.ok(html.includes(`href="#area/${lot.area_id}"`));
@@ -117,4 +119,83 @@ test('lot detail directions button opens Apple Maps on iPhone/iPad and Google Ma
     assert.equal(new URL(d.url).searchParams.get('destination'), '40.243896,-111.649081');
   }
   assert.equal(deviceDirections({}, 'driving', iphone), null);
+});
+
+test('favorite rows show a short status instead of the long rule sentence', async () => {
+  const { shortStatus, favoriteRowHtml } = await import('../js/pages/favorites.js');
+  assert.equal(shortStatus({ kind: 'ok' }), 'Permit OK');
+  assert.equal(shortStatus({ kind: 'no-permit' }), 'Not your permit');
+  assert.equal(shortStatus({ kind: 'limit', rule: { max_stay_minutes: 120 } }).endsWith('limit'), true);
+  const prev = { ...state };
+  Object.assign(state, { favoriteIds: new Set([1]), favoriteNames: new Map(), rulesByArea: new Map() });
+  try {
+    const html = favoriteRowHtml({ ...lots[0], est_available_spaces: 40, total_spaces: 300 });
+    assert.match(html, /~40 open/);
+    assert.doesNotMatch(html, /Approximate section|Driving directions in Google/);
+    assert.match(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-row/);
+    assert.doesNotMatch(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-go-btn/);
+  } finally { Object.assign(state, prev); }
+});
+
+test('a nickname leads the row and the real lot name stays visible under it', async () => {
+  const { favoriteRowHtml } = await import('../js/pages/favorites.js');
+  const prev = { ...state };
+  Object.assign(state, { favoriteIds: new Set([1, 2]), favoriteNames: new Map([[2, 'My <class>']]), rulesByArea: new Map() });
+  try {
+    const named = favoriteRowHtml(lots[1]);
+    assert.match(named, /<span class="fav-name">My &lt;class&gt;<\/span>/);
+    assert.match(named, /<span class="fav-lot">Visitor &lt;lot&gt; &quot;B&quot;<\/span>/);
+    assert.match(named, />Rename</);
+    const plain = favoriteRowHtml(lots[0]);
+    assert.match(plain, /<span class="fav-name">BYU Lot 59Y<\/span>/);
+    assert.doesNotMatch(plain, /fav-lot/);
+    assert.match(plain, />Add a name</);
+  } finally { Object.assign(state, prev); }
+});
+
+test('nicknames are trimmed, capped at 30 characters, and blank clears them', async () => {
+  const { cleanNickname } = await import('../js/data/favorites.js');
+  assert.equal(cleanNickname('  Class   lot '), 'Class lot');
+  assert.equal(cleanNickname('x'.repeat(40)).length, 30);
+  assert.equal(cleanNickname('   '), null);
+  assert.equal(cleanNickname(null), null);
+});
+
+test('removing a favorite shows Undo, and Undo restores it with its nickname', async () => {
+  const { toggleFavorite, initFavorites } = await import('../js/pages/favorites.js');
+  const handlers = {};
+  const fields = { 'fav-list': {}, 'fav-empty': {}, 'fav-count': {}, 'undo-bar': { hidden: true }, 'undo-text': {}, status: { classList: { toggle() {} } } };
+  const prevDoc = globalThis.document, prevState = { ...state };
+  globalThis.document = { getElementById: id => fields[id], querySelector: () => null, querySelectorAll: () => [], addEventListener: (t, f) => { handlers[t] = f; } };
+  const inserted = [];
+  const db = { from: () => ({
+    delete: () => ({ eq: () => ({ eq: () => ({ select: async () => ({ data: [{ area_id: 1 }], error: null }) }) }) }),
+    insert: (row) => { inserted.push(row); return { select: () => ({ single: async () => ({ data: row, error: null }) }) }; },
+  }) };
+  Object.assign(state, { areas: lots, favoriteIds: new Set([1]), favoriteNames: new Map([[1, 'Class']]), rulesByArea: new Map(), user: { userId: 99 }, db });
+  try {
+    const { renderFavorites } = await import('../js/pages/favorites.js');
+    initFavorites({ renderViews: renderFavorites });
+    await toggleFavorite(1, {}, { renderViews: renderFavorites });
+    assert.equal(state.favoriteIds.has(1), false);
+    assert.equal(fields['undo-bar'].hidden, false);
+    assert.equal(fields['undo-text'].textContent, 'Removed Class');
+    await handlers.click({ target: { closest: (sel) => sel === '#undo-btn' ? {} : null } });
+    await new Promise(r => setTimeout(r, 0));
+    assert.deepEqual(inserted.at(-1), { user_id: 99, area_id: 1, nickname: 'Class' });
+    assert.equal(state.favoriteIds.has(1), true);
+    assert.equal(state.favoriteNames.get(1), 'Class');
+    assert.equal(fields['undo-bar'].hidden, true);
+  } finally {
+    Object.assign(state, prevState);
+    if (prevDoc === undefined) delete globalThis.document; else globalThis.document = prevDoc;
+  }
+});
+
+test('saving a plain favorite never sends a nickname column', async () => {
+  const { addFavorite } = await import('../js/data/favorites.js');
+  const prev = { ...state }; let sent;
+  Object.assign(state, { user: { userId: 7 }, db: { from: () => ({ insert: (row) => { sent = row; return { select: () => ({ single: async () => ({ data: row, error: null }) }) }; } }) } });
+  try { await addFavorite(3); assert.deepEqual(sent, { user_id: 7, area_id: 3 }); }
+  finally { Object.assign(state, prev); }
 });

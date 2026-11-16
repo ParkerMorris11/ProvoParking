@@ -14,7 +14,7 @@ import { loadData } from "./data/load.js";
 import * as auth from "./data/auth.js";
 import { go, showView, renderViews } from "./router.js";
 import { renderFind, initFind, applyPermitChoice } from "./pages/find.js";
-import { toggleFavorite } from "./pages/favorites.js";
+import { toggleFavorite, initFavorites } from "./pages/favorites.js";
 import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
 import { initCarFab, renderCarFab } from "./components/car-fab.js";
 import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
@@ -24,7 +24,7 @@ import { initFullscreenMap } from "./pages/fullscreen-map.js";
 import { initHelpModal } from "./pages/help-modal.js";
 
 const RETURNING_KEY = "provoParking.returning"; // this device has signed in before: show Log in, not Sign up
-const GUEST_KEY = "provoParking.guest";         // this device chose "Continue as guest"
+const GUEST_KEY = "provoParking.guest";         // this tab chose "Continue as guest" (sessionStorage)
 const permitAskedKey = (userId) => `provoParking.permitAsked.${userId}`; // the optional permit step was shown
 
 // Read before supabase-js tidies the address bar: did an email link open this page?
@@ -36,6 +36,11 @@ const browserStorage = (name) => { try { return window[name]; } catch { return n
 const authStorage = createAuthStorage({ local: browserStorage("localStorage"), session: browserStorage("sessionStorage") });
 const remember = (key, value) => { try { value == null ? localStorage.removeItem(key) : localStorage.setItem(key, value); } catch { /* private mode */ } };
 const recall = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+// Guest mode lasts only for this tab, so every new visit (a new tab, a new incognito window)
+// starts on the sign-in screen, which still offers "Continue as guest".
+const rememberGuest = (on) => { try { on ? sessionStorage.setItem(GUEST_KEY, "1") : sessionStorage.removeItem(GUEST_KEY); } catch { /* private mode */ } };
+const isGuestTab = () => { try { return sessionStorage.getItem(GUEST_KEY) === "1"; } catch { return false; } };
+remember(GUEST_KEY, null); // older versions kept guest mode forever in localStorage, which hid sign-in on later visits
 
 let signingOut = false;
 const parkingClock = createParkingClock({
@@ -106,7 +111,7 @@ async function onSignedIn(session, note = "", { isNew = false } = {}) {
     state.user = profile;
     void state.visitTracker?.bind(session.user.id).then(() => state.visitTracker?.flush());
     state.guest = false;
-    remember(GUEST_KEY, null);
+    rememberGuest(false);
     remember(RETURNING_KEY, "1");
     await enterApp(note, version);
   } catch (err) {
@@ -120,7 +125,7 @@ async function onGuest() {
   clearPersonalData();
   state.user = null;
   state.guest = true;
-  remember(GUEST_KEY, "1");
+  rememberGuest(true);
   await enterApp("");
 }
 
@@ -135,6 +140,7 @@ function clearPersonalData() {
   state.user = null;
   state.guest = false;
   state.favoriteIds = new Set();
+  state.favoriteNames = new Map();
   state.activeSession = null;
   resetParkingClock();
   state.find.destinationId = null;
@@ -173,12 +179,13 @@ document.addEventListener("click", (e) => {
   if (tab) { setMenuOpen(false); return go(`#${tab.dataset.view}`); }
   if (e.target.closest("#account-action")) {
     if (state.user) return void signOut();
-    remember(GUEST_KEY, null);
-    showAuth("signup");
+    rememberGuest(false);
+    showAuth(recall(RETURNING_KEY) ? "login" : "signup");
   }
 });
 
 initFind({ go, choosePermit, refresh: renderViews });
+initFavorites({ renderViews });
 initCar({ requireAccount });
 initCarFab({ go });
 initAuth({ onSignedIn, onGuest, authStorage });
@@ -303,7 +310,7 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
     showAuth("login"); // explicit return from the separate admin page, even on a guest device
   } else if (session) {
     await onSignedIn(session);
-  } else if (recall(GUEST_KEY)) {
+  } else if (isGuestTab()) {
     await onGuest();
   } else {
     showAuth(recall(RETURNING_KEY) ? "login" : "signup");
