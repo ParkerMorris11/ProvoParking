@@ -489,8 +489,10 @@ function build() {
   sheet.append(handle, head, body);
 
   const shell = el("div", { class: "fs-shell fs-home" });
+  // Laptops: the sidebar toggle sits inside the search row (left of the search bar), not as its own circle.
   const toggle = el("button", { type: "button", id: "sidebar-toggle", class: "sidebar-toggle", "data-sidebar-toggle": "", "aria-expanded": "false", "aria-controls": "sheet-body", "aria-label": "Show or hide the parking sidebar", title: "Show or hide the sidebar" }, '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 4v16" stroke="currentColor" stroke-width="1.8"/></svg>');
-  shell.append(mapWrap, sheet, toggle);
+  searchRow.prepend(toggle);
+  shell.append(mapWrap, sheet);
   if (search) shell.append(buildAccountMenu(search.account));
   document.getElementById("app-main").append(shell);
   shell.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.addEventListener("click", () => setSheet(sheet.dataset.state === "peek" ? "half" : "peek")));

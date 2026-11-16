@@ -169,7 +169,7 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 /* Lot popup and map messages sit under the status tile. */
 .fs-shell .map-card { top: calc(max(14px, env(safe-area-inset-top, 0px)) + 66px); left: 14px; right: 76px; max-width: 340px; max-height: calc(100% - 260px); border-radius: 20px; }
 .fs-shell .map-status { left: 14px; right: auto; bottom: auto; top: calc(max(14px, env(safe-area-inset-top, 0px)) + 66px); max-width: min(300px, calc(100% - 100px)); font-size: .72rem; border-radius: 12px; }
-.fs-shell .map-status:empty { display: none; }
+.fs-shell .map-status:empty, .fs-shell .map-status[data-routine] { display: none; } /* the tile already shows the count */
 
 /* ---- The sheet ---- */
 .fs-shell .home-sheet { top: max(10px, env(safe-area-inset-top, 0px)); bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; border: 1px solid var(--glass-border); border-radius: var(--sheet-radius); overflow: hidden; box-shadow: 0 -2px 30px rgba(15, 30, 55, .18); }
@@ -269,18 +269,24 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 
 /* Laptops: the sheet becomes a floating left sidebar; closed, only its search row shows. */
 @media (min-width: 601px) {
+  .fs-shell { --panel: 384px; }
   .fs-shell .home-sheet { top: 16px; left: 16px; right: auto; bottom: 16px; width: min(var(--panel), calc(100% - 120px)); border-radius: 26px; transform: none; transition: none; }
   .fs-shell .home-sheet[data-state="peek"] { bottom: auto; }
   .fs-shell .home-sheet[data-state="peek"] .sheet-body { display: none; }
   .fs-shell .home-sheet:not([data-state="peek"]) .sheet-body { visibility: visible; }
   .fs-shell .sheet-handle { display: none; }
   .fs-shell .sheet-head { padding: 12px 12px 12px; touch-action: auto; }
-  .fs-shell .map-tile { left: calc(min(var(--panel), 100% - 120px) + 32px); }
-  .fs-shell .map-card, .fs-shell .map-status { left: calc(min(var(--panel), 100% - 120px) + 32px); max-width: min(340px, calc(100% - var(--panel) - 120px)); }
   .fs-shell .map-rail .map-controls .map-zoom { display: inline-grid; }
-  .sidebar-toggle { display: inline-grid; place-items: center; position: absolute; top: 16px; left: calc(min(var(--panel), 100% - 120px) + 28px); z-index: 1003; width: 44px; height: 44px; padding: 0; border: 1px solid var(--glass-border); border-radius: 50%; background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); color: var(--text); cursor: pointer; }
+  /* One top line: sidebar card (toggle · search · avatar), status tile and map pill share top 16px,
+     the tile matches the search card's 72px height, radius and glass, with 16px gaps. */
+  .sidebar-toggle { display: inline-grid; place-items: center; flex: none; width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%; background: var(--search-fill); color: var(--ink-2); cursor: pointer; }
   .sidebar-toggle svg { width: 22px; height: 22px; }
-  .fs-shell .map-tile { margin-left: 58px; }
+  .sidebar-toggle:hover { filter: brightness(.96); }
+  .fs-shell .map-tile, .fs-shell .map-rail { top: 16px; }
+  .fs-shell .map-tile { left: calc(min(var(--panel), 100% - 120px) + 32px); }
+  .fs-shell .permit-chip { min-height: 72px; padding: 0 16px 0 13px; gap: 12px; border-radius: 26px; border-color: var(--glass-border); }
+  .fs-shell .permit-chip .chip-code { min-width: 46px; height: 46px; border-radius: 50%; font-size: 1.05rem; }
+  .fs-shell .map-card, .fs-shell .map-status { top: 104px; left: calc(min(var(--panel), 100% - 120px) + 32px); max-width: min(340px, calc(100% - var(--panel) - 120px)); }
   .has-fs-home .car-fab { bottom: 24px; z-index: 40; }
   .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; }
 }
@@ -303,3 +309,10 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 :root[data-theme-active="dark"] .fs-shell { --glass: rgba(28, 30, 34, .74); --glass-strong: rgba(28, 30, 34, .86); --card: #1c1f24; --surface-2: #24282e; --field-bg: #16191d; --border: #3a3f47; --field: #4a505a; --glass-filter: blur(28px) saturate(1.5); --search-fill: rgba(118, 118, 128, .26); --group-fill: rgba(255, 255, 255, .07); --hover: rgba(255, 255, 255, .08); }
 @supports not (backdrop-filter: blur(1px)) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
 @media (prefers-reduced-transparency: reduce) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
+
+/* Every section in the sheet uses the same grey rounded card as Suggestions and Browse. */
+.fs-shell .sheet-body :is(.panel, .nearby-panel, .card, .rule, .empty, .fav-list, .detail-status, .detail-schedule, .detail-reference, .map-key, .city-lots, .fs-tools, .fine-print, .drawer-account) {
+  background: var(--group-fill); border: 1px solid transparent; border-radius: 20px; box-shadow: none; }
+.fs-shell .sheet-body :is(.map-key, .city-lots, .fs-tools, .drawer-account) { margin: 12px 0 0; padding: 14px 16px; }
+.fs-shell .sheet-body .fs-tools h3 { margin: 0 0 8px; }
+.fs-shell .sheet-body .nearby-card { background: var(--search-fill); border-color: transparent; }
