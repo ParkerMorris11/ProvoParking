@@ -97,7 +97,7 @@ main { max-width: calc(var(--page-max) + 2 * var(--gutter)); margin: 0 auto; pad
 .meta { margin: 0; color: var(--muted); font-size: .88rem; }
 .avail { margin: 6px 0 0; font-weight: 600; font-size: .88rem; }
 .avail.ok { color: var(--ok); } .avail.low { color: var(--low); }
-.heart { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); font-size: 1.3rem; line-height: 1; cursor: pointer; color: var(--fav); transition: background .15s, border-color .15s; }
+.heart { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--card); font-size: 1.3rem; line-height: 1; cursor: pointer; color: var(--brand); transition: background .15s, border-color .15s; } /* --brand: same royal blue in light mode, lighter blue on dark cards */
 .heart:hover { border-color: var(--fav); }
 .heart[aria-pressed="true"] { background: var(--fav-tint); border-color: var(--fav); }
 .heart:disabled { opacity: .6; cursor: wait; }
@@ -648,7 +648,7 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; color: inherit; text-decoration: none; }
 .fav-main:hover { background: var(--hover); }
 .fav-main:focus-visible, .fav-go-btn:focus-visible, .fav-go-menu a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-.fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-weight: 800; color: #fff; background: var(--muted); }
+.fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-weight: 800; color: var(--card); background: var(--muted); } /* --card text: white on dark pins in light mode, navy on pastel pins in dark mode */
 .fav-pin.ok { background: var(--ok); } .fav-pin.limit { background: var(--low); }
 .fav-pin.no-permit, .fav-pin.blocked { background: var(--heart); }
 .fav-text { min-width: 0; display: grid; gap: 1px; }
