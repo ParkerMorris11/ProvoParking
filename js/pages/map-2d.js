@@ -25,7 +25,7 @@ export const DARK_STYLE = [
 const USER_COLOR = "#007AFF";
 
 /** `maps` is google.maps; `lib` is the result of maps.importLibrary("maps"). */
-export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom = 15, dark = false, onSelect }) {
+export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom = 15, dark = false, onSelect, onDropPin }) {
   const map = new lib.Map(container, {
     center, zoom,
     gestureHandling: "greedy", clickableIcons: false,
@@ -76,9 +76,19 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   const clear = () => { for (const item of drawn) item.setMap(null); drawn = []; drawnShapes = []; };
   const clearUser = () => { accuracyRing?.setMap(null); userCursor?.setMap(null); accuracyRing = userCursor = null; };
   map.addListener?.("zoom_changed", () => userCursor?.draw());
+  let droppedPin = null;
+  const dropPin = event => {
+    const lat = event.latLng?.lat(), lng = event.latLng?.lng();
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    droppedPin?.setMap(null);
+    droppedPin = new lib.Circle({ map, center: { lat, lng }, radius: 10, strokeColor: "#ffffff", strokeWeight: 3, fillColor: "#e11d48", fillOpacity: 1, clickable: false, zIndex: 1100 });
+    onDropPin?.({ latitude: lat, longitude: lng });
+  };
+  map.addListener?.("contextmenu", dropPin);
 
   return {
     mode: "2d",
+    clearPin() { droppedPin?.setMap(null); droppedPin = null; },
     setShapes(shapes) {
       clear();
       for (const shape of shapes) {
@@ -87,6 +97,7 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
           ? new lib.Polygon({ ...style, paths: shape.rings, fillOpacity: 0.24 })
           : new lib.Circle({ ...style, center: shape.center, radius: 24, fillOpacity: 0.35 });
         item.addListener("click", () => onSelect(shape));
+        item.addListener("contextmenu", dropPin);
         drawn.push(item);
         drawnShapes.push(shape);
       }

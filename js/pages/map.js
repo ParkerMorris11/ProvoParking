@@ -2,7 +2,7 @@
 // Pure Google Maps, no other map library. The key is read from config.js (see lib/google-maps.js).
 // This file decides WHAT to draw (eligible BYU sections + optional Provo city lots) and what a tap does;
 // map-2d.js / map-3d.js only draw. Eligibility itself stays in domain/eligibility.js via parking-results.js.
-import { escapeHtml } from "../lib/format.js";
+import { escapeHtml, deviceDirections } from "../lib/format.js";
 
 import { nearbyLots, arrivalSuggestion } from "../domain/nearby.js";
 import { createLocationTracker } from "../lib/location.js";
@@ -138,7 +138,7 @@ export function lotCardHtml(feature, matches = matchesFor(feature)) {
 function showCard(html) {
   const card = byId("map-card");
   if (!card) return;
-  card.innerHTML = `<button type="button" class="map-card-close" aria-label="Close lot details"><span aria-hidden="true">×</span></button>${html}`;
+  card.innerHTML = `<button type="button" class="map-card-close" aria-label="Close map details"><span aria-hidden="true">×</span></button>${html}`;
   card.hidden = false;
   card.focus({ preventScroll: true });
 }
@@ -146,6 +146,13 @@ function showCard(html) {
 export function hideCard() {
   const card = byId("map-card");
   if (card && !card.hidden) { card.hidden = true; card.innerHTML = ""; }
+}
+
+function showDroppedPin(point) {
+  const directions = deviceDirections(point, "driving");
+  if (!directions) return;
+  markSelected(null);
+  showCard(`<div class="lot-popup"><span class="lot-popup-type">Dropped pin</span><h3>Selected location</h3><p>Parking rules and availability are unknown here. Check posted signs before parking.</p><a class="lot-popup-link" href="${escapeHtml(directions.url)}" target="_blank" rel="noopener">Get directions in ${escapeHtml(directions.app)} →</a></div>`);
 }
 
 function showFeatureCard(feature) { showCard(lotCardHtml(feature)); }
@@ -258,7 +265,7 @@ async function ensureView(next, center, version) {
   layers[next] = container;
   if (next === "2d") {
     const lib = await maps.importLibrary("maps");
-    views[next] = createMap2D({ maps, lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape });
+    views[next] = createMap2D({ maps, lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onDropPin: showDroppedPin });
   } else {
     const lib = await maps.importLibrary("maps3d");
     views[next] = createMap3D({ lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
@@ -360,8 +367,8 @@ export async function initMap() {
     el.textContent = "";
     syncToggle();
     new MutationObserver(() => { for (const view of Object.values(views)) view.setDark(isDark()); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
-    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); markSelected(null); el.focus({ preventScroll: true }); } });
-    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); markSelected(null); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); views["2d"]?.clearPin(); markSelected(null); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); views["2d"]?.clearPin(); markSelected(null); el.focus({ preventScroll: true }); } });
     for (const m of ["2d", "3d"]) {
       const button = byId(`map-mode-${m}`);
       if (button) { button.disabled = false; button.addEventListener("click", () => void setMode(m)); }
@@ -377,7 +384,7 @@ export async function initMap() {
     // Start 3D in the background so a slow maps3d/WebGL load does not delay
     // lot boundaries, the city layer, or the Find/list UI (initMap is already
     // fire-and-forget from the shell). Fall back to 2D if 3D cannot start.
-    const defaultView = setMode("3d");
+    const defaultView = setMode(window.matchMedia?.("(max-width: 600px)").matches ? "2d" : "3d");
     void initCityLayer(cityHost);
     let boundaryError = false;
     try {

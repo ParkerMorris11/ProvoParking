@@ -28,6 +28,14 @@ test("account timer migration: RLS, server timestamps, one active session and co
  const migration=file("supabase/migrations/20261113002000_single_account_timer.sql");
  sql(migration);sql(migration);
  sql(file("supabase/migrations/20261116210000_bound_guest_writes_and_model_usage.sql"));
+ const oldLibrary = sql("SELECT destination_id || ':' || name FROM public.destination WHERE building_code='HBLL'");
+ const buildingMigration = file("supabase/migrations/20261116230000_byu_campus_destinations.sql");
+ sql(buildingMigration);
+ sql(buildingMigration);
+ assert.equal(sql("SELECT destination_id || ':' || name FROM public.destination WHERE building_code='HBLL'"), oldLibrary);
+ assert.ok(Number(sql("SELECT count(*) FROM public.destination")) > 200);
+ assert.ok(Number(sql("SELECT count(*) FROM public.destination")) <= 300);
+ assert.equal(sql("SELECT count(*) FROM public.destination WHERE building_code='CTB'"), "1");
  assert.equal(as(A,"SELECT has_column_privilege(current_user, 'public.parking_session', 'session_id', 'INSERT')"),"f");
  assert.equal(as(A,"SELECT has_sequence_privilege(current_user, 'public.parking_session_session_id_seq', 'UPDATE')"),"f");
  assert.equal(sql("SELECT count(*) FROM public.parking_session"),count);

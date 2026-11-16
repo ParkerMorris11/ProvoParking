@@ -25,6 +25,9 @@ export function renderViews() {
   if (state.currentView === "area" && area) renderAreaDetail(Number(area[1]));
 }
 
+let showRequestedResults = false;
+document.addEventListener("parking:show-results", () => { showRequestedResults = true; });
+
 export function showView() {
   if (!state.db || !state.areas.length && !state.permits.length) return; // data not loaded yet
   const [name, routeId] = (location.hash.replace(/^#/, "") || (state.find.permitId ? "areas" : "find")).split("/");
@@ -38,7 +41,8 @@ export function showView() {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
   renderViews();
-  const mapHome = syncFullscreenRoute(state.currentView);
+  const mapHome = syncFullscreenRoute(state.currentView, { showResults: state.currentView === "areas" && showRequestedResults });
+  showRequestedResults = false;
   if (mapHome || state.currentView === "areas") void initMap(); else pauseMapLocation();
   if (state.currentView === "lots") renderAllLots();
   if (carSheet) {

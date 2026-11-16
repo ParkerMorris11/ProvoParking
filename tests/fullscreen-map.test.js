@@ -99,8 +99,8 @@ test('guests with no favorites get up to three nearby lots; the tile counts open
   const areaById = new Map([1, 2, 3, 4].map(id => [id, { area_id: id, area_name: `Lot ${id}` }]));
   const rows = suggestionRows({ session: null, favorites: [], nearby: [4, 3, 2, 1], areaById, describe: () => 'Allowed now' });
   assert.deepEqual(rows.map(r => r.title), ['Lot 4', 'Lot 3', 'Lot 2']);
-  assert.equal(matchText(1), '1 area open');
-  assert.equal(matchText(33), '33 areas open');
+  assert.equal(matchText(1), '1 matching section');
+  assert.equal(matchText(33), '33 matching sections');
 });
 
 test('the status tile never shows a bare "0 areas open"', () => {

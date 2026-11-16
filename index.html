@@ -217,7 +217,7 @@
           </button>
           <button type="submit" id="nl-go" class="secondary">Fill in form</button>
         </div>
-        <p id="nl-hint" class="hint">Optional. Say or type your permit, building and time. You can review and change everything below before searching.</p>
+        <p id="nl-hint" class="hint">Enter your permit, destination and time. Review the form before searching.</p>
         <p id="nl-status" class="hint nl-status" role="status" aria-live="polite"></p>
       </form>
       <form id="find-form" class="panel">
@@ -226,9 +226,9 @@
         <p id="permit-info" class="hint"></p>
         <label for="find-destination">Where are you going? (optional)</label>
         <select id="find-destination" aria-describedby="destination-hint"></select>
-        <p id="destination-hint" class="hint">Optional. Choose your BYU building to see the closest matching lots first. We also save it with your parking timer to measure how close you parked. You can also pick it when you start a timer.</p>
+        <p id="destination-hint" class="hint">Choose a BYU building to sort matching lots by distance.</p>
         <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
-        <p class="hint">Updates automatically as lot rules change. Uncheck to plan a different arrival day and time.</p>
+        <p class="hint">Uncheck to choose another day and time.</p>
 
         <div class="row">
           <div>
@@ -244,7 +244,7 @@
             <input type="time" id="arrive-time" required disabled>
           </div>
         </div>
-        <p class="hint">Results compare your selection with listed rules. Your BYU registration and actual eligibility are not verified.</p>
+        <p class="hint">Matches use published rules; verify your permit and posted signs.</p>
         <button type="submit" class="primary">Show parking areas</button>
       </form>
     </section>
@@ -265,7 +265,7 @@
               <button type="button" id="map-mode-2d" aria-pressed="false" disabled>2D</button>
               <button type="button" id="map-mode-3d" aria-pressed="true" disabled>3D</button>
             </div>
-            <div id="map-card" class="map-card" role="region" aria-label="Selected parking lot" tabindex="-1" hidden></div>
+            <div id="map-card" class="map-card" role="region" aria-label="Selected map location" tabindex="-1" hidden></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
           <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
@@ -282,14 +282,14 @@
             <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
             <p id="arrival-suggestion" class="hint" hidden></p>
             <p id="location-status" class="location-status">Use your location to find nearby mapped lots.</p>
-            <p class="location-privacy">Only while this map is open. Your location is not saved to our database.</p>
-            <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Only sections matching listed rules for your selected permit and time are included. Check signs.</p></div>
+            <p class="location-privacy">Your location is not saved.</p>
+            <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Matches your selected permit and time. Check signs.</p></div>
             <ul id="nearby-list" class="nearby-list"></ul>
             <p id="nearby-empty" class="nearby-note" hidden></p>
-            <p class="nearby-note">Distances are straight-line estimates to lot centers. Availability and temporary restrictions are not verified.</p>
+            <p class="nearby-note">Distances are estimates. Open spaces are unknown.</p>
           </section>
           <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
-          <p class="results-note">BYU lot sections checked Nov 4, 2026. Ordinary stalls; regular fall/winter weekly schedule. Register and activate your vehicle. Check signs for events, finals, holidays and breaks. Availability is unknown.</p>
+          <p class="results-note">Regular BYU schedule for ordinary stalls. Register your vehicle and check signs; open spaces are unknown.</p>
           <div class="list-tools">
             <div class="list-search">
               <label for="area-search">Search lots</label>
@@ -317,7 +317,7 @@
         <div><p class="eyebrow">PARKING DIRECTORY</p><h2 id="h-lots" tabindex="-1">All Lots</h2></div>
         <a class="permit-link" href="#areas">See permit matches →</a>
       </div>
-      <p class="summary">Browse the parking locations we’ve mapped. Inclusion does not establish permission to park or space availability.</p>
+      <p class="summary">Explore mapped lots. Check signs; open spaces are not verified.</p>
       <div class="list-tools"><div class="list-search">
         <label for="all-lots-search">Search all lots</label>
         <input type="search" id="all-lots-search" placeholder="e.g. 37Y, Covey or Airport" autocomplete="off">
@@ -330,7 +330,7 @@
       </section>
       <section class="catalog-group" aria-labelledby="all-city-heading">
         <h3 id="all-city-heading">Provo city facilities</h3>
-        <p class="hint">City and OpenStreetMap records. Check posted signs for public access, hours and limits.</p>
+        <p class="hint">City and OpenStreetMap records. Check posted signs.</p>
         <ul class="nearby-list" id="all-city-lots"></ul>
         <button type="button" class="secondary" id="all-city-more" hidden>Show more city facilities</button>
       </section>
@@ -346,14 +346,14 @@
     <section id="view-favorites" aria-labelledby="h-favorites" hidden>
       <h2 id="h-favorites" tabindex="-1">Favorites</h2>
       <ul id="fav-list" class="fav-list"></ul>
-      <p id="fav-empty" class="empty" hidden>No favorites yet. Tap the heart on a parking area to save it here.</p>
+      <p id="fav-empty" class="empty" hidden>No saved lots yet. Tap a heart to save one.</p>
     </section>
 
     <!-- Screen 6 tab: Help — BYU permits, how to read results, Provo rules, citations -->
     <section id="view-help" aria-labelledby="h-help" hidden>
       <h2 id="h-help" tabindex="-1">Help</h2>
-      <div class="panel help">
-        <h3 id="help-permits">Which BYU permit parks where</h3>
+      <div class="panel help"><p class="hint">Choose a topic for parking guidance and sources.</p>
+        <details class="help-topic"><summary id="help-permits">Which BYU permit parks where</summary>
         <p class="hint">Your permit is valid only in the lot letters listed. Every other lettered lot can get you a ticket during enforcement hours.</p>
         <div class="table-wrap">
           <table class="permit-table" aria-describedby="help-permits">
@@ -381,7 +381,8 @@
         </ul>
         <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> (released July 23, 2026) · checked 2026-11-05</p>
 
-        <h3>How to read the Areas page</h3>
+        </details>
+        <details class="help-topic"><summary>How to read the Areas page</summary>
         <ul>
           <li><strong>Matches listed rules</strong> means the permit and time you picked fit the rules BYU publishes for that lot section. It does not mean a space is open.</li>
           <li><strong>Map colors</strong> show the lot category (student, employee, visitor and so on), not availability.</li>
@@ -389,7 +390,8 @@
           <li><strong>Posted signs win.</strong> Events, finals, holidays and construction can change the rules.</li>
         </ul>
 
-        <h3>Downtown Provo</h3>
+        </details>
+        <details class="help-topic"><summary>Downtown Provo</summary>
         <ul>
           <li>Use garages for stays longer than two hours.</li>
           <li>Enforcement works around the clock.</li>
@@ -397,7 +399,8 @@
         </ul>
         <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · city GIS and OSM map snapshot checked 2026-11-06</p>
 
-        <h3>If you get a Provo citation</h3>
+        </details>
+        <details class="help-topic"><summary>If you get a Provo citation</summary>
         <ul>
           <li>Respond within <strong>5 business days</strong>.</li>
           <li>No late fees while an appeal filed in time is pending.</li>
@@ -405,8 +408,10 @@
         </ul>
         <p class="hint"><a href="https://www.provo.gov/213/Pay-Parking-Citations" target="_blank" rel="noopener">Pay Parking Citations</a> · checked 2026-10-07</p>
 
-        <h3>About this app</h3>
+        </details>
+        <details class="help-topic"><summary>About this app</summary>
         <p class="hint">Results compare the permit you pick with official map rules; BYU registration and eligibility are not verified. Capacity, live availability and tow contacts are unknown. Rules can change, so confirm with the source links before relying on them.</p>
+        </details>
       </div>
     </section>
 
@@ -424,7 +429,7 @@
         </section>
         <section aria-labelledby="hm-3d">
           <h3 id="hm-3d">2D and 3D</h3>
-          <p>The map starts in <strong>3D</strong> and follows the app theme, including a native dark road map in dark mode. Use the <strong>2D / 3D</strong> switch to change views. 2D offers a dark road map or satellite imagery with street and place labels. Use the map-style button to switch. 3D also offers a photorealistic satellite view of campus with buildings and labels. The style button works in both views. Dark theme gently tints 3D satellite imagery to match the app. Drag to pan, pinch or scroll to zoom. If 3D is not available on your device, the app shows the 2D map.</p>
+          <p>The map starts in <strong>2D on phones</strong> and <strong>3D on larger screens</strong> and follows the app theme, including a native dark road map in dark mode. Use the <strong>2D / 3D</strong> switch to change views. 2D offers a dark road map or satellite imagery with street and place labels. Use the map-style button to switch. 3D also offers a photorealistic satellite view of campus with buildings and labels. The style button works in both views. Dark theme gently tints 3D satellite imagery to match the app. Drag to pan, pinch or scroll to zoom. In 2D, touch and hold the map (or right-click) to drop a pin and get directions. A dropped pin does not confirm parking is allowed. If 3D is not available on your device, the app shows the 2D map.</p>
         </section>
         <section aria-labelledby="hm-live">
           <h3 id="hm-live">Live location and directions</h3>
@@ -444,7 +449,7 @@
         <p id="car-action-status" class="hint" role="status" hidden></p>
         <div id="car-guest" class="panel car-guest" hidden>
           <h3>Start a parking timer</h3>
-          <p class="hint">Create a free account to start a timer, get a reminder before your time runs out, and save where you parked. Your timer stays on any device you sign in on.</p>
+          <p class="hint">Sign in to save your parking location and start a timer.</p>
           <button type="button" class="primary" id="car-signup">Create a free account</button>
         </div>
         <div id="car-active" hidden></div>
@@ -481,9 +486,9 @@
           <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
           <p id="car-warning" class="hint warn" hidden></p>
           <button type="submit" class="primary">Start parking timer</button>
-          <p class="hint">Reminders show on this page while it is open. The app does not send notifications.</p>
+          <p class="hint">Reminders appear only while the app is open; no notifications are sent.</p>
         </form>
-        <p class="summary car-local-links">One timer per account. Your timer stays saved when you close this popup or the app. Reminders appear while the app is open.</p>
+        <p class="summary car-local-links">One saved timer per account.</p>
       </section>
     </div>
 
