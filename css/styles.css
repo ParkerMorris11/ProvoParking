@@ -656,10 +656,10 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-status.ok { color: var(--ok); } .fav-status.limit { color: var(--low); }
 .fav-status.no-permit, .fav-status.blocked { color: var(--heart); }
 .fav-pop { position: relative; flex: none; }
-.fav-go-btn { list-style: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 48px; height: 48px; border-radius: 12px; color: var(--brand); font-size: .7rem; font-weight: 700; cursor: pointer; }
-.fav-go-btn::-webkit-details-marker, .fav-more-btn::-webkit-details-marker { display: none; }
+.fav-go-btn { flex: none; text-decoration: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 48px; height: 48px; border-radius: 12px; color: var(--brand); font-size: .7rem; font-weight: 700; cursor: pointer; }
+.fav-more-btn::-webkit-details-marker { display: none; }
 .fav-go-btn svg { width: 22px; height: 22px; }
-.fav-go-btn:hover, .fav-go[open] .fav-go-btn { background: var(--brand-tint); }
+.fav-go-btn:hover { background: var(--brand-tint); }
 .fav-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 5; display: grid; min-width: 160px; white-space: nowrap; padding: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
 .fav-menu a { padding: 10px 12px; border-radius: 8px; color: var(--ink-2); font-weight: 600; text-decoration: none; }
 .fav-menu a:hover { background: var(--hover); }

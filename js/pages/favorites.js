@@ -1,10 +1,10 @@
 // Page: Favorites — areas saved with the heart (favorite_area).
 // Kept deliberately simple, like saved places in Google/Apple Maps: one row per lot with its name
-// (or the user's nickname for it), one short status line, a Go button and a ⋯ menu (Rename, Remove).
+// (or the user's nickname for it), one short status line, a Go button (Google Maps directions) and a ⋯ menu (Rename, Remove).
 // Removing a favorite anywhere shows an Undo bar, so a mis-tap never loses a saved lot.
 import { state } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
-import { escapeHtml, fmtDuration, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
+import { escapeHtml, fmtDuration, directionsUrl } from "../lib/format.js";
 import { evaluateArea } from "../components/area-card.js";
 import { formatDistance } from "../domain/area-list.js";
 import { addFavorite, removeFavorite, renameFavorite, cleanNickname } from "../data/favorites.js";
@@ -60,15 +60,9 @@ export function favoriteRowHtml(area) {
     area.est_available_spaces != null ? `~${area.est_available_spaces} open` : "",
   ].filter(Boolean).join(" · ");
   const google = directionsUrl(area, "driving");
-  const apple = appleDirectionsUrl(area, "driving");
+  // Go opens Google Maps driving directions right away (the same Google Maps the app's map uses).
   const go = google
-    ? `<details class="fav-go fav-pop">
-        <summary class="fav-go-btn" aria-label="Directions to ${name}">${GO_ICON}<span>Go</span></summary>
-        <div class="fav-menu">
-          <a href="${escapeHtml(google)}" target="_blank" rel="noopener noreferrer" aria-label="Directions to ${name} in Google Maps (opens in a new tab)">Google Maps</a>
-          <a href="${escapeHtml(apple)}" target="_blank" rel="noopener noreferrer" aria-label="Directions to ${name} in Apple Maps (opens in a new tab)">Apple Maps</a>
-        </div>
-      </details>`
+    ? `<a class="fav-go-btn" href="${escapeHtml(google)}" target="_blank" rel="noopener noreferrer" aria-label="Directions to ${name} in Google Maps (opens in a new tab)">${GO_ICON}<span>Go</span></a>`
     : "";
   return `
     <li class="fav-row">
@@ -164,7 +158,7 @@ async function saveName(areaId, text, { renderViews }) {
 
 export function initFavorites({ renderViews }) {
   document.addEventListener("click", (e) => {
-    // Only one Go or ⋯ menu open at a time; a click anywhere else closes them.
+    // Only one ⋯ menu open at a time; a click anywhere else closes it.
     for (const menu of document.querySelectorAll(".fav-pop[open]")) {
       if (!menu.contains(e.target)) menu.open = false;
     }

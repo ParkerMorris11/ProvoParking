@@ -47,10 +47,10 @@ test('favorites render a simple row with one directions menu per saved lot and u
   try {
     renderFavorites();
     const html = fields['fav-list'].innerHTML;
-    assert.equal((html.match(/class="fav-go fav-pop"/g) || []).length, 2);
+    assert.equal((html.match(/class="fav-go-btn" href="https:\/\/www\.google\.com\/maps\/dir\//g) || []).length, 2, 'Go links straight to Google Maps');
     assert.equal((html.match(/class="heart"/g) || []).length, 0, 'the one-tap heart is replaced by the ⋯ menu');
     assert.equal((html.match(/data-fav-remove=/g) || []).length, 2);
-    assert.equal((html.match(/maps\.apple\.com/g) || []).length, 2);
+    assert.doesNotMatch(html, /maps\.apple\.com/);
     for (const lot of lots.slice(0, 2)) {
       assert.ok(html.includes(directionsUrl(lot, 'driving').replaceAll('&', '&amp;')));
       assert.ok(html.includes(`href="#area/${lot.area_id}"`));
@@ -114,7 +114,7 @@ test('favorite rows show a short status instead of the long rule sentence', asyn
     assert.match(html, /~40 open/);
     assert.doesNotMatch(html, /Approximate section|Driving directions in Google/);
     assert.match(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-row/);
-    assert.doesNotMatch(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-go/);
+    assert.doesNotMatch(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-go-btn/);
   } finally { Object.assign(state, prev); }
 });
 
