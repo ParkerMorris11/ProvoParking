@@ -1,5 +1,6 @@
 // Pure map helpers shared by the 2D and 3D views: lot colors and GeoJSON -> {lat, lng} shapes. No DOM.
-export const CAMPUS_CENTER = { lat: 40.2518, lng: -111.6493 };
+// Main campus (between the WSC and the JSB), so the default view is not centered north by the stadium.
+export const CAMPUS_CENTER = { lat: 40.2497, lng: -111.6493 };
 export const DOWNTOWN_CENTER = { lat: 40.2338, lng: -111.6595 };
 export const CITY_COLOR = "#7a4fb5";
 

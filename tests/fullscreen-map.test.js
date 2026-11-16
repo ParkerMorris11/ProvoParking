@@ -37,7 +37,10 @@ test('permit chip never throws on a half-filled planned time', () => {
 test('list title counts areas with the right wording', () => {
   assert.equal(sheetTitle(33, true), '33 areas match your permit');
   assert.equal(sheetTitle(1, true), '1 area matches your permit');
-  assert.equal(sheetTitle(0, false), '0 areas match for everyone');
+  assert.equal(sheetTitle(0, false), 'Choose your permit to see where you can park');
+  assert.equal(sheetTitle(0, true, { day: 6 }), 'Weekend: no BYU permit rules listed. Check signs');
+  assert.equal(sheetTitle(0, true, { day: 0 }), 'Weekend: no BYU permit rules listed. Check signs');
+  assert.equal(sheetTitle(0, true, { day: 2 }), 'No lots match your permit right now');
 });
 
 test('runtime layout preserves the original forms, results and map landmarks', async () => {
@@ -98,4 +101,10 @@ test('guests with no favorites get up to three nearby lots; the tile counts open
   assert.deepEqual(rows.map(r => r.title), ['Lot 4', 'Lot 3', 'Lot 2']);
   assert.equal(matchText(1), '1 area open');
   assert.equal(matchText(33), '33 areas open');
+});
+
+test('the status tile never shows a bare "0 areas open"', () => {
+  assert.equal(matchText(0, false), 'Choose a permit');
+  assert.equal(matchText(0, true, { day: 6 }), 'Weekend: check signs');
+  assert.equal(matchText(0, true, { day: 2 }), 'No lots match now');
 });

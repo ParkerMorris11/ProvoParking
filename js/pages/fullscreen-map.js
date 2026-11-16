@@ -112,13 +112,25 @@ export function chipText(find, permits) {
   };
 }
 
-export function sheetTitle(count, hasPermit) {
+/**
+ * The drawer's one-line title on the map screen. Never a bare "0": with no permit it asks for one,
+ * and with a permit but nothing matching it says why (BYU lists no weekend permit rules, so on
+ * Saturday and Sunday nothing is confirmed).
+ */
+export function sheetTitle(count, hasPermit, selection = {}) {
+  if (!count && !hasPermit) return "Choose your permit to see where you can park";
+  if (!count) {
+    const weekend = selection.day === 0 || selection.day === 6;
+    return weekend ? "Weekend: no BYU permit rules listed. Check signs" : "No lots match your permit right now";
+  }
   const noun = count === 1 ? "area matches" : "areas match";
   return `${count} ${noun} ${hasPermit ? "your permit" : "for everyone"}`;
 }
 
-// Second line of the status tile, e.g. "33 areas open".
-export function matchText(count) {
+// Second line of the status tile, e.g. "33 areas open". Never a bare "0" (same rule as sheetTitle).
+export function matchText(count, hasPermit = true, selection = {}) {
+  if (!count && !hasPermit) return "Choose a permit";
+  if (!count) return selection.day === 0 || selection.day === 6 ? "Weekend: check signs" : "No lots match now";
   return `${count} ${count === 1 ? "area" : "areas"} open`;
 }
 
@@ -130,12 +142,13 @@ function updateChrome() {
     const count = eligibleAreas(state.areas || [], state.rulesByArea || new Map(), selection).length;
     chip.querySelector(".chip-code").textContent = info.code;
     chip.querySelector(".chip-text").textContent = info.text;
-    chip.querySelector(".chip-sub").textContent = matchText(count);
+    const hasPermit = Boolean(state.find.permitId);
+    chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection);
     chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
     const home = state.currentView === "areas";
     routeBar.hidden = home;
     suggestions.hidden = !home;
-    if (home) renderSuggestions(selection);
+    if (home) renderSuggestions(selection, sheetTitle(count, hasPermit, selection));
   } catch (err) {
     console.error("[fullscreen-map] could not update the map chrome", err);
   }
@@ -186,7 +199,7 @@ export function suggestionRows({ session, favorites, nearby, areaById, describe 
   return rows;
 }
 
-function renderSuggestions(selection) {
+function renderSuggestions(selection, emptyText) {
   const areaById = new Map((state.areas || []).map(a => [a.area_id, a]));
   const favorites = [...(state.favoriteIds || [])].map(id => ({ id, nickname: state.favoriteNames?.get(id) || "" }));
   const nearby = [...document.querySelectorAll('#area-list a[href^="#area/"]')].map(a => Number(a.getAttribute("href").split("/")[1]));
@@ -194,7 +207,7 @@ function renderSuggestions(selection) {
   const html = rows.length ? rows.map(r =>
     `<li><a class="sg-row" href="${r.href}"><span class="sg-icon sg-${r.tone}" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false">${ICONS[r.icon]}</svg></span>` +
     `<span class="sg-text"><span class="sg-title">${escapeHtml(r.title)}</span><span class="sg-sub">${escapeHtml(r.sub)}</span></span>${CHEVRON}</a></li>`).join("")
-    : `<li class="sg-empty">Choose a permit to see lots you can park in.</li>`;
+    : `<li class="sg-empty">${escapeHtml(emptyText)}</li>`;
   const list = suggestions.querySelector(".sg-list");
   if (list.dataset.html !== html) { list.innerHTML = html; list.dataset.html = html; }
 }
