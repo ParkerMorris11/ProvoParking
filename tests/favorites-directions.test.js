@@ -93,11 +93,15 @@ test('Apple Maps directions use the same exact destination, driving or walking, 
   assert.equal(appleDirectionsUrl({ latitude: 91, longitude: 0 }, 'driving'), null);
 });
 
-test('each favorite offers Google Maps and Apple Maps driving directions', () => {
+test('each favorite is one horizontal card with Details, Park here, and a directions + heart icon pair', () => {
   const html = cardHtml(lots[0], { showDirections: true });
+  assert.match(html, /class="card fav-card"/);
+  assert.equal((html.match(/class="icon-btn directions-btn"/g) || []).length, 1);
   assert.ok(html.includes(directionsUrl(lots[0], 'driving').replaceAll('&', '&amp;')));
-  assert.match(html, /href="https:\/\/maps\.apple\.com\/\?daddr=40\.243896%2C-111\.649081&amp;dirflg=d"/);
-  assert.equal((html.match(/class="secondary"/g) || []).length, 1);
+  assert.match(html, /<div class="icon-pair">[\s\S]*directions-btn[\s\S]*class="heart"/);
+  assert.match(html, /class="secondary" href="#area\/1"[^>]*>Details</);
+  assert.match(html, /class="primary" href="#car\/1"[^>]*>Park here</);
+  assert.doesNotMatch(cardHtml({ ...lots[0], is_sample_data: true }, { showDirections: true }), /#car\//);
 });
 
 test('lot detail directions button opens Apple Maps on iPhone/iPad and Google Maps elsewhere', async () => {

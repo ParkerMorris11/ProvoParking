@@ -1,6 +1,6 @@
 // One parking area card, used on the Areas and Favorites pages.
 import { state, rulesFor } from "../state.js";
-import { escapeHtml, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
+import { escapeHtml, deviceDirections } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { formatDistance } from "../domain/area-list.js";
@@ -31,11 +31,36 @@ export function heartHtml(area) {
               aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${HEART_ICON}</button>`;
 }
 
-export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
+// Favorites: one full-width horizontal card per lot. Name + status on the left, actions and the
+// directions/heart icon pair on the right; on narrow screens the actions drop under the name.
+function favoriteCardHtml(area) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
-  const directions = showDirections ? directionsUrl(area, "driving") : null;
-  const appleDirections = showDirections ? appleDirectionsUrl(area, "driving") : null;
+  const dir = deviceDirections(area, "driving");
+  const name = escapeHtml(area.area_name);
+  return `
+    <li class="card fav-card">
+      <div class="fav-info">
+        <h3>${name}</h3>
+        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}</p>
+        <p class="fav-status"><span class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</span><span class="avail ${avail.cls}">${avail.text}</span></p>
+        ${dir ? (area.is_sample_data ? '<p class="hint">Sample location, lot center only.</p>' : "") : '<p class="hint">Directions unavailable — this lot has no valid map location.</p>'}
+      </div>
+      <div class="fav-actions">
+        <a class="secondary" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${name}">Details</a>
+        ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}" aria-label="Park here: ${name}">Park here</a>` : ""}
+      </div>
+      <div class="icon-pair">
+        ${dir ? `<a class="icon-btn directions-btn" href="${escapeHtml(dir.url)}" target="_blank" rel="noopener noreferrer" aria-label="Directions to ${name} in ${dir.app} (opens in a new tab)">${DIRECTIONS_ICON}</a>` : ""}
+        ${heartHtml(area)}
+      </div>
+    </li>`;
+}
+
+export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
+  if (showDirections) return favoriteCardHtml(area);
+  const avail = availabilityText(area);
+  const ev = evaluateArea(area);
   return `
     <li class="card">
       <div class="card-body">
@@ -48,11 +73,6 @@ export function cardHtml(area, { showDirections = false, showOnMap = false } = {
           ${!area.is_sample_data ? `<a class="link" href="#car/${area.area_id}" aria-label="Park here: ${escapeHtml(area.area_name)}">Park here →</a>` : ""}
           ${showOnMap && Number.isInteger(area.source_feature_id) ? `<button type="button" class="link-button" data-map-area="${area.area_id}" aria-label="Show ${escapeHtml(area.area_name)} on map">Show on map</button>` : ""}
         </div>
-        ${showDirections ? `<div class="favorite-directions">
-          ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>
-          <a class="link directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Apple Maps (opens in a new tab)">Apple Maps ↗</a>
-          <p class="hint">${area.is_sample_data ? "Sample location. " : ""}Driving directions in Google or Apple Maps · ${area.is_sample_data ? "Sample lot center" : "Approximate section, not an entrance"}</p>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
-        </div>` : ""}
       </div>
       ${heartHtml(area)}
     </li>`;
