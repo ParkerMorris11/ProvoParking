@@ -14,6 +14,7 @@ export const state = {
   rulesByArea: new Map(), // area_id -> parking_rule rows
   towById: new Map(),
   favoriteIds: new Set(),
+  favoriteNames: new Map(), // area_id -> nickname the user gave that favorite
   activeSession: null,
   currentView: null,
   // What the user picked on the Find screen.

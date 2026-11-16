@@ -647,7 +647,7 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-row + .fav-row { border-top: 1px solid var(--border); }
 .fav-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; color: inherit; text-decoration: none; }
 .fav-main:hover { background: var(--hover); }
-.fav-main:focus-visible, .fav-go-btn:focus-visible, .fav-go-menu a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.fav-main:focus-visible, .fav-go-btn:focus-visible, .fav-menu a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .fav-pin { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; font-weight: 800; color: var(--card); background: var(--muted); } /* --card text: white on dark pins in light mode, navy on pastel pins in dark mode */
 .fav-pin.ok { background: var(--ok); } .fav-pin.limit { background: var(--low); }
 .fav-pin.no-permit, .fav-pin.blocked { background: var(--heart); }
@@ -657,13 +657,37 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 .fav-status { font-weight: 650; }
 .fav-status.ok { color: var(--ok); } .fav-status.limit { color: var(--low); }
 .fav-status.no-permit, .fav-status.blocked { color: var(--heart); }
-.fav-go { position: relative; flex: none; }
+.fav-pop { position: relative; flex: none; }
 .fav-go-btn { list-style: none; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 48px; height: 48px; border-radius: 12px; color: var(--brand); font-size: .7rem; font-weight: 700; cursor: pointer; }
-.fav-go-btn::-webkit-details-marker { display: none; }
+.fav-go-btn::-webkit-details-marker, .fav-more-btn::-webkit-details-marker { display: none; }
 .fav-go-btn svg { width: 22px; height: 22px; }
 .fav-go-btn:hover, .fav-go[open] .fav-go-btn { background: var(--brand-tint); }
-.fav-go-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 5; display: grid; min-width: 160px; padding: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
-.fav-go-menu a { padding: 10px 12px; border-radius: 8px; color: var(--ink-2); font-weight: 600; text-decoration: none; }
-.fav-go-menu a:hover { background: var(--hover); }
-.fav-row .heart { width: 40px; height: 40px; font-size: 1.15rem; }
-@media (max-width: 480px) { .fav-row { gap: 4px; padding-right: 8px; } .fav-main { gap: 10px; } .fav-pin { width: 34px; height: 34px; font-size: .9rem; } .fav-go-btn { width: 44px; height: 44px; } }
+.fav-menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 5; display: grid; min-width: 160px; white-space: nowrap; padding: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+.fav-menu a { padding: 10px 12px; border-radius: 8px; color: var(--ink-2); font-weight: 600; text-decoration: none; }
+.fav-menu a:hover { background: var(--hover); }
+.fav-menu button { padding: 10px 12px; border: 0; border-radius: 8px; background: none; color: var(--ink-2); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.fav-menu button:hover { background: var(--hover); }
+.fav-menu button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.fav-menu .danger { color: var(--heart); }
+.fav-more-btn { list-style: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--muted); cursor: pointer; }
+.fav-more-btn svg { width: 20px; height: 20px; }
+.fav-more-btn:hover, .fav-more[open] .fav-more-btn { background: var(--hover); color: var(--ink-2); }
+.fav-more-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.fav-lot { font-size: .85rem; color: var(--ink-2); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fav-rename { flex: 1; display: grid; gap: 8px; padding: 10px 8px; }
+.fav-rename-label { font-size: .85rem; font-weight: 650; color: var(--label); }
+.fav-rename input { width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid var(--field); border-radius: 12px; background: var(--field-bg); color: var(--text); font: inherit; font-size: 1rem; }
+.fav-rename input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
+.fav-rename-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.fav-rename-actions .primary, .fav-rename-actions .secondary { min-height: 42px; padding: 0 18px; }
+.fav-rename-actions .link-button { margin: 0; }
+/* Undo bar: shown for a few seconds after any favorite is removed. */
+.undo-bar { position: fixed; z-index: 60; left: 50%; bottom: 24px; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; width: max-content; max-width: calc(100% - 32px); padding: 8px 8px 8px 18px; border-radius: 14px; background: var(--text); color: var(--bg); box-shadow: var(--shadow); font-weight: 600; animation: undo-in .2s ease-out; }
+.undo-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo-bar button { flex: none; min-height: 40px; padding: 0 14px; border: 0; border-radius: 10px; background: transparent; color: inherit; font: inherit; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.undo-bar button:hover { background: color-mix(in srgb, var(--bg) 14%, transparent); }
+.undo-bar button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@keyframes undo-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+@media (prefers-reduced-motion: reduce) { .undo-bar { animation: none; } }
+@media (max-width: 600px) { .undo-bar { left: 16px; right: 84px; transform: none; width: auto; max-width: none; justify-content: space-between; bottom: calc(var(--bottom-nav, 64px) + 12px); } @keyframes undo-in { from { opacity: 0; } } }
+@media (max-width: 480px) { .fav-row { gap: 4px; padding-right: 8px; } .fav-main { gap: 10px; } .fav-pin { width: 34px; height: 34px; font-size: .9rem; } .fav-go-btn { width: 44px; height: 44px; } .fav-more-btn { width: 40px; } }
