@@ -35,7 +35,7 @@ test('missing and invalid destinations never produce misleading directions links
   assert.ok(directionsUrl({ latitude: 0, longitude: 0 }, 'driving'));
 });
 
-test('favorites render a separate directions button per saved lot and update after removal', async () => {
+test('favorites render a simple row with one directions menu per saved lot and update after removal', async () => {
   const fields = { 'fav-list': {}, 'fav-empty': {}, 'fav-count': {}, status: { classList: { toggle() {} } } };
   const previousDocument = globalThis.document;
   const previousState = { ...state };
@@ -47,8 +47,9 @@ test('favorites render a separate directions button per saved lot and update aft
   try {
     renderFavorites();
     const html = fields['fav-list'].innerHTML;
-    assert.equal((html.match(/class="secondary"/g) || []).length, 2);
+    assert.equal((html.match(/class="fav-go"/g) || []).length, 2);
     assert.equal((html.match(/class="heart"/g) || []).length, 2);
+    assert.equal((html.match(/maps\.apple\.com/g) || []).length, 2);
     for (const lot of lots.slice(0, 2)) {
       assert.ok(html.includes(directionsUrl(lot, 'driving').replaceAll('&', '&amp;')));
       assert.ok(html.includes(`href="#area/${lot.area_id}"`));
@@ -98,4 +99,20 @@ test('each favorite offers Google Maps and Apple Maps driving directions', () =>
   assert.ok(html.includes(directionsUrl(lots[0], 'driving').replaceAll('&', '&amp;')));
   assert.match(html, /href="https:\/\/maps\.apple\.com\/\?daddr=40\.243896%2C-111\.649081&amp;dirflg=d"/);
   assert.equal((html.match(/class="secondary"/g) || []).length, 1);
+});
+
+test('favorite rows show a short status instead of the long rule sentence', async () => {
+  const { shortStatus, favoriteRowHtml } = await import('../js/pages/favorites.js');
+  assert.equal(shortStatus({ kind: 'ok' }), 'Permit OK');
+  assert.equal(shortStatus({ kind: 'no-permit' }), 'Not your permit');
+  assert.equal(shortStatus({ kind: 'limit', rule: { max_stay_minutes: 120 } }).endsWith('limit'), true);
+  const prev = { ...state };
+  Object.assign(state, { favoriteIds: new Set([1]), rulesByArea: new Map() });
+  try {
+    const html = favoriteRowHtml({ ...lots[0], est_available_spaces: 40, total_spaces: 300 });
+    assert.match(html, /~40 open/);
+    assert.doesNotMatch(html, /Approximate section|Driving directions in Google/);
+    assert.match(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-row/);
+    assert.doesNotMatch(favoriteRowHtml({ ...lots[0], latitude: null }), /fav-go/);
+  } finally { Object.assign(state, prev); }
 });
