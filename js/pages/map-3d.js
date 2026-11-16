@@ -32,6 +32,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
 
   const Polygon = lib.Polygon3DInteractiveElement ?? lib.Polygon3DElement;
   const Marker = lib.Marker3DInteractiveElement ?? lib.Marker3DElement;
+  let selectedKey = null;
   let drawn = [], userShapes = {}, userPoint = null, userAccuracy = 0, userHeading = null;
   const win = container.ownerDocument?.defaultView;
   let pulseFrame = null, lastPulse = 0, visible = true;
@@ -81,12 +82,19 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     map.setAttribute?.("color-scheme", scheme());
     container.classList?.toggle("map-layer-3d--night", night());
     // The tile filter also affects WebGL overlays, so give permits more opacity and a crisp edge.
-    for (const { el, shape } of drawn) if (shape.kind === "polygon") {
-      el.fillColor = withAlpha(shape.color, night() ? 0.66 : 0.45);
-      el.strokeWidth = night() ? 3 : 2;
-    }
+    for (const entry of drawn) paint(entry);
     drawUser();
   };
+  // A selected lot gets a white outline, a near-solid fill and stands taller than the others.
+  function paint({ el, shape }) {
+    if (shape.kind !== "polygon") return;
+    const selected = selectedKey != null && shape.key === selectedKey;
+    el.fillColor = withAlpha(shape.color, selected ? 0.9 : night() ? 0.66 : 0.45);
+    el.strokeColor = selected ? "#ffffff" : shape.color;
+    el.strokeWidth = selected ? 6 : night() ? 3 : 2;
+    const height = selected ? 30 : shape.source.type === "city" ? 20 : 10;
+    if (el.__height !== height) { el.__height = height; el.outerCoordinates = shape.rings[0].map(p => ({ ...p, altitude: height })); }
+  }
   map.addEventListener("gmp-rangechange", () => drawUser());
   applyStyle();
 
@@ -111,9 +119,12 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
           : new Marker({ position: shape.center, altitudeMode: "CLAMP_TO_GROUND", label: "P", title: "Provo parking" });
         el.addEventListener("gmp-click", () => onSelect(shape));
         map.append(el);
+        el.__height = shape.source.type === "city" ? 20 : 10; // matches the altitude above
         drawn.push({ el, shape });
+        paint({ el, shape });
       }
     },
+    setSelected(key) { selectedKey = key; for (const entry of drawn) paint(entry); },
     setUser(point, accuracy, heading = null, speed = null) {
       if (!point) return clearUser();
       userPoint = point;
