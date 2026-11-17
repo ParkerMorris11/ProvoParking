@@ -5,12 +5,21 @@ const normalize = value => String(value || '').toLowerCase().normalize('NFKD')
 // What students actually call a building. Keyed by building code; a match counts like the official name.
 export const BUILDING_NICKNAMES = {
   JRCB: ['law school', 'law building', 'law library', 'clark building'], MC: ['marriott center', 'the marriott', 'marriott', 'basketball arena'],
-  HBLL: ['library', 'hbll', 'lee library', 'harold b lee library'], WSC: ['wilk', 'wilkinson center', 'student center', 'the wilk'],
-  JKB: ['jkb', 'jesse knight', 'knight building'], TNRB: ['tanner', 'tanner building', 'marriott school', 'business school'],
-  JFSB: ['jfsb', 'smith building', 'joseph f smith'], JSB: ['jsb', 'joseph smith building'], KMBL: ['kimball tower', 'kimball'],
-  TMCB: ['tmcb', 'talmage', 'math building', 'math sciences'], MSRB: ['maeser', 'msrb'], BNSN: ['benson', 'benson building'],
-  LVES: ['stadium', 'football stadium', 'lavell edwards'], CB: ['clyde building', 'engineering building'], BRMB: ['brimhall', 'brmb'],
-  ELLB: ['ellsworth'], SFLD: ['fieldhouse', 'smith fieldhouse', 'gym'],
+  HBLL: ['library', 'hbll', 'lee library', 'harold b lee library', 'the library'], WSC: ['wilk', 'wilkinson', 'wilkinson center', 'student center', 'the wilk', 'cougareat'],
+  JKB: ['jkb', 'jesse knight', 'knight building'], TNRB: ['tanner', 'tanner building', 'marriott school', 'business school', 'business building'],
+  JFSB: ['jfsb', 'smith building', 'joseph f smith'], JSB: ['jsb', 'joseph smith building'], KMBL: ['kimball tower', 'kimball', 'spencer w kimball tower'],
+  TMCB: ['tmcb', 'talmage', 'talmage building', 'math building', 'math sciences', 'computer science building'], MSRB: ['maeser', 'msrb', 'maeser building'],
+  BNSN: ['benson', 'benson building', 'chemistry building', 'chem building'], LVES: ['stadium', 'football stadium', 'lavell edwards'],
+  CB: ['clyde building', 'clyde'], BRMB: ['brimhall', 'brmb', 'brimhall building'], ELLB: ['ellsworth'],
+  // The Smith Fieldhouse's code in the campus building list is SFH.
+  SFH: ['fieldhouse', 'smith fieldhouse', 'the fieldhouse', 'gym'],
+  ESC: ['eyring', 'esc', 'eyring science center', 'physics building'], CANC: ['cannon center', 'cannon'],
+  HC: ['hinckley', 'hinckley center', 'alumni center', 'visitors center'], MOA: ['moa', 'art museum'],
+  CTB: ['crabtree', 'crabtree building'], RB: ['richards', 'richards building'], MCKB: ['mckay', 'mckay building'],
+  MARB: ['marb', 'martin building'], LSB: ['lsb', 'life sciences', 'life science building'], SHC: ['health center'],
+  MB: ['music building'], ARTS: ['hfac', 'fine arts', 'fine arts center', 'arts building'], CONF: ['conference center'],
+  MCDB: ['mcdonald building'], SNLB: ['snell building'], HGB: ['grant building'], TRAK: ['track', 'track and field'],
+  MLRP: ['miller park', 'baseball field', 'softball field'], ITB: ['it building'],
 };
 
 // Plain edit distance, stopped early once it is clearly above `max`.

@@ -83,6 +83,7 @@ export function buildPrompt({ text, permits, destinations, now }) {
     "",
     "Rules:",
     "- permit_id: set only when the driver names a permit (for example \"my Y permit\", \"graduate permit\"). Otherwise null.",
+    "- A capital letter or permit code right before \"permit\" or \"pass\" is the permit type, not a word: \"A permit at the Wilk\" and \"an A pass\" mean the A permit, \"Y permit\" means Y. Only a lowercase \"a permit\" (\"I need a permit\") is the article. A named permit always beats the saved one.",
     "- use_saved_permit: true when they mean the permit they already have (\"my permit\", \"my current permit\", \"what I have\") without naming one. If permit_id is set, this is false.",
     "- destination_id: the building they are going to, matched by name or building code (JKB is a building code). Null if none or unsure.",
     "- live: true when they are parking now / just arrived, or gave no time at all. False when they gave a time or a day.",
@@ -111,13 +112,46 @@ export function readModelJson(response) {
   } catch { return null; }
 }
 
+// Words people use for a permit instead of its letter. Same table as js/domain/local-parse.js.
+const PERMIT_WORDS = { faculty: "A", staff: "A", employee: "A", grad: "G", graduate: "G", undergrad: "Y", undergraduate: "Y",
+  visitor: "V", visitors: "V", guest: "V", wymount: "YM", wyview: "YV", heritage: "B", helaman: "C", riviera: "D" };
+const escapeRe = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** The permit code at the start of a label like "A - A Employee". */
+export const permitCodeOf = (label) => String(label || "").split(" - ")[0].trim();
+
+/**
+ * The permit the driver named outright ("A permit", "an A pass", "permit G", "faculty pass"), as an id from
+ * `permits` ({ id, label }), or null. A lowercase "a permit" with no "an" is the article. Mirrors
+ * findExplicitPermit in js/domain/local-parse.js; tests/search-accuracy.test.js checks they agree.
+ */
+export function explicitPermitId(text, permits = []) {
+  const clean = String(text || "").normalize("NFKD").replace(/[^A-Za-z0-9]+/g, " ").trim();
+  if (!clean) return null;
+  const coded = permits.map((p) => ({ id: p.id, code: permitCodeOf(p.label) })).filter((p) => p.code && p.code.length <= 4)
+    .sort((a, b) => b.code.length - a.code.length);
+  for (const permit of coded) {
+    const c = escapeRe(permit.code);
+    const re = new RegExp(`(?:^| )(an )?(${c}) (?:permit|pass|parking|sticker|tag)(?= |$)|(?:^| )permit (${c})(?= |$)`, "gi");
+    for (const m of clean.matchAll(re)) {
+      const said = m[2] ?? m[3];
+      if (!(said === "a" && !m[1])) return permit.id;
+    }
+  }
+  const word = clean.toLowerCase().match(/\b([a-z]{4,}) (?:permit|pass|parking|sticker)\b/)?.[1];
+  const code = word && PERMIT_WORDS[word];
+  return code ? coded.find((p) => p.code === code)?.id ?? null : null;
+}
+
 /**
  * Turns whatever the model said into the strict answer, restricted to the permit and destination IDs the
- * page said are real. Anything out of range becomes null/false. `now` fills a missing day.
+ * page said are real. Anything out of range becomes null/false. `now` fills a missing day. When `text` and
+ * `permits` (labels) are given, a permit named outright in the text overrides the model ("A permit" read as "a").
  */
-export function sanitizeParse(raw, { permitIds, destinationIds, now }) {
+export function sanitizeParse(raw, { permitIds, destinationIds, now, text = "", permits = [] }) {
   const input = raw && typeof raw === "object" ? raw : {};
-  const permit_id = Number.isInteger(input.permit_id) && permitIds.includes(input.permit_id) ? input.permit_id : null;
+  const named = explicitPermitId(text, permits.filter((p) => permitIds.includes(p.id)));
+  const permit_id = named ?? (Number.isInteger(input.permit_id) && permitIds.includes(input.permit_id) ? input.permit_id : null);
   const destination_id = Number.isInteger(input.destination_id) && destinationIds.includes(input.destination_id) ? input.destination_id : null;
   const use_saved_permit = permit_id == null && input.use_saved_permit === true;
   const time = typeof input.time === "string" && TIME_RE.test(input.time.trim()) ? input.time.trim() : null;
