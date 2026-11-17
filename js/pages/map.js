@@ -456,7 +456,11 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
     drawShapes();
   }
   if (all) {
-    setMapStatus(`All lots: ${visibleFeatures.length} BYU ${visibleFeatures.length === 1 ? "section" : "sections"}${cityFacilities.length ? ` + ${cityFacilities.length} Provo lots` : ""}`);
+    // Same 102 as the All Lots list (sections with checked rules); the rest of BYU's map layer (housing,
+    // service, reserved stalls) is outlined but has no rules here, so it's counted separately.
+    const checked = new Set(state.areas.filter((a) => a.operator === "BYU" && !a.is_sample_data && a.source_feature_id != null).map((a) => a.source_feature_id)).size;
+    const outlinedOnly = Math.max(0, visibleFeatures.length - checked);
+    setMapStatus(`All lots: ${checked} BYU ${checked === 1 ? "section" : "sections"} with checked rules${outlinedOnly ? ` + ${outlinedOnly} other BYU areas outlined` : ""}${cityFacilities.length ? ` + ${cityFacilities.length} Provo lots` : ""}`);
     renderNearby();
     return;
   }

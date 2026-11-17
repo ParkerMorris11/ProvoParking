@@ -14,7 +14,7 @@ function results() {
   const query = $("all-lots-search").value;
   const byu = state.areas.filter(a => a.operator === "BYU" && !a.is_sample_data && matchesQuery(a, query)).sort(byName);
   const facilities = (city || []).filter(s => matchesQuery({ area_name: s.name, lot_code: s.kind, operator: s.sourceLabel }, query));
-  $("all-lots-count").textContent = `${byu.length} BYU ${byu.length === 1 ? "section" : "sections"} · ${cityStatus === "ready" ? `${facilities.length} city ${facilities.length === 1 ? "facility" : "facilities"}` : cityStatus === "error" ? "City facilities unavailable" : "Loading city facilities…"}`;
+  $("all-lots-count").textContent = `${byu.length} BYU ${byu.length === 1 ? "section" : "sections"} with checked rules · ${cityStatus === "ready" ? `${facilities.length} city ${facilities.length === 1 ? "facility" : "facilities"}` : cityStatus === "error" ? "City facilities unavailable" : "Loading city facilities…"}`;
   $("all-byu-lots").innerHTML = byu.slice(0, byuLimit).map(area => `<li class="nearby-card">
     <h4>${escapeHtml(area.area_name)}</h4>
     ${area.section_note ? `<p class="lot-subtitle">${escapeHtml(area.section_note)}</p>` : ""}
