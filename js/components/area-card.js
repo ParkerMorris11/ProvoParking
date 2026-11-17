@@ -40,6 +40,7 @@ export function cardHtml(area, { showDirections = false, showOnMap = false } = {
     <li class="card">
       <div class="card-body">
         <h3>${escapeHtml(area.area_name)}</h3>
+        ${area.section_note ? `<p class="lot-subtitle">${escapeHtml(area.section_note)}</p>` : ""}
         <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}${Number.isFinite(area.distanceMeters) ? ` · <span class="distance">~${formatDistance(area.distanceMeters)} away</span>` : ""}</p>
         <p class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</p>
         <p class="avail ${avail.cls}">${avail.text}</p>

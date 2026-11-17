@@ -17,8 +17,9 @@ function results() {
   $("all-lots-count").textContent = `${byu.length} BYU ${byu.length === 1 ? "section" : "sections"} · ${cityStatus === "ready" ? `${facilities.length} city ${facilities.length === 1 ? "facility" : "facilities"}` : cityStatus === "error" ? "City facilities unavailable" : "Loading city facilities…"}`;
   $("all-byu-lots").innerHTML = byu.slice(0, byuLimit).map(area => `<li class="nearby-card">
     <h4>${escapeHtml(area.area_name)}</h4>
+    ${area.section_note ? `<p class="lot-subtitle">${escapeHtml(area.section_note)}</p>` : ""}
     <p class="nearby-description">${escapeHtml(evaluateArea(area).text)}</p>
-    <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(area.area_name)}">Rules &amp; details →</a>
+    <a class="link" href="#area/${area.area_id}" aria-label="Rules &amp; details for ${escapeHtml(area.area_name)}${area.section_note ? `, ${escapeHtml(area.section_note)}` : ""}">Rules &amp; details →</a>
   </li>`).join("") || '<li class="empty">No BYU sections match your search.</li>';
   $("all-city-lots").innerHTML = facilities.slice(0, cityLimit).map(s => `<li class="nearby-card">
     <h4>${escapeHtml(s.name)}</h4>

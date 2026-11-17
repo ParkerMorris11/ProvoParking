@@ -47,7 +47,7 @@ export function renderAreaDetail(areaId) {
     <div class="detail-head">
       <div>
         <h2 id="h-area" tabindex="-1">${escapeHtml(area.area_name)}</h2>
-        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}</p>
+        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}${area.section_note ? ` · ${escapeHtml(area.section_note)}` : ""}</p>
       </div>
       <div class="detail-head-actions">
         ${quickDirections ? `<a class="icon-btn directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)">${DIRECTIONS_ICON}</a>` : ""}

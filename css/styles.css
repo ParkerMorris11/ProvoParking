@@ -807,3 +807,6 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 
 /* Narrow phones: a placeholder too long for its field ends with "…" instead of a cut-off letter. */
 input:is([type="text"], [type="email"], [type="password"], [type="search"]) { text-overflow: ellipsis; }
+
+/* Which part of a multi-section lot a card is (lot-names.js); quieter than the title. */
+.lot-subtitle { margin: 2px 0 6px; font-size: .8rem; color: var(--muted); }
