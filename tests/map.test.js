@@ -583,3 +583,33 @@ test('3D long press drops a pin at the pressed spot; a short tap still selects a
     assert.equal(children.filter(c => c.options.fillColor === '#e11d48').length, 0);
   } finally { performance.now = realNow; }
 });
+
+test('3D draws point-only city facilities as small ground circles, never default red marker pins', () => {
+  const f = fakeMaps3D();
+  let markers = 0;
+  f.lib.Marker3DElement = class { constructor() { markers++; } };
+  let picked = null;
+  const view = createMap3D({ ...f, dark: false, onSelect(shape) { picked = shape; } });
+  const point = { key: 'city:1', kind: 'point', center: { lat: 40.25, lng: -111.65 }, color: '#64748b', source: { type: 'city', index: 1 } };
+  view.setShapes([point]);
+  assert.equal(markers, 0, 'no Marker3DElement');
+  const drawn = f.children.filter(el => Array.isArray(el.outerCoordinates));
+  assert.ok(drawn.some(el => el.outerCoordinates.length >= 12), 'drawn as a ring');
+  const circle = drawn.find(el => el.outerCoordinates.length >= 12);
+  circle.listeners['gmp-click']?.({});
+  assert.equal(picked, point, 'tapping it still selects the original facility');
+});
+
+test('2D draws non-matching BYU sections faint, and selecting a lot keeps them faint', () => {
+  const f = fakeMaps2D();
+  for (const P of [f.lib.Polygon, f.lib.Circle]) P.prototype.setOptions = function (o) { Object.assign(this.options, o); };
+  const view = createMap2D({ maps: f.maps, lib: f.lib, container: {}, dark: false, onSelect() {} });
+  const ring = [[{ lat: 40.25, lng: -111.65 }, { lat: 40.251, lng: -111.65 }, { lat: 40.251, lng: -111.649 }]];
+  const base = { kind: 'polygon', rings: ring, color: '#0062B8', bounds: {}, center: { lat: 40.25, lng: -111.65 }, source: { type: 'byu' } };
+  view.setShapes([{ ...base, key: 'dim', dim: true }, { ...base, key: 'match' }]);
+  view.setSelected('match');
+  const polys = f.made.polygons;
+  assert.equal(polys[0].options.fillOpacity, 0.08);
+  assert.equal(polys[0].options.strokeColor, '#94a3b8');
+  assert.equal(polys[1].options.strokeColor, '#ffffff', 'the selected match is outlined white');
+});

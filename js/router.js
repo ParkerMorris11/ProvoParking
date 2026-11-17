@@ -12,7 +12,7 @@ import { renderCar, stopTimer, openCarSheet, closeCarSheet } from "./pages/car.j
 
 import { syncFullscreenRoute } from "./pages/fullscreen-map.js";
 
-import { initMap, pauseMapLocation } from "./pages/map.js";
+import { initMap, pauseMapLocation, focusAreaOnMap } from "./pages/map.js";
 
 export const VIEWS = ["find", "areas", "area", "lots", "favorites", "help"];
 
@@ -44,6 +44,11 @@ export function showView() {
   const mapHome = syncFullscreenRoute(state.currentView, { showResults: state.currentView === "areas" && showRequestedResults });
   showRequestedResults = false;
   if (mapHome || state.currentView === "areas") void initMap(); else pauseMapLocation();
+  // A lot's page: fly the map to that section and highlight it above the sheet (retried once while the map loads).
+  if (state.currentView === "area" && mapHome && /^\d+$/.test(routeId || "")) {
+    const id = Number(routeId);
+    if (!focusAreaOnMap(id)) setTimeout(() => { if (location.hash === `#area/${id}`) focusAreaOnMap(id); }, 1200);
+  }
   if (state.currentView === "lots") renderAllLots();
   if (carSheet) {
     renderCar(routeId);

@@ -1,6 +1,7 @@
 // Google Maps Photorealistic 3D view (<gmp-map-3d>), same adapter shape as map-2d.js.
 // Lots are extruded polygons; tapping one fires `gmp-click`. Needs v=beta with the maps3d library.
 import { CAMPUS_CENTER, withAlpha } from "../domain/map-geometry.js";
+import { paddedCamera } from "../domain/map-focus.js";
 
 const ALTITUDE = 1415;
 // North-up and a moderate tilt, so the middle of the screen is campus itself. The old 65° tilt facing
@@ -34,7 +35,6 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   container.append(map);
 
   const Polygon = lib.Polygon3DInteractiveElement ?? lib.Polygon3DElement;
-  const Marker = lib.Marker3DInteractiveElement ?? lib.Marker3DElement;
   let selectedKey = null;
   let drawn = [], userShapes = {}, userPoint = null, userAccuracy = 0, userHeading = null;
   const win = container.ownerDocument?.defaultView;
@@ -91,6 +91,14 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   // A selected lot gets a white outline, a near-solid fill and stands taller than the others.
   function paint({ el, shape }) {
     if (shape.kind !== "polygon") return;
+    if (shape.dim) {
+      // BYU sections your permit can't use right now: faint and flat, so the matching ones stand out.
+      el.fillColor = withAlpha("#94a3b8", night() ? 0.12 : 0.1);
+      el.strokeColor = withAlpha("#94a3b8", 0.5);
+      el.strokeWidth = 1;
+      if (el.__height !== 1) { el.__height = 1; el.outerCoordinates = shape.rings[0].map(p => ({ ...p, altitude: 1 })); }
+      return;
+    }
     const selected = selectedKey != null && shape.key === selectedKey;
     el.fillColor = withAlpha(shape.color, selected ? 0.9 : night() ? 0.66 : 0.45);
     el.strokeColor = selected ? "#ffffff" : shape.color;
@@ -138,8 +146,10 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   applyStyle();
 
   const clear = () => { for (const { el } of drawn) el.remove(); drawn = []; };
+  let lastTarget = null; // the camera last asked for (the live one is mid-flight for a second)
   const fly = (camera, durationMillis = 1000) => {
     const endCamera = { tilt: DEFAULT_CAMERA.tilt, heading: DEFAULT_CAMERA.heading, ...camera, center: { ...camera.center, altitude: ALTITUDE } };
+    lastTarget = endCamera;
     if (typeof map.flyCameraTo === "function") map.flyCameraTo({ endCamera, durationMillis });
     else Object.assign(map, endCamera);
   };
@@ -148,15 +158,17 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     mode: "3d",
     setShapes(shapes) {
       clear();
-      for (const shape of shapes) {
-        const el = shape.kind === "polygon"
-          ? new Polygon({
+      for (const original of shapes) {
+        // City facilities recorded as a single point used to be default Google marker pins (big red
+        // teardrops labeled "P"). Draw them as the same small ground circle the 2D map uses instead.
+        const shape = original.kind === "polygon" ? original
+          : { ...original, kind: "polygon", rings: [circleRing(original.center, 24, 24)] };
+        const el = new Polygon({
             outerCoordinates: shape.rings[0].map(p => ({ ...p, altitude: shape.source.type === "city" ? 20 : 10 })),
             altitudeMode: "RELATIVE_TO_GROUND", extruded: true, drawsOccludedSegments: true,
             fillColor: withAlpha(shape.color, night() ? 0.66 : 0.45), strokeColor: shape.color, strokeWidth: night() ? 3 : 2,
-          })
-          : new Marker({ position: shape.center, altitudeMode: "CLAMP_TO_GROUND", label: "P", title: "Provo parking" });
-        el.addEventListener("gmp-click", event => { if (!longPressDrop(event) && !justDropped()) onSelect(shape); });
+          });
+        el.addEventListener("gmp-click", event => { if (!longPressDrop(event) && !justDropped()) onSelect(original); });
         map.append(el);
         el.__height = shape.source.type === "city" ? 20 : 10; // matches the altitude above
         drawn.push({ el, shape });
@@ -178,11 +190,17 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });
     },
     focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level) }); },
-    fitBounds(bounds) {
+    fitBounds(bounds, padding) {
+      if (padding && typeof padding === "object") {
+        // Padding (sheet, chip, buttons): shift the camera so the lots sit in the uncovered part of the map.
+        fly(paddedCamera(bounds, padding, { width: container.clientWidth || 390, height: container.clientHeight || 844, maxRange: 6000 }));
+        return;
+      }
       const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
       fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 1.3)) });
     },
     getView() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng }; },
+    getCamera() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng, range: map.range, target: lastTarget && { lat: lastTarget.center.lat, lng: lastTarget.center.lng, range: lastTarget.range } }; },
     zoomBy(delta) { map.range = Math.min(20000, Math.max(150, (map.range ?? DEFAULT_CAMERA.range) / 2 ** delta)); },
     setDark(on) { darkOn = !!on; applyStyle(); },
     setStyle(style) { mapStyle = style === "hybrid" ? "hybrid" : "roadmap"; applyStyle(); },

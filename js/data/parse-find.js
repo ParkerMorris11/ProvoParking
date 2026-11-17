@@ -133,6 +133,16 @@ export function applyParsedToForm(parsed, els, { permits = [], destinations = []
 }
 
 /**
+ * What happens after the trip sentence fills the form. With a permit and a destination (and nothing the
+ * reader was unsure about) the search runs by itself; otherwise the form stays open and names what's missing.
+ * Either way eligibility is decided later by domain/eligibility.js, never by the reader.
+ */
+export function afterFill({ permit, destination, needsReview = false, warnings = [] } = {}) {
+  const missing = [!permit && "permit", !destination && "destination"].filter(Boolean);
+  return { autoSearch: missing.length === 0 && !needsReview && warnings.length === 0, missing };
+}
+
+/**
  * Asks the model, then lets the local reader fill in anything the model missed. When the model can't be
  * reached at all (busy, over its limit, offline), the local reader answers alone so the search still works.
  * Resolves to { parsed, fallback } where fallback is true when only the local reader answered.

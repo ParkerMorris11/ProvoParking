@@ -824,3 +824,11 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 .near-me-btn { gap: 8px; width: 100%; margin: 4px 0 8px; }
 .near-me-btn svg { width: 20px; height: 20px; }
 .near-me-btn[hidden] { display: none; }
+
+/* Best pick: the top row of a distance-ranked result list */
+.best-pick { display: inline-flex; align-items: center; margin: 0 0 6px; padding: 2px 8px; border-radius: 999px; background: var(--brand-fill); color: #fff; font-size: .74rem; font-weight: 700; }
+.best-reason { margin: 2px 0 6px; font-weight: 600; }
+.card.is-best { outline: 2px solid var(--brand-fill); outline-offset: -2px; }
+.areas-empty-link { margin: 6px 0 0; }
+/* Lot cards open their lot (and fly the map there) when tapped anywhere outside their links and buttons. */
+#area-list .card, #nearby-list .nearby-card { cursor: pointer; }

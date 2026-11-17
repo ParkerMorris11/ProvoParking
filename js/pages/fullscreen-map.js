@@ -603,6 +603,7 @@ function buildSearch() {
       input.readOnly = busy;
       if (busy) input.setAttribute("aria-disabled", "true"); else input.removeAttribute("aria-disabled");
       if (text.includes("Check the fields")) status.insertAdjacentHTML("beforeend", ` <a href="#find">Review</a>`);
+      else if (/^(Read by Gemini|AI busy)/.test(text)) status.insertAdjacentHTML("beforeend", ` <a href="#find">Edit</a>`);
       status.hidden = !text;
     };
     new MutationObserver(syncStatus).observe(nlStatus, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["class"] });

@@ -14,6 +14,7 @@ import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
 import { createMap3D } from "./map-3d.js";
+import { mapPadding, unionBounds, selectionKey, fitDecision } from "../domain/map-focus.js";
 
 let maps, started = false, mode = "3d", centeredDestinationId;
 let mapStyle = "roadmap";
@@ -29,6 +30,22 @@ const activeView = () => views[mode];
 const showingAllLots = () => state.currentView === "lots";
 let allLotsFitted = false, drewAllLots = false;
 let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
+// BYU sections that don't match the chosen permit and time: drawn faint so the matching ones stand out.
+let dimFeatures = [], lastFitKey = null, lastFitDest = null;
+
+const PHONE = "(max-width: 600px)";
+// What part of the map is uncovered for a given sheet position (phones) or with the sidebar (laptops).
+function currentPadding(sheetState) {
+  const el = byId("parking-map");
+  const sheet = document.getElementById("home-sheet");
+  const phone = Boolean(window.matchMedia?.(PHONE).matches);
+  const open = sheet && sheet.dataset.state !== "peek";
+  return mapPadding({
+    phone, sheetState: sheetState || sheet?.dataset.state || "half",
+    width: el?.clientWidth || window.innerWidth, height: el?.clientHeight || window.innerHeight,
+    sidebarRight: !phone && open ? sheet.getBoundingClientRect().right : 0,
+  });
+}
 
 function updateArrivalSuggestion(element, candidate) {
   if (!element) return;
@@ -58,7 +75,7 @@ function renderNearby() {
   emptyText.textContent = "No lots near you match this permit and time within 5 km. Change your permit or arrival time, or browse every lot.";
   list.innerHTML = nearby.map((lot, index) => {
     const distance = lot.distanceMeters < 1000 ? `${Math.max(10, Math.round(lot.distanceMeters / 10) * 10)} m` : `${(lot.distanceMeters / 1000).toFixed(1)} km`;
-    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
+    return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show on map</button></li>`;
   }).join("");
   if (focusedLot) {
     const index = nearby.findIndex(lot => lot.name === focusedLot.name && lot.permit === focusedLot.permit);
@@ -112,13 +129,22 @@ function initLocation() {
   const codes = [...new Set(features.map(f => f.properties?.permit_typ).filter(code => code && !["R", "No BYU Parking"].includes(code)))].sort();
   select.innerHTML = '<option value="">All matching categories</option>' + codes.map(code => `<option value="${escapeHtml(code)}">${escapeHtml(code)}</option>`).join("");
   select.addEventListener("change", renderNearby);
+  // Tapping a nearby lot (the card or its button) flies to that section, highlights it and opens it:
+  // one BYU section -> its Area details page (the map keeps it highlighted above the sheet); a shared
+  // boundary -> the map card listing its sections.
   document.getElementById("nearby-list").addEventListener("click", event => {
-    const control = event.target.closest("[data-nearby-index]");
+    if (event.target.closest("a, select")) return;
+    const card = event.target.closest(".nearby-card");
+    const control = card?.querySelector("[data-nearby-index]");
     const lot = control && nearby[Number(control.dataset.nearbyIndex)];
     if (!lot) return;
-    activeView()?.focus({ lat: lot.point.latitude, lng: lot.point.longitude }, 17);
+    const matches = matchesFor(lot.feature);
+    if (matches.length === 1) { openLot(matches[0].area_id); return; }
+    const shape = shapes.find((s) => s.source.feature === lot.feature);
+    if (shape) { activeView()?.fitBounds(shape.bounds, currentPadding("peek")); markSelected(shape.key); }
+    else activeView()?.focus({ lat: lot.point.latitude, lng: lot.point.longitude }, 17);
     showFeatureCard(lot.feature);
-    document.getElementById("parking-map").focus({ preventScroll: false });
+    document.getElementById("parking-map").focus({ preventScroll: true });
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) pauseMapLocation();
@@ -202,16 +228,42 @@ function selectShape(shape) {
   else showFeatureCard(shape.source.feature);
 }
 
+/** Opens a lot's Area details page; the router then flies the map to it (focusAreaOnMap). */
+export function openLot(areaId) {
+  const hash = `#area/${areaId}`;
+  if (location.hash === hash) focusAreaOnMap(areaId); else location.hash = hash;
+}
+
+function shapeForArea(area) {
+  const feature = area && features.find((f) => f.properties?.OBJECTID === area.source_feature_id);
+  return feature ? shapes.find((s) => s.source.feature === feature) || null : null;
+}
+
+/**
+ * Flies to one section and draws it highlighted, framed in the part of the map the sheet leaves
+ * uncovered (phones: the top of the screen above the half-height sheet). Returns false until the map is up.
+ */
+export function focusAreaOnMap(areaId, { sheetState } = {}) {
+  const view = activeView();
+  const area = state.areas.find((a) => a.area_id === Number(areaId));
+  const shape = view && shapeForArea(area);
+  if (!shape) return false;
+  hideCard();
+  view.fitBounds(shape.bounds, currentPadding(sheetState));
+  markSelected(shape.key);
+  return true;
+}
+
 /** "Show on map" from an Areas card: zoom to that section's boundary and open its card. */
 export function showAreaOnMap(area) {
   const view = activeView();
   if (!view || !area) return false;
-  const feature = visibleFeatures.find((f) => f.properties?.OBJECTID === area.source_feature_id);
-  const shape = feature && shapes.find((s) => s.source.feature === feature);
+  const shape = shapeForArea(area);
   if (!shape) return false;
+  const feature = shape.source.feature;
   const el = byId("parking-map");
-  el?.scrollIntoView?.({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-  if (mode === "2d") view.fitBounds(shape.bounds, 24); else view.focus(shape.center, 18);
+  // Phones lower the sheet for this (fullscreen-map.js), so frame it for the lowered sheet.
+  view.fitBounds(shape.bounds, currentPadding(window.matchMedia?.(PHONE).matches ? "peek" : undefined));
   markSelected(shape.key);
   showFeatureCard(feature);
   el?.focus?.({ preventScroll: true });
@@ -230,6 +282,8 @@ export function resetPersonalMap() {
   stopMapLocation();
   centeredDestinationId = undefined;
   selectedKey = null;
+  lastFitKey = null;
+  lastFitDest = null;
   hideCard();
   for (const view of Object.values(views)) {
     view.setSelected?.(null);
@@ -250,6 +304,7 @@ function setMapStatus(message, { routine = false } = {}) {
 // ---- Drawing -----------------------------------------------------------------------------------
 function drawShapes() {
   shapes = [
+    ...dimFeatures.map((feature) => { const shape = byuShape(feature); return shape && { ...shape, dim: true }; }),
     ...visibleFeatures.map(byuShape),
     ...(cityVisible || showingAllLots() ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
@@ -281,6 +336,19 @@ function fitAllLots() {
     south: Math.min(...boxes.map(b => b.south)), west: Math.min(...boxes.map(b => b.west)),
     north: Math.max(...boxes.map(b => b.north)), east: Math.max(...boxes.map(b => b.east)),
   }, 24);
+}
+
+// A new permit or planned time re-frames the map on the matching sections (same eligibility.js result as
+// the list and the chip). No matches: the camera stays put and the sheet shows the empty state.
+// Works from every view (Find, results, Favorites, Help, map home); a lot page or a new building keeps its camera.
+function fitToMatches(selection, matching) {
+  const dest = state.find.destinationId ?? state.find.customDestination?.name ?? null;
+  const next = fitDecision({ key: selectionKey(selection), lastKey: lastFitKey, dest, lastDest: lastFitDest, view: state.currentView, count: matching.length, hasPermit: selection.permitId != null });
+  lastFitKey = next.key;
+  lastFitDest = next.dest;
+  if (!next.fit) return;
+  const bounds = unionBounds(shapes.filter((shape) => !shape.dim && shape.source?.type === "byu").map((shape) => shape.bounds));
+  if (bounds) activeView()?.fitBounds(bounds, currentPadding());
 }
 
 // Called on every route change once the map is up: switch between "permit matches" and "every lot".
@@ -466,8 +534,12 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   if (all !== drewAllLots || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
     visibleFeatures = next;
     drewAllLots = all;
+    // Every other BYU section stays on the map, faint, so changing permit visibly changes the highlight.
+    const shown = new Set(next);
+    dimFeatures = all ? [] : features.filter((feature) => !shown.has(feature));
     drawShapes();
   }
+  if (!all) fitToMatches(selection, next);
   if (all) {
     // Same 102 as the All Lots list (sections with checked rules); the rest of BYU's map layer (housing,
     // service, reserved stalls) is outlined but has no rules here, so it's counted separately.
@@ -479,4 +551,11 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   }
   setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`, { routine: true });
   renderNearby();
+}
+
+/** Read-only snapshot for tests and the QA harness: what the map is showing right now. */
+export function mapSnapshot() {
+  const lit = shapes.filter((shape) => !shape.dim && shape.source?.type === "byu");
+  return { mode, view: state.currentView, highlighted: lit.length, dimmed: shapes.filter((s) => s.dim).length,
+    bounds: unionBounds(lit.map((s) => s.bounds)), camera: activeView()?.getCamera?.() || activeView()?.getView?.() || null, lastFitKey };
 }
