@@ -135,7 +135,7 @@ select:focus-visible, input:focus-visible, .primary:focus-visible, .secondary:fo
 .summary { color: var(--muted); margin: 0 0 16px; font-size: .92rem; }
 .link { display: inline-block; margin-top: 8px; color: var(--brand-ink); font-weight: 650; padding: 6px 0; text-underline-offset: 3px; }
 .link:hover { color: var(--brand); }
-.back { display: inline-block; padding: 10px 0; margin-bottom: 8px; color: var(--brand-ink); font-weight: 650; text-decoration: none; font-size: .9rem; }
+.back { display: inline-flex; align-items: center; min-height: 44px; padding: 0; margin-bottom: 8px; color: var(--brand-ink); font-weight: 650; text-decoration: none; font-size: .9rem; }
 .back:hover { text-decoration: underline; }
 .elig { margin: 6px 0 0; font-weight: 700; font-size: .9rem; }
 .elig.ok { color: var(--ok); } .elig.limit { color: var(--low); }
@@ -321,10 +321,10 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 }
 @media (max-width: 600px) {
   .areas-heading { display: block; margin-bottom: 22px; }
-  .areas-heading .eyebrow { font-size: .58rem; }
+  .areas-heading .eyebrow { font-size: .7rem; }
   .areas-heading h2 { font-size: 1.9rem; }
   .areas-heading .summary { font-size: .8rem; line-height: 1.5; }
-  .permit-link { margin-top: 16px; min-height: 40px; padding: 0 12px; font-size: .75rem; }
+  .permit-link { margin-top: 16px; min-height: 44px; padding: 0 14px; font-size: .85rem; }
   .map-panel { border-radius: 18px; }
   .map-toolbar { padding: 10px 14px; }
   .parking-map { height: 420px; }
@@ -793,3 +793,6 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 
 /* Account details (email, permit) only show where the account bar sits in the Help / account page. */
 .account-email, .account-permit { display: none; }
+
+/* Narrow phones: a placeholder too long for its field ends with "…" instead of a cut-off letter. */
+input:is([type="text"], [type="email"], [type="password"], [type="search"]) { text-overflow: ellipsis; }

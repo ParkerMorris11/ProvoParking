@@ -538,3 +538,48 @@ for (const reducedMotion of [false, true]) {
     assert.deepEqual(cancelled, reducedMotion ? [] : [1]);
   });
 }
+
+test('3D long press drops a pin at the pressed spot; a short tap still selects a lot', () => {
+  const children = [];
+  const handlers = {};
+  class El {
+    constructor(options) { this.options = options; this.listeners = {}; }
+    addEventListener(name, fn) { this.listeners[name] = fn; }
+    append(c) { children.push(c); } remove() { const i = children.indexOf(this); if (i >= 0) children.splice(i, 1); }
+    setAttribute() {}
+  }
+  const lib = { Map3DElement: El, Polygon3DElement: El, Marker3DElement: El, MapMode: { HYBRID: 'HYBRID' } };
+  let map;
+  const container = { append(m) { map = m; }, addEventListener(name, fn) { handlers[name] = fn; } };
+  const selected = [], dropped = [];
+  const view = createMap3D({ lib, container, onSelect: s => selected.push(s), onDropPin: p => dropped.push(p) });
+  const poly = byuShape({ properties: { OBJECTID: 1, permit_typ: 'Y' }, geometry: { type: 'Polygon', coordinates: [square] } });
+  view.setShapes([poly]);
+  const lot = children.find(c => c.options.extruded);
+  const click = { position: { lat: 40.25, lng: -111.65 } };
+  const realNow = performance.now.bind(performance);
+  let t = 1000; performance.now = () => t;
+  try {
+    // quick tap on a lot: selects it, no pin
+    handlers.pointerdown({ clientX: 10, clientY: 10 }); t += 120; handlers.pointerup({});
+    lot.listeners['gmp-click'](click);
+    assert.deepEqual(selected, [poly]); assert.equal(dropped.length, 0);
+    // held 600 ms without moving, on a lot: pin, no selection
+    t += 2000; handlers.pointerdown({ clientX: 10, clientY: 10 }); t += 600; handlers.pointerup({});
+    lot.listeners['gmp-click'](click);
+    assert.deepEqual(dropped, [{ latitude: 40.25, longitude: -111.65 }]);
+    assert.equal(selected.length, 1, 'the long press did not also select the lot');
+    assert.ok(children.some(c => c.options.fillColor === '#e11d48'), 'a red pin is drawn');
+    // held but dragged: treated as a pan, no pin
+    t += 2000; handlers.pointerdown({ clientX: 10, clientY: 10 }); handlers.pointermove({ clientX: 80, clientY: 10 }); t += 600; handlers.pointerup({});
+    map.listeners['gmp-click'](click);
+    assert.equal(dropped.length, 1);
+    // a second long press moves the pin; clearPin removes it
+    t += 2000; handlers.pointerdown({ clientX: 5, clientY: 5 }); t += 700; handlers.pointerup({});
+    map.listeners['gmp-click']({ position: { lat: 40.26, lng: -111.66 } });
+    assert.equal(dropped.length, 2);
+    assert.equal(children.filter(c => c.options.fillColor === '#e11d48').length, 1, 'only one pin at a time');
+    view.clearPin();
+    assert.equal(children.filter(c => c.options.fillColor === '#e11d48').length, 0);
+  } finally { performance.now = realNow; }
+});

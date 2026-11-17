@@ -1,4 +1,5 @@
 import { searchMapCatalog } from "../domain/map-search.js";
+import { cityFacilityNames } from "./city-layer.js";
 import { findExactLot } from "../domain/lot-search.js";
 // The map stays mounted while existing screens move through one floating drawer.
 // Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
@@ -291,13 +292,19 @@ export function resetMapSearch() {
   }
 }
 
+// Phones get a placeholder short enough to show whole; laptops keep the longer hint. The label says it all either way.
+const PHONE = "(max-width: 600px)";
+const NL_PLACEHOLDER_PHONE = "e.g. Class at 3 pm at the JKB";
+const searchPlaceholder = () => window.matchMedia?.("(max-width: 359px)").matches ? "Search"
+  : window.matchMedia?.(PHONE).matches ? "Search parking" : "Search parking or describe your trip";
+
 function buildSearch() {
   const nlForm = document.getElementById("nl-form"), nlText = document.getElementById("nl-text");
   const nlMic = document.getElementById("nl-mic"), nlStatus = document.getElementById("nl-status");
   if (!nlForm || !nlText) return null;
   const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking and campus buildings" },
     `<span class="map-search-icon">${SEARCH_ICON}</span>` +
-    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Search lots, buildings, or describe your trip" aria-describedby="map-search-status" placeholder="Search parking or describe your trip">` +
+    `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Search lots, buildings, or describe your trip" aria-describedby="map-search-status" placeholder="${searchPlaceholder()}">` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Search" title="Search">${GO_ICON}</button>`);
   // Round account button beside the search bar: initials when signed in, a person icon for guests.
@@ -317,11 +324,18 @@ function buildSearch() {
   syncAccount();
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
   const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
+  for (const query of [PHONE, "(max-width: 359px)"]) window.matchMedia?.(query).addEventListener?.("change", () => { input.placeholder = searchPlaceholder(); });
   const results = el("div", { class: "map-search-results", id: "map-search-results", "aria-label": "Search suggestions", hidden: "" });
   const clearResults = () => { results.replaceChildren(); results.hidden = true; };
   const selectResult = (result) => {
     clearResults(); input.value = result.title; status.hidden = true;
     if (result.type === "lot") { location.hash = `#area/${result.id}`; return; }
+    if (result.type === "city") {
+      // The city list's own "Show on map" control turns the layer on, flies there and opens the card.
+      if (!isDesktop()) setSheet("peek");
+      document.querySelector(`[data-city-index="${result.id}"]`)?.click();
+      return;
+    }
     setSheet("half");
     const version = state.authVersion;
     const chooseDestination = () => {
@@ -334,7 +348,7 @@ function buildSearch() {
   };
   const suggest = () => {
     clearResults();
-    const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations });
+    const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     for (const result of matches) {
       const button = document.createElement("button");
       button.type = "button"; button.className = "map-search-result";
@@ -387,7 +401,7 @@ function buildSearch() {
       status.hidden = false;
       return;
     }
-    const matches = searchMapCatalog(text, { areas: state.areas, destinations: state.destinations });
+    const matches = searchMapCatalog(text, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     const exactDestination = matches.find(item => item.type === "destination" && (item.title.toLowerCase() === text.toLowerCase() || state.destinations.some(d => d.destination_id === item.id && String(d.building_code).toLowerCase() === text.toLowerCase())));
     if (exactDestination) { selectResult(exactDestination); return; }
     if (matches.length === 1) { selectResult(matches[0]); return; }
