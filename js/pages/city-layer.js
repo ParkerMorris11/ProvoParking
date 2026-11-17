@@ -29,6 +29,11 @@ export function cityFacilitySummary(index) {
   return facilities[index] ? facilitySummary(facilities[index], source) : null;
 }
 
+/** Name and kind of every loaded city facility, in list order (for search). */
+export function cityFacilityNames() {
+  return facilities.map((feature, index) => { const s = facilitySummary(feature, source); return { index, name: s.name, kind: s.kind }; });
+}
+
 function renderList(host) {
   const list = byId("city-lot-list");
   const count = byId("city-lot-count");

@@ -1,4 +1,5 @@
 import { searchMapCatalog } from "../domain/map-search.js";
+import { cityFacilityNames } from "./city-layer.js";
 import { findExactLot } from "../domain/lot-search.js";
 // The map stays mounted while existing screens move through one floating drawer.
 // Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
@@ -329,6 +330,12 @@ function buildSearch() {
   const selectResult = (result) => {
     clearResults(); input.value = result.title; status.hidden = true;
     if (result.type === "lot") { location.hash = `#area/${result.id}`; return; }
+    if (result.type === "city") {
+      // The city list's own "Show on map" control turns the layer on, flies there and opens the card.
+      if (!isDesktop()) setSheet("peek");
+      document.querySelector(`[data-city-index="${result.id}"]`)?.click();
+      return;
+    }
     setSheet("half");
     const version = state.authVersion;
     const chooseDestination = () => {
@@ -341,7 +348,7 @@ function buildSearch() {
   };
   const suggest = () => {
     clearResults();
-    const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations });
+    const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     for (const result of matches) {
       const button = document.createElement("button");
       button.type = "button"; button.className = "map-search-result";
@@ -394,7 +401,7 @@ function buildSearch() {
       status.hidden = false;
       return;
     }
-    const matches = searchMapCatalog(text, { areas: state.areas, destinations: state.destinations });
+    const matches = searchMapCatalog(text, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     const exactDestination = matches.find(item => item.type === "destination" && (item.title.toLowerCase() === text.toLowerCase() || state.destinations.some(d => d.destination_id === item.id && String(d.building_code).toLowerCase() === text.toLowerCase())));
     if (exactDestination) { selectResult(exactDestination); return; }
     if (matches.length === 1) { selectResult(matches[0]); return; }
