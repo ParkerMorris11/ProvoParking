@@ -73,3 +73,32 @@
 .help-topic { border-top: 1px solid var(--border); }
 .help-topic summary { padding: 14px 0; min-height: 44px; font-weight: 700; cursor: pointer; }
 .help-topic[open] { padding-bottom: 12px; }
+
+/* ---- Lot page top: title, colored status pill, key facts (one card, scannable at a glance) ---- */
+#area-detail .detail-head { align-items: center; }
+#area-detail .detail-title h2 { margin: 0; font-size: 1.45rem; line-height: 1.2; letter-spacing: -.02em; }
+#area-detail .detail-title .meta { margin-top: 2px; }
+.detail-status-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 14px 0 0; }
+.status-pill { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 7px 14px 7px 8px; border-radius: 999px; border: 1px solid transparent; font-size: .92rem; font-weight: 650; line-height: 1.25; }
+.status-pill .pill-icon { display: grid; place-items: center; flex: 0 0 22px; height: 22px; border-radius: 50%; font-size: .78rem; font-weight: 800; }
+.status-pill.ok { color: var(--ok); background: var(--ok-tint); border-color: color-mix(in srgb, var(--ok) 35%, transparent); }
+.status-pill.limit { color: var(--warn-ink); background: var(--warn-tint); border-color: var(--warn-line); }
+.status-pill.no-permit, .status-pill.blocked { color: var(--err-ink); background: var(--heart-tint); border-color: var(--err-line); }
+.status-pill.pick, .status-pill.unknown { color: var(--ink-2); background: var(--surface-2); border-color: var(--border); }
+.status-pill .pill-icon { background: color-mix(in srgb, currentColor 18%, transparent); }
+.detail-status-row .when { margin: 0; color: var(--muted); font-size: .82rem; font-weight: 500; }
+
+.lot-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; margin: 16px 0 0; padding: 4px 16px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); }
+.lot-fact { min-width: 0; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.lot-fact:nth-child(odd) { padding-right: 12px; }
+.lot-fact:nth-child(even) { padding-left: 12px; border-left: 1px solid var(--border); }
+.lot-fact:nth-last-child(-n + 2):nth-child(odd), .lot-fact:last-child { border-bottom: 0; }
+.lot-fact dt { margin: 0 0 3px; color: var(--muted); font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.lot-fact dd { margin: 0; color: var(--text); font-size: .92rem; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.fact-sub { display: block; color: var(--muted); font-size: .78rem; font-weight: 500; }
+.fact-permits { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0; padding: 0; list-style: none; }
+.fact-permits li { display: inline-flex; align-items: center; gap: 5px; }
+.permit-swatch { display: inline-block; flex: 0 0 auto; width: 10px; height: 10px; border-radius: 3px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent); }
+#area-detail .detail-primary-actions { margin: 16px 0 6px; }
+#area-detail .detail-primary-actions .primary { width: 100%; }
+.detail-avail { margin: 0 0 18px; color: var(--muted); font-size: .76rem; line-height: 1.45; font-weight: 500; }

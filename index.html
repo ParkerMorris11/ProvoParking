@@ -283,7 +283,7 @@
             <div id="map-card" class="map-card" role="region" aria-label="Selected map location" tabindex="-1" hidden></div>
             <p id="map-status" class="map-status" role="status">Loading campus boundaries…</p>
           </div>
-          <div class="map-key"><p class="key-title">PERMIT TYPES</p><ul id="map-legend" class="map-legend" aria-label="Parking boundary colors"></ul><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
+          <div class="map-key"><label class="check city-toggle"><input type="checkbox" id="city-toggle" disabled> <span class="legend-dot city-dot" aria-hidden="true"></span>Show Provo lots (city records, rules not verified)</label></div>
           <p id="map-note" class="map-note">BYU sections are filtered by listed permit and time rules. Provo city and OpenStreetMap records are shown separately and their rules are not verified. They never start a parking timer. Registration, eligibility and open spaces are not verified. Check posted signs.</p>
           <details class="city-lots">
             <summary>Provo lots and garages (<span id="city-lot-count">0</span>)</summary>
@@ -447,8 +447,7 @@
       <div class="help-modal-body">
         <section aria-labelledby="hm-colors">
           <h3 id="hm-colors">Permit colors</h3>
-          <p>Each outline on the map is a lot section. Its color is the permit category allowed there, not whether a space is open. The permit chip on the map filters the lots for your permit and time.</p>
-          <ul id="help-legend" class="map-legend" aria-label="Permit colors"></ul>
+          <p>Each outline on the map is a lot section. Its color is the permit category allowed there, not whether a space is open. Tap the permit chip at the top left to see every permit with its color; choosing one filters the lots for your permit and time.</p>
         </section>
         <section aria-labelledby="hm-3d">
           <h3 id="hm-3d">2D and 3D</h3>

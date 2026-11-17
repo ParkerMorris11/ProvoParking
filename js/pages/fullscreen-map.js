@@ -1,4 +1,5 @@
 import { sharedLotsTag } from "../domain/permit-coverage.js";
+import { PERMIT_CATEGORIES, CITY_COLOR, permitCategory } from "../domain/map-geometry.js";
 import { searchMapCatalog, QUICK_FILTERS, isNaturalLanguageTripQuery } from "../domain/map-search.js";
 import { cityFacilityNames } from "./city-layer.js";
 import { loadRecents, rememberRecent } from "../lib/recent-searches.js";
@@ -628,15 +629,21 @@ function buildSearch() {
 // Tapping the chip opens a small list of permits; choosing one re-filters lots on the map and in the list
 // at once. Without JavaScript the chip is still a plain link to Find.
 function buildPermitPopover() {
+  // A radio list (not a native <select>) so each permit can show its map color: this list is the map's
+  // one permit-color legend. Map colors that no permit covers are listed underneath.
   const pop = el("div", { class: "permit-pop", id: "permit-pop", role: "dialog", "aria-label": "Choose your permit", hidden: "" },
-    `<label for="chip-permit">Your permit</label><select id="chip-permit"></select>` +
+    `<fieldset class="permit-options"><legend>Your permit</legend><div id="chip-permit" class="permit-option-list"></div></fieldset>` +
+    `<p class="permit-pop-other"></p>` +
     `<a class="permit-pop-more" href="#find">Change time or building</a>`);
-  const select = pop.querySelector("select");
+  const list = pop.querySelector("#chip-permit");
   const fill = () => {
-    select.innerHTML = `<option value="">Choose a permit…</option>` + (state.permits || []).map(p =>
-      `<option value="${p.permit_id}">${escapeHtml(p.permit_code)} — ${escapeHtml(p.permit_name)}</option>`).join("");
-    select.value = state.find.permitId ?? "";
+    pop.querySelector(".permit-pop-other").innerHTML = `<span class="visually-hidden">Other map colors: </span>${otherColorsHtml()}`;
+    list.innerHTML = permitOptions(state.permits || []).map(o =>
+      `<label class="permit-option" data-permit-code="${escapeHtml(o.code)}"><input type="radio" name="chip-permit" value="${o.value}"${String(state.find.permitId ?? "") === o.value ? " checked" : ""}>` +
+      `<span class="permit-swatch${o.value ? "" : " none"}" style="${o.color ? `background:${o.color}` : ""}" aria-hidden="true"></span>` +
+      `<span class="permit-option-text">${o.code ? `<span class="permit-option-code">${escapeHtml(o.code)}</span> ` : ""}${escapeHtml(o.name)}<span class="permit-option-cat">${escapeHtml(o.category)}</span></span></label>`).join("");
   };
+  const checked = () => list.querySelector("input:checked") || list.querySelector("input");
   const setOpen = (open) => {
     if (open) fill();
     pop.hidden = !open;
@@ -645,12 +652,37 @@ function buildPermitPopover() {
   chip.setAttribute("aria-haspopup", "dialog");
   chip.setAttribute("aria-expanded", "false");
   chip.setAttribute("aria-controls", "permit-pop");
-  chip.addEventListener("click", (e) => { e.preventDefault(); setOpen(pop.hidden); if (!pop.hidden) select.focus(); });
-  select.addEventListener("change", () => { if (applyPermit(select.value)) setOpen(false); chip.focus(); });
+  chip.addEventListener("click", (e) => { e.preventDefault(); setOpen(pop.hidden); if (!pop.hidden) checked()?.focus(); });
+  // Arrow keys move between radios without choosing; a click, tap, Enter or Space chooses.
+  let viaKeys = false;
+  list.addEventListener("keydown", (e) => {
+    if (e.key.startsWith("Arrow")) viaKeys = true;
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); const r = document.activeElement; if (r?.name === "chip-permit") { r.checked = true; choose(r.value); } }
+  });
+  const choose = (value) => { if (applyPermit(value)) setOpen(false); chip.focus(); };
+  list.addEventListener("change", (e) => { if (viaKeys) { viaKeys = false; return; } choose(e.target.value); });
   pop.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); setOpen(false); chip.focus(); } });
   document.addEventListener("click", (e) => { if (!pop.hidden && !e.target.closest("#permit-pop, #permit-chip")) setOpen(false); });
   pop.querySelector(".permit-pop-more").addEventListener("click", () => setOpen(false));
   return pop;
+}
+
+/** Rows for the permit list: "no permit" first, then every permit with its map color and category. */
+export function permitOptions(permits) {
+  return [{ value: "", code: "", name: "No permit", category: "Only lots open to everyone", color: null },
+    ...permits.map(p => {
+      const cat = permitCategory(p.permit_code);
+      // Names in the data often repeat the code ("A Employee"); show the code once.
+      const name = String(p.permit_name || "").replace(new RegExp(`^${p.permit_code}\\s+`), "") || p.permit_code;
+      return { value: String(p.permit_id), code: p.permit_code, name, category: `${cat.label.split(" · ")[0]} lots`, color: cat.color };
+    })];
+}
+
+// Map colors with no permit of their own (timed stalls, restricted lots, Provo city lots).
+function otherColorsHtml() {
+  const used = new Set((state.permits || []).map(p => permitCategory(p.permit_code).label));
+  const rest = PERMIT_CATEGORIES.filter(c => !used.has(c.label)).map(c => [c.label, c.color]).concat([["Provo city", CITY_COLOR]]);
+  return rest.map(([label, color]) => `<span class="permit-other"><span class="permit-swatch" style="background:${color}" aria-hidden="true"></span>${escapeHtml(label)}</span>`).join("");
 }
 
 // ---- Building the layout ----------------------------------------------------------------------
@@ -829,6 +861,9 @@ function build() {
   if (state.currentView) void initMap();
 }
 
+
+/** True while the Areas screen is showing search results (not the map home). */
+export function isResultsMode() { return resultsMode; }
 
 /** Results mode survives a trip to one lot's page and back; any other screen (or the close button) ends it. */
 export function nextResultsMode({ name, showResults = false, current = false, lastRoute = null }) {
