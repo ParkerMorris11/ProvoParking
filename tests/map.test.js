@@ -583,3 +583,19 @@ test('3D long press drops a pin at the pressed spot; a short tap still selects a
     assert.equal(children.filter(c => c.options.fillColor === '#e11d48').length, 0);
   } finally { performance.now = realNow; }
 });
+
+test('3D draws point-only city facilities as small ground circles, never default red marker pins', () => {
+  const f = fakeMaps3D();
+  let markers = 0;
+  f.lib.Marker3DElement = class { constructor() { markers++; } };
+  let picked = null;
+  const view = createMap3D({ ...f, dark: false, onSelect(shape) { picked = shape; } });
+  const point = { key: 'city:1', kind: 'point', center: { lat: 40.25, lng: -111.65 }, color: '#64748b', source: { type: 'city', index: 1 } };
+  view.setShapes([point]);
+  assert.equal(markers, 0, 'no Marker3DElement');
+  const drawn = f.children.filter(el => Array.isArray(el.outerCoordinates));
+  assert.ok(drawn.some(el => el.outerCoordinates.length >= 12), 'drawn as a ring');
+  const circle = drawn.find(el => el.outerCoordinates.length >= 12);
+  circle.listeners['gmp-click']?.({});
+  assert.equal(picked, point, 'tapping it still selects the original facility');
+});
