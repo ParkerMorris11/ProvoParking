@@ -282,10 +282,11 @@
             <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
             <p id="arrival-suggestion" class="hint" hidden></p>
             <p id="location-status" class="location-status">Use your location to find nearby mapped lots.</p>
+            <button type="button" id="near-me-btn" class="primary near-me-btn" data-near-me><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>Parking near me</button>
             <p class="location-privacy">Your location is not saved.</p>
             <div id="nearby-controls" hidden><label for="nearby-permit">Filter matching sections by category</label><select id="nearby-permit"><option value="">All matching categories</option></select><p class="nearby-note">Matches your selected permit and time. Check signs.</p></div>
             <ul id="nearby-list" class="nearby-list"></ul>
-            <p id="nearby-empty" class="nearby-note" hidden></p>
+            <div id="nearby-empty" class="nearby-empty" hidden><p id="nearby-empty-text" class="nearby-note"></p><div class="empty-actions"><a class="secondary" href="#find">Change permit or time</a><a class="secondary" href="#lots">Browse all lots</a></div></div>
             <p class="nearby-note">Distances are estimates. Open spaces are unknown.</p>
           </section>
           <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
@@ -346,7 +347,12 @@
     <section id="view-favorites" aria-labelledby="h-favorites" hidden>
       <h2 id="h-favorites" tabindex="-1">Favorites</h2>
       <ul id="fav-list" class="fav-list"></ul>
-      <p id="fav-empty" class="empty" hidden>No saved lots yet. Tap a heart to save one.</p>
+      <div id="fav-empty" class="empty empty-state" hidden>
+        <svg class="empty-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="24" cy="24" r="23" fill="currentColor" opacity=".12"/><path d="M24 35s-10-6.2-10-13.3A5.7 5.7 0 0 1 24 18a5.7 5.7 0 0 1 10 3.7C34 28.8 24 35 24 35Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
+        <h3 class="empty-title">No favorite lots yet</h3>
+        <p>Tap the heart on any lot to keep it here with one-tap directions.</p>
+        <div class="empty-actions"><button type="button" class="primary" data-near-me>Find parking near me</button><a class="secondary" href="#lots">Browse all lots</a></div>
+      </div>
     </section>
 
     <!-- Screen 6 tab: Help — BYU permits, how to read results, Provo rules, citations -->

@@ -810,3 +810,17 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 
 /* Which part of a multi-section lot a card is (lot-names.js); quieter than the title. */
 .lot-subtitle { margin: 2px 0 6px; font-size: .8rem; color: var(--muted); }
+
+/* Empty states with a next step (Favorites, Nearby). */
+.empty-state { display: grid; justify-items: center; gap: 8px; padding: 28px 20px; }
+.empty-state[hidden] { display: none; }
+.empty-state p { margin: 0; max-width: 32ch; }
+.empty-icon { width: 56px; height: 56px; color: var(--brand-ink); }
+.empty-title { margin: 4px 0 0; font-size: 1.1rem; color: var(--text); }
+.empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
+.empty-actions .primary { margin-top: 0; }
+.nearby-empty[hidden] { display: none; }
+.nearby-empty .empty-actions { justify-content: flex-start; }
+.near-me-btn { gap: 8px; width: 100%; margin: 4px 0 8px; }
+.near-me-btn svg { width: 20px; height: 20px; }
+.near-me-btn[hidden] { display: none; }
