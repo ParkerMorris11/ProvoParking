@@ -138,6 +138,7 @@ function clearPersonalData() {
   if (state.authId && /^#(?:car|area)(?:\/|$)/.test(location.hash)) history.replaceState(null, "", "#areas");
   state.find.live = true;
   state.find.permitId = null;
+  state.find.customDestination = null;
   state.authVersion++;
   state.authId = null;
   clearPasswords();

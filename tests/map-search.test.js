@@ -44,3 +44,14 @@ test('misspelling matches never rank above exact ones', () => {
   const results = searchMapCatalog('tanner', { destinations });
   assert.equal(results[0].id, 1);
 });
+
+import { QUICK_FILTERS, isNaturalLanguageTripQuery } from '../js/domain/map-search.js';
+
+test('exposes quick filters and detects natural-language trip statements cleanly', () => {
+  assert.deepEqual(QUICK_FILTERS.map(f => f.id), ['near-me', 'visitor', 'free-now']);
+  assert.equal(isNaturalLanguageTripQuery('tanner building'), false);
+  assert.equal(isNaturalLanguageTripQuery('law school'), false);
+  assert.equal(isNaturalLanguageTripQuery('park near library tomorrow 3pm'), true);
+  assert.equal(isNaturalLanguageTripQuery('Y permit until 5pm'), true);
+  assert.equal(isNaturalLanguageTripQuery('where can I park for class'), true);
+});
