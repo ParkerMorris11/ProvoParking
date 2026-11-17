@@ -836,7 +836,7 @@ export function syncFullscreenRoute(name, { showResults = false } = {}) {
   lastRoute = name;
   sheet.dataset.route = name;
   sheet.toggleAttribute("data-results", name === "areas" && resultsMode);
-  setSheet(name === "areas" && !isDesktop() && !showResults ? "peek" : "half");
+  setSheet(name === "areas" && !isDesktop() && !resultsMode ? "peek" : "half");
   if ((name === "area" || resultsMode) && body) body.scrollTop = 0;
   updateChrome();
   refreshMap();
