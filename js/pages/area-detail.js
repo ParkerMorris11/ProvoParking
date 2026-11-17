@@ -8,7 +8,6 @@ import { parkingSelection } from "../domain/parking-results.js";
 import { ruleScheduleHtml } from "../components/rule-schedule.js";
 import { backTarget, lotFacts } from "../domain/lot-facts.js";
 import { areaPoint } from "../domain/area-list.js";
-import { currentPosition } from "./map.js";
 
 let dayChoice = { areaId: null, day: null };
 const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -71,7 +70,7 @@ export function renderAreaDetail(areaId) {
   const disclosures = [...(box.querySelectorAll?.("details") || [])].map((el) => el.open);
   const byu = area.operator === "BYU" && !area.is_sample_data;
   const building = (state.destinations || []).find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
-  const facts = lotFacts({ area, rules, permits: state.permits || [], day: selection.day, position: currentPosition(), destination: building ? { point: areaPoint(building), name: building.name } : null });
+  const facts = lotFacts({ area, rules, permits: state.permits || [], day: selection.day, position: state.lastPosition, destination: building ? { point: areaPoint(building), name: building.name } : null });
   box.innerHTML = `
     <div class="detail-head">
       <div class="detail-title">

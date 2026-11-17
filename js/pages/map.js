@@ -92,6 +92,7 @@ function initLocation() {
   tracker = createLocationTracker({ geolocation: window.navigator?.geolocation, onChange: update => {
     const wasLive = Boolean(latestPosition);
     latestPosition = update.position;
+    state.lastPosition = latestPosition;
     const active = update.status === "live" || update.status === "waiting";
     button.textContent = active ? "Stop tracking" : "Use my location";
     button.setAttribute("aria-pressed", String(active));
