@@ -258,9 +258,11 @@ const cityHost = {
   select(index) { const summary = cityFacilitySummary(index); if (summary) showCard(cityPopupHtml(summary)); },
 };
 
-// Frame every drawn lot (All Lots screen).
+// Frame the lots on the All Lots screen: BYU campus, or the whole valley only when the city layer is on.
+// (Framing all ~600 lots zoomed the 3D view out over the valley, which made campus unreadable.)
 function fitAllLots() {
-  const boxes = shapes.map(shape => shape.bounds || (shape.center && { south: shape.center.lat, north: shape.center.lat, west: shape.center.lng, east: shape.center.lng })).filter(Boolean);
+  const framed = cityVisible ? shapes : shapes.filter((shape) => shape.source?.type !== "city");
+  const boxes = (framed.length ? framed : shapes).map(shape => shape.bounds || (shape.center && { south: shape.center.lat, north: shape.center.lat, west: shape.center.lng, east: shape.center.lng })).filter(Boolean);
   if (!boxes.length) return;
   activeView()?.fitBounds({
     south: Math.min(...boxes.map(b => b.south)), west: Math.min(...boxes.map(b => b.west)),
@@ -272,7 +274,12 @@ function fitAllLots() {
 function syncAllLots() {
   const on = showingAllLots();
   refreshMapEligibility();
-  if (!on) { allLotsFitted = false; return; }
+  if (!on) {
+    // Leaving All Lots: go back to the normal campus camera (3D tilt and heading included).
+    if (allLotsFitted) { for (const view of Object.values(views)) view.resetCamera(); }
+    allLotsFitted = false;
+    return;
+  }
   if (!allLotsFitted && shapes.length) { allLotsFitted = true; fitAllLots(); }
 }
 
