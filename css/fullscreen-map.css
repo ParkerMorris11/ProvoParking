@@ -314,9 +314,10 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 }
 
 /* Sheet colors: a light frosted panel with grouped rows, like the system maps apps. */
-.fs-shell { --search-fill: var(--sheet-search, rgba(118, 118, 128, .12)); --group-fill: var(--sheet-group, rgba(255, 255, 255, .62)); --glass-strong: var(--sheet-glass, rgba(246, 247, 249, .84)); --glass-filter: blur(28px) saturate(1.8); }
-:root[data-theme-active="dark"] .fs-shell { --glass: rgba(28, 30, 34, .74); --glass-strong: rgba(28, 30, 34, .86); --card: #1c1f24; --surface-2: #24282e; --field-bg: #16191d; --border: #3a3f47; --field: #4a505a; --glass-filter: blur(28px) saturate(1.5); --search-fill: rgba(118, 118, 128, .26); --group-fill: rgba(255, 255, 255, .07); --hover: rgba(255, 255, 255, .08); }
-@supports not (backdrop-filter: blur(1px)) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
+.fs-shell { --search-fill: var(--sheet-search, rgba(118, 118, 128, .12)); --group-fill: var(--sheet-group, rgba(255, 255, 255, .62)); --glass-strong: var(--sheet-glass, rgba(246, 247, 249, .72)); --glass-filter: blur(28px) saturate(1.8); }
+:root[data-theme-active="dark"] .fs-shell { --glass: rgba(28, 30, 34, .66); --glass-strong: rgba(28, 30, 34, .74); --card: #1c1f24; --surface-2: #24282e; --field-bg: #16191d; --border: #3a3f47; --field: #4a505a; --glass-filter: blur(28px) saturate(1.5); --search-fill: rgba(118, 118, 128, .26); --group-fill: rgba(255, 255, 255, .07); --hover: rgba(255, 255, 255, .08); }
+/* Safari before 18 (iOS 17 and older) only knows -webkit-backdrop-filter: without the "or" it lost the glass. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
 @media (prefers-reduced-transparency: reduce) { .fs-shell { --glass: var(--card); --glass-strong: var(--card); } }
 
 /* Every section in the sheet uses the same grey rounded card as Suggestions and Browse. */
@@ -338,7 +339,7 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .home-sheet { clip-path: inset(0 0 var(--drag-y, var(--sheet-y)) 0 round var(--sheet-radius)); }
   .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46dvh + 48px); }
 }
-.fs-shell .home-sheet { background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
+.fs-shell .home-sheet { background: var(--glass-strong); -webkit-backdrop-filter: blur(28px) saturate(1.7); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .fs-shell .map-search-results { background: var(--glass-strong); color: var(--text); border-color: var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 
 /* Phones: the closed sheet is one even bar. The search field, mic, arrow and profile button share one 48px line,
@@ -398,3 +399,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .map-search input:focus, .fs-shell .map-search input:focus-visible { outline: none; border: 0; border-radius: 0; box-shadow: none; -webkit-appearance: none; appearance: none; }
 .fs-shell .map-search:focus-within { box-shadow: 0 0 0 3px var(--brand); }
 @media (forced-colors: active) { .fs-shell .map-search:focus-within { outline: 2px solid CanvasText; } }
+
+/* One search at a time: Find has its own trip box, so the sheet's search row steps aside there.
+   (Close returns to the map, where the search and the account button are; Help also has the account.) */
+.home-sheet[data-route="find"] :is(.sheet-search-row, .map-search-status, .map-search-results) { display: none; }
+/* After a search the ranked list (Best pick first) leads; Browse and Nearby return with the close button. */
+.home-sheet[data-results] :is(#app-nav, .nearby-panel) { display: none; }

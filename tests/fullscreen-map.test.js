@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { chipText, sheetTitle, suggestionRows, matchText } from '../js/pages/fullscreen-map.js';
+import { chipText, sheetTitle, suggestionRows, matchText, nextResultsMode } from '../js/pages/fullscreen-map.js';
 
 const permits = [
   { permit_id: 1, permit_code: 'Y', permit_name: 'Y Undergraduate' },
@@ -123,4 +123,21 @@ test('the status tile never shows a bare "0 areas open"', () => {
   assert.equal(matchText(0, false), 'Choose a permit');
   assert.equal(matchText(0, true, { day: 6 }), 'Weekend: check signs');
   assert.equal(matchText(0, true, { day: 2 }), 'No lots match now');
+});
+
+test('after a search the sheet leads with results; a lot page and back keeps them; other screens end it', () => {
+  assert.equal(nextResultsMode({ name: 'areas', showResults: true }), true, 'AI fill / Show parking areas');
+  assert.equal(nextResultsMode({ name: 'area', current: true, lastRoute: 'areas' }), true, 'open a lot');
+  assert.equal(nextResultsMode({ name: 'areas', current: true, lastRoute: 'area' }), true, 'back from the lot');
+  assert.equal(nextResultsMode({ name: 'areas', current: true, lastRoute: 'areas' }), false, 'map home again (close)');
+  for (const name of ['find', 'lots', 'favorites', 'help']) assert.equal(nextResultsMode({ name, current: true, lastRoute: 'areas' }), false, name);
+});
+
+test('glass stays on in Safari 17 and older (prefixed backdrop-filter), and Find shows one search box', async () => {
+  const css = await readFile(new URL('../css/fullscreen-map.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(css, /@supports not \(backdrop-filter: blur\(1px\)\)\s*\{/, 'an unprefixed-only check turns the glass off on iOS 17');
+  assert.match(css, /@supports not \(\(backdrop-filter: blur\(1px\)\) or \(-webkit-backdrop-filter: blur\(1px\)\)\)/);
+  assert.match(css, /\.fs-shell \.home-sheet \{[^}]*-webkit-backdrop-filter: blur\(/, 'the sheet has a literal prefixed blur');
+  assert.match(css, /\.home-sheet\[data-route="find"\] :is\(\.sheet-search-row,/);
+  assert.match(css, /\.home-sheet\[data-results\] :is\(#app-nav, \.nearby-panel\)/);
 });

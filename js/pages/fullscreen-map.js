@@ -22,6 +22,9 @@ const DESKTOP = "(min-width: 601px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
 let view, sheet, handle, head, body, chip, suggestions, routeBar, ready = false, applyPermit = () => false;
+// True while the Areas screen shows the results of a search (Find, AI fill, a building): the sheet then leads with
+// the ranked list (Best pick first). Suggestions and Browse come back when you close the results.
+let resultsMode = false, lastRoute = null;
 
 const isDesktop = () => Boolean(window.matchMedia?.(DESKTOP).matches);
 
@@ -150,7 +153,7 @@ function updateChrome() {
     const hasPermit = Boolean(state.find.permitId);
     chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection);
     chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
-    const home = state.currentView === "areas";
+    const home = state.currentView === "areas" && !resultsMode;
     routeBar.hidden = home;
     suggestions.hidden = !home;
     if (home) renderSuggestions(selection, sheetTitle(count, hasPermit, selection));
@@ -754,6 +757,12 @@ function build() {
   routeBar = el("div", { class: "route-bar", hidden: "" });
   const close = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
   routeBar.append(close);
+  close.addEventListener("click", (e) => {
+    if (state.currentView !== "areas" || !resultsMode) return;
+    e.preventDefault();
+    resultsMode = false;
+    syncFullscreenRoute("areas");
+  });
 
   const accountBar = document.querySelector(".account-bar");
   const accountSection = el("section", { class: "drawer-account", "aria-label": "Your account" });
@@ -817,12 +826,23 @@ function build() {
 }
 
 
+/** Results mode survives a trip to one lot's page and back; any other screen (or the close button) ends it. */
+export function nextResultsMode({ name, showResults = false, current = false, lastRoute = null }) {
+  if (name === "areas") return Boolean(showResults || (current && lastRoute === "area"));
+  return name === "area" ? current : false;
+}
+
 // Called after the router selects a screen. The canvas is a sibling of the drawer, never a route.
 export function syncFullscreenRoute(name, { showResults = false } = {}) {
   if (!sheet) return false;
   // Phones open on the map with the sheet lowered; laptops keep the sidebar open.
-  setSheet(name === "areas" && !isDesktop() && !showResults ? "peek" : "half");
-  if (name === "area" && body) body.scrollTop = 0;
+  // Back from a lot's page returns to the same results; the close button on the results goes home.
+  resultsMode = nextResultsMode({ name, showResults, current: resultsMode, lastRoute });
+  lastRoute = name;
+  sheet.dataset.route = name;
+  sheet.toggleAttribute("data-results", name === "areas" && resultsMode);
+  setSheet(name === "areas" && !isDesktop() && !resultsMode ? "peek" : "half");
+  if ((name === "area" || resultsMode) && body) body.scrollTop = 0;
   updateChrome();
   refreshMap();
   return true;
