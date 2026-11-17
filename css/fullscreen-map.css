@@ -339,8 +339,33 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .home-sheet { background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .fs-shell .map-search-results { background: var(--glass-strong); color: var(--text); border-color: var(--glass-border); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 
-/* Balance the search row above the rounded bottom edge on phones. */
+/* Phones: the closed sheet is one even bar. The search field, mic, arrow and profile button share one 48px line,
+   with 15px from the sheet's left, right and bottom edges (14px padding + 1px border; the closed sheet's bottom edge
+   is its clip, so --peek = 1 + 24 + 48 + 15). The grip sits centered in its own 24px band above the row. */
 @media (max-width: 600px) {
-  .fs-shell { --peek: 96px; }
-  .fs-shell .home-sheet[data-state="peek"] .sheet-head { padding-bottom: 24px; }
+  .fs-shell { --peek: 88px; }
+  .fs-shell .sheet-handle { height: 24px; }
+  .fs-shell .sheet-grip { top: 10px; height: 4px; border-radius: 2px; }
+  .fs-shell .sheet-head { padding: 0 14px 14px; }
+  .fs-shell .sheet-search-row { gap: 8px; }
+  .fs-shell .map-search { min-height: 48px; padding: 0 4px 0 14px; border-radius: 24px; }
+  .fs-shell .map-search input { height: 48px; text-overflow: ellipsis; }
+  .fs-shell .map-search-btn { width: 40px; height: 40px; }
+  .fs-shell .map-search-go { border-radius: 50%; }
+  .fs-shell .map-account { width: 48px; height: 48px; }
+  .fs-shell .sheet-body { padding-left: 14px; padding-right: 14px; }
+  /* The car button clears the closed sheet (8px gap + 88px peek) by 12px. */
+  .has-fs-home .car-fab { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
+  /* Close button: a full 44px tap target, level with each screen's title. */
+  .route-bar { margin: 2px 0 -46px; }
+  .route-close { width: 44px; height: 44px; }
+  .route-close svg { width: 20px; height: 20px; }
+  .fs-shell .route-bar:not([hidden]) ~ section > h2:first-child { padding-right: 54px; }
+  /* Help opens with the account card: leave a 44px row above it for the close button. */
+  .fs-shell #view-help > .drawer-account { margin-top: 46px; }
+  /* Find: the trip box gets its own line; the mic and "Fill in form" share the next one. */
+  .fs-shell .sheet-body .nl-row .secondary { flex: 1 1 0; }
+  /* Small print in the sheet stays at least 12px, and the map tool buttons get full 44px targets. */
+  .fs-shell :is(.key-title, .results-heading .eyebrow, .map-legend li, .map-note, .nearby-category, .lot-popup-type, .sample-label, .day-scale) { font-size: .75rem; }
+  .fs-shell :is(.map-reset, .map-tools .location-button) { min-height: 44px; }
 }
