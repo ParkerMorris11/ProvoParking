@@ -830,5 +830,7 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 .best-reason { margin: 2px 0 6px; font-weight: 600; }
 .card.is-best { outline: 2px solid var(--brand-fill); outline-offset: -2px; }
 .areas-empty-link { margin: 6px 0 0; }
+/* Note for permits whose home lots are not in the data yet (B, C, D, YM, YV). */
+.areas-coverage { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; font-size: .8rem; line-height: 1.4; background: color-mix(in srgb, var(--brand) 10%, transparent); }
 /* Lot cards open their lot (and fly the map there) when tapped anywhere outside their links and buttons. */
 #area-list .card, #nearby-list .nearby-card { cursor: pointer; }
