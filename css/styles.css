@@ -602,112 +602,103 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 }
 
 /* ---- Loading screens (#loading at start-up, #auth-loading while signing in) ----
-   The Y pin sits on a white app-icon tile and gently drops onto its shadow while location-style
-   rings spread out behind it. A slim bar slides underneath. The tile stays white in dark mode so the
-   navy pin keeps its contrast. With reduced motion everything holds still and the bar just breathes. */
+   A glass brand cluster sits on a soft navy wash. The app icon breathes; a 2px bar
+   shimmers underneath a short status line. The start-up screen also shows a frosted
+   skeleton of the map sheet so the first paint already feels like the app. Reduced
+   motion holds everything still and just fades the bar. .is-leaving fades the
+   overlay out once the app is ready (js/components/splash.js). */
 .splash {
   --splash-tile: #ffffff;
-  --splash-ring: color-mix(in srgb, var(--brand) 32%, transparent);
-  --splash-track: color-mix(in srgb, var(--brand) 16%, transparent);
+  --splash-track: color-mix(in srgb, var(--brand) 18%, transparent);
+  --splash-glow: color-mix(in srgb, var(--brand) 28%, transparent);
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: grid;
-  place-items: center;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   padding: max(32px, env(safe-area-inset-top)) 24px max(32px, env(safe-area-inset-bottom));
   background-color: var(--bg);
   background-image:
-    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 42%),
-    radial-gradient(circle, color-mix(in srgb, var(--text) 11%, transparent) 1.2px, transparent 1.6px);
-  background-size: auto, 22px 22px;
-  background-position: center, center;
+    radial-gradient(ellipse 80% 55% at 50% 28%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 62%),
+    radial-gradient(ellipse 55% 40% at 85% 100%, color-mix(in srgb, var(--brand-ink) 14%, transparent), transparent 60%);
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--text);
   text-align: center;
   outline: none;
+  transition: opacity .32s ease;
 }
-/* Fade the dot grid out toward the edges so it reads as a hint of a map, not wallpaper. */
-.splash::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse 70% 60% at 50% 42%, transparent 30%, var(--bg) 78%);
-}
+.splash.is-leaving { opacity: 0; pointer-events: none; }
 .splash-content {
   position: relative;
-  width: min(100%, 360px);
+  z-index: 1;
+  width: min(100%, 320px);
+  padding: 32px 28px 28px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-strong);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
   animation: splash-in .5s cubic-bezier(.2, .8, .2, 1) both;
 }
 .splash-mark {
   position: relative;
-  width: 132px;
-  height: 132px;
-  margin: 0 auto 40px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 20px;
+}
+.splash-pulse {
+  position: absolute;
+  inset: -12px;
+  border-radius: 32px;
+  background: var(--splash-glow);
+  filter: blur(8px);
+  opacity: .55;
+  animation: splash-pulse 2.2s ease-in-out infinite;
 }
 .splash-tile {
   position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
-  border-radius: 38px;
+  border-radius: 26px;
   background: var(--splash-tile);
   box-shadow:
     0 1px 0 #ffffff inset,
-    0 18px 40px color-mix(in srgb, var(--brand-ink) 22%, transparent),
-    0 4px 10px color-mix(in srgb, var(--brand-ink) 12%, transparent);
+    0 10px 28px color-mix(in srgb, var(--brand-ink) 18%, transparent);
   overflow: hidden;
 }
 .splash-pin {
-  position: relative;
-  z-index: 1;
-  width: 56px;
+  width: 50px;
   height: auto;
-  margin-top: -10px;
-  animation: splash-drop 1.8s cubic-bezier(.45, 0, .35, 1) infinite;
+  animation: splash-icon-pulse 2.2s ease-in-out infinite;
 }
-.splash-shadow {
-  position: absolute;
-  left: 50%;
-  bottom: 22px;
-  width: 34px;
-  height: 8px;
-  margin-left: -17px;
-  border-radius: 50%;
-  background: #002e5d40;
-  animation: splash-shadow 1.8s cubic-bezier(.45, 0, .35, 1) infinite;
-}
-.splash-ripple {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid var(--splash-ring);
-  animation: splash-ripple 2.6s cubic-bezier(.2, .6, .3, 1) infinite;
-}
-.splash-ripple + .splash-ripple { animation-delay: 1.3s; }
 .splash-brand {
   margin: 0 0 6px;
-  color: var(--brand);
-  font-size: .78rem;
+  color: var(--text);
+  font-size: 1.2rem;
   font-weight: 600;
-  letter-spacing: .14em;
-  text-transform: uppercase;
+  letter-spacing: -.02em;
+  line-height: 1.2;
 }
 .splash-title {
   margin: 0;
-  color: var(--text);
-  font-size: clamp(1.4rem, 5vw, 1.65rem);
-  font-weight: 600;
-  letter-spacing: -.03em;
-  line-height: 1.25;
+  color: var(--muted);
+  font-size: .95rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.35;
 }
 .splash-bar {
   position: relative;
-  width: 168px;
-  height: 6px;
-  margin: 22px auto 0;
+  width: 120px;
+  height: 3px;
+  margin: 18px auto 0;
   border-radius: 999px;
   background: var(--splash-track);
   overflow: hidden;
@@ -717,39 +708,94 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
   top: 0;
   bottom: 0;
   left: 0;
-  width: 40%;
+  width: 42%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand-fill), var(--brand));
-  animation: splash-slide 1.4s cubic-bezier(.65, 0, .35, 1) infinite;
+  background: var(--brand-fill);
+  animation: splash-slide 1.3s cubic-bezier(.65, 0, .35, 1) infinite;
 }
-.splash-caption { margin: 16px 0 0; color: var(--muted); font-size: .9rem; }
-:root[data-theme="dark"] .splash-tile { --splash-tile: #f4f8fc; box-shadow: 0 0 0 1px #ffffff1f, 0 20px 50px #00000080, 0 0 60px color-mix(in srgb, var(--brand) 35%, transparent); }
+/* Frosted stand-in for the Find map sheet (start-up screen only). */
+.splash-sheet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+  width: min(100%, 520px);
+  padding: 10px 20px calc(18px + env(safe-area-inset-bottom, 0px));
+  border: 1px solid var(--glass-border);
+  border-bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: var(--glass-strong);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+  transform: translateX(-50%);
+  animation: splash-sheet-in .6s cubic-bezier(.2, .8, .2, 1) both;
+  pointer-events: none;
+}
+.splash-handle {
+  width: 36px;
+  height: 4px;
+  margin: 2px auto 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+.splash-skel {
+  position: relative;
+  display: block;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--muted) 22%, transparent);
+}
+.splash-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 40%, transparent), transparent);
+  animation: splash-shimmer 1.6s ease-in-out infinite;
+}
+.splash-skel-wide { height: 40px; border-radius: 12px; width: 100%; }
+.splash-skel-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.splash-skel-row .splash-skel { height: 28px; border-radius: 999px; }
+:root[data-theme="dark"] .splash-tile {
+  --splash-tile: #f4f8fc;
+  box-shadow: 0 0 0 1px #ffffff1f, 0 14px 36px #00000080, 0 0 40px color-mix(in srgb, var(--brand) 30%, transparent);
+}
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .splash-tile { --splash-tile: #f4f8fc; box-shadow: 0 0 0 1px #ffffff1f, 0 20px 50px #00000080, 0 0 60px color-mix(in srgb, var(--brand) 35%, transparent); }
+  :root:not([data-theme="light"]) .splash-tile {
+    --splash-tile: #f4f8fc;
+    box-shadow: 0 0 0 1px #ffffff1f, 0 14px 36px #00000080, 0 0 40px color-mix(in srgb, var(--brand) 30%, transparent);
+  }
 }
 @keyframes splash-in { from { opacity: 0; transform: translateY(8px); } }
-@keyframes splash-drop {
-  0%, 100% { transform: translateY(-7px); }
-  50% { transform: translateY(3px); }
+@keyframes splash-sheet-in { from { opacity: 0; transform: translate(-50%, 16px); } }
+@keyframes splash-pulse {
+  0%, 100% { opacity: .35; transform: scale(.92); }
+  50% { opacity: .7; transform: scale(1.05); }
 }
-@keyframes splash-shadow {
-  0%, 100% { transform: scaleX(.6); opacity: .45; }
-  50% { transform: scaleX(1); opacity: 1; }
-}
-@keyframes splash-ripple {
-  0% { transform: scale(.85); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: scale(1.7); opacity: 0; }
+@keyframes splash-icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
 }
 @keyframes splash-slide {
   0% { transform: translateX(-100%); }
-  100% { transform: translateX(250%); }
+  100% { transform: translateX(280%); }
+}
+@keyframes splash-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 @keyframes splash-breathe { 50% { opacity: .45; } }
+@media (max-height: 640px) {
+  .splash-sheet { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .splash-content, .splash-pin, .splash-shadow, .splash-ripple { animation: none; }
-  .splash-ripple { opacity: 0; }
-  .splash-ripple:first-child { opacity: .6; transform: scale(1.25); }
+  .splash { transition: none; }
+  .splash-content, .splash-sheet, .splash-pulse, .splash-pin { animation: none; }
+  .splash-pulse { opacity: .4; }
+  .splash-skel::after, .splash-bar span { animation: none; }
   .splash-bar span { width: 100%; animation: splash-breathe 2.4s ease-in-out infinite; }
 }
 

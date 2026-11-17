@@ -4,6 +4,7 @@
 // Everything personal is read from / written to Supabase for the signed-in account.
 // Where things live: see docs/CONTRIBUTING.md.
 import { showAuthLoading } from "./components/auth-loading.js";
+import { hideSplash } from "./components/splash.js";
 import { resetParkingClock } from "./lib/server-clock.js";
 import { state } from "./state.js";
 import { createVisitTracker } from "./data/visit-tracker.js";
@@ -273,9 +274,16 @@ headerWatch.observe($("app-header").querySelector(".account-bar"));
 headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs' width
 
 (async function init() {
+  const loadingScreen = $("loading");
+  // If session setup hangs, never leave people on the splash. Ready-path dismiss is immediate; the fade is visual only.
+  const loadingFallback = setTimeout(() => hideSplash(loadingScreen), 8000);
+  const dismissLoading = () => {
+    clearTimeout(loadingFallback);
+    hideSplash(loadingScreen);
+  };
   const cfg = window.APP_CONFIG;
   if (!cfg || !cfg.SUPABASE_URL || cfg.SUPABASE_URL.includes("YOUR-PROJECT")) {
-    $("loading").hidden = true;
+    dismissLoading();
     for (const id of ["app-header", "app-main", "app-footer"]) $(id).hidden = false;
     setStatus("Missing config.js. Copy config.example.js to config.js and add your Supabase URL and key.", true);
     return;
@@ -320,7 +328,7 @@ headerWatch.observe($("tab-list")); // e.g. the favorites badge changes the tabs
 
   let session = null;
   try { session = await auth.getCurrentSession(); } catch (err) { console.error(err); }
-  $("loading").hidden = true;
+  dismissLoading();
 
   if (linkError) {
     history.replaceState(null, "", location.pathname + location.search);
