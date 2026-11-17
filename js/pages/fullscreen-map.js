@@ -1,5 +1,6 @@
 import { searchMapCatalog } from "../domain/map-search.js";
 import { cityFacilityNames } from "./city-layer.js";
+import { loadRecents, rememberRecent } from "../lib/recent-searches.js";
 import { findExactLot } from "../domain/lot-search.js";
 // The map stays mounted while existing screens move through one floating drawer.
 // Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
@@ -329,6 +330,7 @@ function buildSearch() {
   const clearResults = () => { results.replaceChildren(); results.hidden = true; };
   const selectResult = (result) => {
     clearResults(); input.value = result.title; status.hidden = true;
+    rememberRecent(result);
     if (result.type === "lot") { location.hash = `#area/${result.id}`; return; }
     if (result.type === "city") {
       // The city list's own "Show on map" control turns the layer on, flies there and opens the card.
@@ -337,6 +339,16 @@ function buildSearch() {
       return;
     }
     setSheet("half");
+    // With a permit chosen, go straight to the parking list sorted by distance to this building.
+    if (state.find.permitId && state.destinations.some(d => d.destination_id === result.id)) {
+      state.find.destinationId = result.id;
+      const sort = document.getElementById("area-sort");
+      if (sort) sort.value = "destination";
+      document.dispatchEvent(new CustomEvent("parking:show-results"));
+      status.textContent = `Parking near ${result.title}, closest first.`; status.hidden = false;
+      if (location.hash === "#areas") window.dispatchEvent(new HashChangeEvent("hashchange")); else location.hash = "#areas";
+      return;
+    }
     const version = state.authVersion;
     const chooseDestination = () => {
       if (version !== state.authVersion) return;
@@ -346,7 +358,24 @@ function buildSearch() {
     if (location.hash === "#find") chooseDestination();
     else { window.addEventListener("hashchange", chooseDestination, { once: true }); location.hash = "#find"; }
   };
+  const showRecents = () => {
+    clearResults();
+    const recents = loadRecents();
+    if (!recents.length) return;
+    const label = document.createElement("span"); label.className = "map-search-recent-label"; label.textContent = "Recent";
+    results.append(label);
+    for (const result of recents) {
+      const button = document.createElement("button");
+      button.type = "button"; button.className = "map-search-result";
+      const title = document.createElement("strong"); title.textContent = result.title;
+      const subtitle = document.createElement("span"); subtitle.textContent = result.subtitle;
+      button.append(title, subtitle); button.addEventListener("click", () => selectResult(result));
+      results.append(button);
+    }
+    results.hidden = false;
+  };
   const suggest = () => {
+    if (!input.value.trim()) { showRecents(); return; }
     clearResults();
     const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     for (const result of matches) {
@@ -369,7 +398,7 @@ function buildSearch() {
   });
   results.addEventListener("keydown", e => { if (e.key === "Escape") { clearResults(); input.focus(); } });
   // Like other map apps, starting a search raises the sheet so suggestions and results have room.
-  input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); if (input.value.trim()) suggest(); });
+  input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); suggest(); });
 
   bar.addEventListener("submit", (e) => {
     e.preventDefault();
