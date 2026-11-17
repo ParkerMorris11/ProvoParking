@@ -1,6 +1,6 @@
 // One parking area card, used on the Areas and Favorites pages.
 import { state, rulesFor } from "../state.js";
-import { escapeHtml, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
+import { escapeHtml, directionsUrl, appleDirectionsUrl, entrancePoint } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { formatDistance } from "../domain/area-list.js";
@@ -51,7 +51,7 @@ export function cardHtml(area, { showDirections = false, showOnMap = false } = {
         ${showDirections ? `<div class="favorite-directions">
           ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Google Maps (opens in a new tab)">Get Directions <span aria-hidden="true">↗</span></a>
           <a class="link directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener noreferrer" aria-label="Get Directions to ${escapeHtml(area.area_name)} in Apple Maps (opens in a new tab)">Apple Maps ↗</a>
-          <p class="hint">${area.is_sample_data ? "Sample location. " : ""}Driving directions in Google or Apple Maps · ${area.is_sample_data ? "Sample lot center" : "Approximate section, not an entrance"}</p>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
+          <p class="hint">${area.is_sample_data ? "Sample location. " : ""}Driving directions in Google or Apple Maps · ${area.is_sample_data ? "Sample lot center" : entrancePoint(area) ? "Takes you to the lot entrance" : "Approximate section, not an entrance"}</p>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
         </div>` : ""}
       </div>
       ${heartHtml(area)}

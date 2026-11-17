@@ -29,6 +29,46 @@ export function facilityCenter(feature) {
   return { latitude: (Math.min(...lats) + Math.max(...lats)) / 2, longitude: (Math.min(...lngs) + Math.max(...lngs)) / 2 };
 }
 
+function insideRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i], [xj, yj] = ring[j];
+    if ((yi > lat) !== (yj > lat) && lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * A point inside the lot for directions. The box center of an L-shaped lot or a street strip can sit outside
+ * it (up to ~36 m in the Provo snapshot), so fall back to the middle of the widest east-west run through it.
+ */
+export function facilityDirectionsPoint(feature) {
+  const center = facilityCenter(feature);
+  const geometry = feature?.geometry;
+  if (!center || geometry?.type === "Point") return center;
+  const rings = geometry.type === "Polygon" ? [geometry.coordinates?.[0]] : (geometry.coordinates || []).map((polygon) => polygon?.[0]);
+  const clean = rings.map(ringPoints).filter((ring) => ring.length >= 3);
+  if (clean.some((ring) => insideRing(center.longitude, center.latitude, ring))) return center;
+  let best = null;
+  for (const ring of clean) {
+    const lats = ring.map((p) => p[1]);
+    for (const fraction of [0.5, 0.4, 0.6, 0.3, 0.7]) {
+      const lat = Math.min(...lats) + (Math.max(...lats) - Math.min(...lats)) * fraction;
+      const hits = [];
+      for (let i = 0; i + 1 < ring.length; i++) {
+        const [a, b] = [ring[i], ring[i + 1]];
+        if ((a[1] > lat) !== (b[1] > lat)) hits.push(a[0] + ((lat - a[1]) * (b[0] - a[0])) / (b[1] - a[1]));
+      }
+      hits.sort((x, y) => x - y);
+      for (let k = 0; k + 1 < hits.length; k += 2) {
+        const width = hits[k + 1] - hits[k];
+        if (!best || width > best.width) best = { width, latitude: lat, longitude: (hits[k] + hits[k + 1]) / 2 };
+      }
+    }
+  }
+  return best ? { latitude: best.latitude, longitude: best.longitude } : center;
+}
+
 export function cityLayerBounds(facilities) {
   const lats = [], lngs = [];
   for (const feature of facilities || []) {
@@ -89,5 +129,6 @@ export function facilitySummary(feature, source = {}) {
       : (source.info_url || source.url || null),
     sourceLabel: osm ? "OpenStreetMap" : "Provo Parking",
     center: facilityCenter(feature),
+    directionsPoint: facilityDirectionsPoint(feature),
   };
 }

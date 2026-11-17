@@ -1,4 +1,5 @@
 // Formatting helpers shared by every page. No DOM, no database.
+import { LOT_ENTRANCES } from "../data/lot-entrances.js";
 
 export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -42,6 +43,19 @@ export function timeAgo(iso) {
   return `${Math.round(mins / 1440)} days ago`;
 }
 
+/** The lot entrance to drive to, when the area is a verified BYU section with one on file. */
+export function entrancePoint(area) {
+  if (!area || area.is_sample_data || area.source_feature_id == null) return null;
+  const entrance = LOT_ENTRANCES[area.source_feature_id];
+  return entrance ? { latitude: entrance[0], longitude: entrance[1] } : null;
+}
+
+// Driving goes to the lot's drive-in entrance (a pin in the middle of a lot can route to a street with no way
+// in). Walking, e.g. back to a parked car, goes to the section itself.
+function routePoint(area, travelmode) {
+  return (travelmode === "driving" && entrancePoint(area)) || destinationPoint(area);
+}
+
 function destinationPoint(area) {
   const coordinate = value => (typeof value === "number" || typeof value === "string" && value.trim() !== "") ? Number(value) : NaN;
   const latitude = coordinate(area?.latitude), longitude = coordinate(area?.longitude);
@@ -50,7 +64,7 @@ function destinationPoint(area) {
 }
 
 export function directionsUrl(area, travelmode = "walking") {
-  const point = destinationPoint(area);
+  const point = routePoint(area, travelmode);
   if (!point) return null;
   // Omit origin so Google Maps uses the device's current location (or asks for a start).
   // Leave dir_action unset to show directions first, letting the user choose Start.
@@ -59,7 +73,7 @@ export function directionsUrl(area, travelmode = "walking") {
 
 // Apple Maps: no saddr, so it starts from the device's current location. dirflg d = driving, w = walking.
 export function appleDirectionsUrl(area, travelmode = "walking") {
-  const point = destinationPoint(area);
+  const point = routePoint(area, travelmode);
   if (!point) return null;
   return `https://maps.apple.com/?daddr=${encodeURIComponent(`${point.latitude},${point.longitude}`)}&dirflg=${travelmode === "driving" ? "d" : "w"}`;
 }

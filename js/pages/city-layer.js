@@ -11,8 +11,9 @@ let started = false, facilities = [], source = {};
 const byId = id => globalThis.document?.getElementById?.(id) ?? null;
 
 export function cityPopupHtml(summary) {
-  const directions = summary.center && directionsUrl(summary.center, "driving");
-  const appleDirections = summary.center && appleDirectionsUrl(summary.center, "driving");
+  const target = summary.directionsPoint || summary.center;
+  const directions = target && directionsUrl(target, "driving");
+  const appleDirections = target && appleDirectionsUrl(target, "driving");
   const sourceLink = summary.sourceUrl
     ? `<a href="${escapeHtml(summary.sourceUrl)}" target="_blank" rel="noopener">${escapeHtml(summary.sourceLabel || "Source")}</a> · `
     : "";
