@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { chipText, sheetTitle, suggestionRows, matchText } from '../js/pages/fullscreen-map.js';
+import { chipText, sheetTitle, suggestionRows, kindText, whenText, matchText } from '../js/pages/fullscreen-map.js';
 
 const permits = [
   { permit_id: 1, permit_code: 'Y', permit_name: 'Y Undergraduate' },
@@ -64,7 +64,7 @@ test('nav tabs carry icons and the quick-guide dialog keeps its landmarks', asyn
   }
   assert.equal((html.match(/class="tab-icon"/g) || []).length, 5, 'one icon per tab');
   assert.match(html, /<dialog id="help-modal"[^>]*aria-labelledby="help-modal-title"/);
-  for (const topic of ['Permit colors', '2D and 3D', 'Live location and directions']) assert.ok(html.includes(topic));
+  for (const topic of ['Permit colors', '>Map<', 'Location and directions']) assert.ok(html.includes(topic));
   assert.doesNotMatch(html, /leaflet/i);
 });
 
@@ -107,4 +107,13 @@ test('the status tile never shows a bare "0 areas open"', () => {
   assert.equal(matchText(0, false), 'Choose a permit');
   assert.equal(matchText(0, true, { day: 6 }), 'Weekend: check signs');
   assert.equal(matchText(0, true, { day: 2 }), 'No lots match now');
+});
+
+test('suggestion labels follow the chosen time: "Allowed now" only when parking right now', () => {
+  assert.equal(kindText('ok', { live: true, day: 2, time: '15:00' }), 'Allowed now');
+  assert.equal(kindText('ok', { live: false, day: 2, time: '15:00' }), 'Allowed at Tue 3:00 PM');
+  assert.equal(kindText('limit', { live: false, day: 3, time: '12:30' }), 'Allowed at Wed 12:30 PM, with limits');
+  assert.equal(kindText('no', { live: false, day: 2, time: '15:00' }), 'Not allowed at Tue 3:00 PM');
+  assert.equal(kindText('unknown', { live: true }), 'Check the rules');
+  assert.equal(whenText({ live: false, day: null, time: '' }), 'now');
 });

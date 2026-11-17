@@ -824,3 +824,13 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 .near-me-btn { gap: 8px; width: 100%; margin: 4px 0 8px; }
 .near-me-btn svg { width: 20px; height: 20px; }
 .near-me-btn[hidden] { display: none; }
+
+/* ---- Minimal pass ---- */
+.hint:empty { display: none; }
+/* Day and time only matter when you are not parking right now. */
+#find-form:has(#arrive-now:checked) .arrive-when { display: none; }
+.ai-badge { display: inline-grid; place-items: center; min-width: 24px; height: 18px; margin-right: 4px; padding: 0 5px; border-radius: 6px; background: var(--brand-fill, #0062b8); color: #fff; font-size: .68rem; font-weight: 700; letter-spacing: .04em; vertical-align: 1px; }
+.panel.help > .help-topic:first-child { border-top: 0; }
+.day-periods-more > summary { min-height: 44px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
+/* Phones: on Find the search row would hold only the account button, so it goes (Help & account has it). */
+@media (max-width: 600px) { .home-sheet[data-route="find"] .sheet-search-row { display: none; } }

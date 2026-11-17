@@ -92,7 +92,7 @@ function initPlainLanguage({ choosePermit }) {
       if (parsed.destination_id) state.find.customDestination = null;
       syncTimeControls();
       renderPermitInfo();
-      say([fallback ? "The AI is busy, so I read this myself." : "Read by the AI (Gemini).", result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
+      say([fallback ? "AI busy, read by the backup reader." : "Read by Gemini.", result.summary, ...result.warnings, "Check the fields, then Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
     } catch (error) {
       if (current()) say(error.message || "I couldn't read that. Use the form below.", true);
     } finally {
@@ -193,7 +193,7 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     state.find.day = Number($("arrive-day").value);
     state.find.time = $("arrive-time").value || nowHHMM();
     const selection = parkingSelection(state.find);
-    setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
+    setStatus(`Showing lots for ${selection.live ? "right now" : `${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)}`}.`);
     $("nl-status").textContent = "";
     document.dispatchEvent(new CustomEvent("parking:show-results"));
     go("#areas");

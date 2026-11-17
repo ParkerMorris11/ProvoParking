@@ -63,6 +63,8 @@ export function renderAreas() {
   const activeHeart = document.activeElement?.closest?.("#area-list .heart");
   const focusedId = activeHeart?.dataset.areaId;
   const focusedLink = document.activeElement?.matches?.("#area-list .link") ? document.activeElement.getAttribute("href") : null;
+  const building = state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
+  const permit = state.permits.find((p) => p.permit_id === selection.permitId);
   const list = $("area-list"), html = shown.map((area) => cardHtml(area, { showOnMap: true })).join("");
   // Keep pending heart requests and keyboard focus intact when only the clock changes.
   if (list !== renderedList || html !== renderedHtml) {
@@ -81,17 +83,15 @@ export function renderAreas() {
   const more = $("areas-more");
   if (more) {
     more.hidden = shown.length >= items.length;
-    more.textContent = `Show all ${items.length} sections`;
+    more.textContent = `Show all ${items.length}`;
   }
   const count = $("areas-count");
   if (count) {
-    const building = state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
-    const order = sortedBy === "distance" ? "nearest to you first" : sortedBy === "destination" && building?.name ? `nearest to ${building.name} first` : "by lot number";
-    const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on “Use my location” to sort by distance."
-      : sortedBy === "name" && options.sort === "destination" ? " Choose a building in Find to sort by destination."
-      : sortedBy !== "name" ? " Distances are approximate, measured in a straight line." : "";
+    const order = sortedBy === "distance" ? "nearest to you" : sortedBy === "destination" && building?.name ? `nearest to ${building.name}` : "by lot number";
+    const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on location to sort by distance."
+      : sortedBy === "name" && options.sort === "destination" ? " Pick a building in Find to sort by it." : "";
     count.textContent = total
-      ? `Showing ${shown.length} of ${total}${searching ? ` matching “${options.query.trim()}”` : ""}, ${order}.${sortNote}`
+      ? `${shown.length} of ${total}${searching ? ` matching “${options.query.trim()}”` : ""} · ${order}.${sortNote}`
       : searching && eligible.length ? `No sections match “${options.query.trim()}”.` : "";
   }
 
@@ -99,11 +99,10 @@ export function renderAreas() {
   if (empty) {
     empty.hidden = eligible.length > 0;
     empty.textContent = selection.permitId == null
-      ? "No verified lots are confirmed open to everyone at this time. Choose your permit to see more options."
-      : "No verified parking areas match your permit at this time. Check your permit or choose another arrival time.";
+      ? "No lots are open to everyone at this time. Choose your permit."
+      : "No verified lots match this permit at this time. Try another time.";
   }
-  const { permitId, day, time } = selection;
-  const permit = state.permits.find((p) => p.permit_id === permitId);
+  const { day, time } = selection;
   $("areas-summary").textContent = `${permit ? permit.permit_name : "No permit selected"} · ${selection.live ? "Right now" : "Planned arrival"}: ${DAY_NAMES[day]} at ${fmtTime(time)} (Provo time) · ${eligible.length} matching ${eligible.length === 1 ? "section" : "sections"}`;
   refreshMapEligibility(selection, eligible);
 }
