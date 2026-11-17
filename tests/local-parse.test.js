@@ -106,3 +106,11 @@ test('when the model is unreachable the local reader answers alone, and nonsense
   assert.equal('found' in ok.parsed, false);
   await assert.rejects(parseFindWithFallback(failing, { text: 'free parking downtown for 2 hours' }, lists, {}, monday), (e) => e.code === 'quota_exhausted');
 });
+
+test('"tonight 7" is 7 pm and a misspelled building still matches', () => {
+  assert.equal(read('my permit, library, tonight 7').time, '19:00');
+  assert.equal(read('my permit, library, tonight 7').use_saved_permit, true);
+  assert.equal(read('librery 3pm tomorrow').destination_id, 12);
+  assert.equal(read('tanner bilding 10am').destination_id, 11);
+  assert.equal(read('free parking downtown for 2 hours').destination_id, null);
+});
