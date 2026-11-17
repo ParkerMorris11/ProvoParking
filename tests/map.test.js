@@ -599,3 +599,17 @@ test('3D draws point-only city facilities as small ground circles, never default
   circle.listeners['gmp-click']?.({});
   assert.equal(picked, point, 'tapping it still selects the original facility');
 });
+
+test('2D draws non-matching BYU sections faint, and selecting a lot keeps them faint', () => {
+  const f = fakeMaps2D();
+  for (const P of [f.lib.Polygon, f.lib.Circle]) P.prototype.setOptions = function (o) { Object.assign(this.options, o); };
+  const view = createMap2D({ maps: f.maps, lib: f.lib, container: {}, dark: false, onSelect() {} });
+  const ring = [[{ lat: 40.25, lng: -111.65 }, { lat: 40.251, lng: -111.65 }, { lat: 40.251, lng: -111.649 }]];
+  const base = { kind: 'polygon', rings: ring, color: '#0062B8', bounds: {}, center: { lat: 40.25, lng: -111.65 }, source: { type: 'byu' } };
+  view.setShapes([{ ...base, key: 'dim', dim: true }, { ...base, key: 'match' }]);
+  view.setSelected('match');
+  const polys = f.made.polygons;
+  assert.equal(polys[0].options.fillOpacity, 0.08);
+  assert.equal(polys[0].options.strokeColor, '#94a3b8');
+  assert.equal(polys[1].options.strokeColor, '#ffffff', 'the selected match is outlined white');
+});

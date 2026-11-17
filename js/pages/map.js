@@ -14,7 +14,7 @@ import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
 import { createMap3D } from "./map-3d.js";
-import { mapPadding } from "../domain/map-focus.js";
+import { mapPadding, unionBounds, selectionKey } from "../domain/map-focus.js";
 
 let maps, started = false, mode = "3d", centeredDestinationId;
 let mapStyle = "roadmap";
@@ -30,6 +30,8 @@ const activeView = () => views[mode];
 const showingAllLots = () => state.currentView === "lots";
 let allLotsFitted = false, drewAllLots = false;
 let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
+// BYU sections that don't match the chosen permit and time: drawn faint so the matching ones stand out.
+let dimFeatures = [], lastFitKey = null;
 
 const PHONE = "(max-width: 600px)";
 // What part of the map is uncovered for a given sheet position (phones) or with the sidebar (laptops).
@@ -280,6 +282,7 @@ export function resetPersonalMap() {
   stopMapLocation();
   centeredDestinationId = undefined;
   selectedKey = null;
+  lastFitKey = null;
   hideCard();
   for (const view of Object.values(views)) {
     view.setSelected?.(null);
@@ -300,6 +303,7 @@ function setMapStatus(message, { routine = false } = {}) {
 // ---- Drawing -----------------------------------------------------------------------------------
 function drawShapes() {
   shapes = [
+    ...dimFeatures.map((feature) => { const shape = byuShape(feature); return shape && { ...shape, dim: true }; }),
     ...visibleFeatures.map(byuShape),
     ...(cityVisible || showingAllLots() ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
@@ -331,6 +335,18 @@ function fitAllLots() {
     south: Math.min(...boxes.map(b => b.south)), west: Math.min(...boxes.map(b => b.west)),
     north: Math.max(...boxes.map(b => b.north)), east: Math.max(...boxes.map(b => b.east)),
   }, 24);
+}
+
+// A new permit or planned time re-frames the map on the matching sections (same eligibility.js result as
+// the list and the chip). No matches: the camera stays put and the sheet shows the empty state.
+// A chosen building or a lot page keeps its own camera.
+function fitToMatches(selection, matching) {
+  const key = selectionKey(selection);
+  if (key === lastFitKey) return;
+  lastFitKey = key;
+  if (!matching.length || state.currentView !== "areas" || state.find.destinationId || state.find.customDestination) return;
+  const bounds = unionBounds(shapes.filter((shape) => !shape.dim && shape.source?.type === "byu").map((shape) => shape.bounds));
+  if (bounds) activeView()?.fitBounds(bounds, currentPadding());
 }
 
 // Called on every route change once the map is up: switch between "permit matches" and "every lot".
@@ -516,8 +532,12 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   if (all !== drewAllLots || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
     visibleFeatures = next;
     drewAllLots = all;
+    // Every other BYU section stays on the map, faint, so changing permit visibly changes the highlight.
+    const shown = new Set(next);
+    dimFeatures = all ? [] : features.filter((feature) => !shown.has(feature));
     drawShapes();
   }
+  if (!all) fitToMatches(selection, next);
   if (all) {
     // Same 102 as the All Lots list (sections with checked rules); the rest of BYU's map layer (housing,
     // service, reserved stalls) is outlined but has no rules here, so it's counted separately.
