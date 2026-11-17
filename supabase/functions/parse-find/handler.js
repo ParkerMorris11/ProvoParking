@@ -102,7 +102,7 @@ export async function handleRequest(request, { env, fetchImpl = fetch, now = new
     const parsed = readModelJson(await response.json().catch(() => null));
     if (!parsed) throw new RequestError(502, "bad_model_output", "The model returned nothing usable");
 
-    return json(200, sanitizeParse(parsed, { permitIds: input.permit_ids, destinationIds: input.destination_ids, now: today }), cors);
+    return json(200, sanitizeParse(parsed, { permitIds: input.permit_ids, destinationIds: input.destination_ids, now: today, text: input.text, permits }), cors);
   } catch (error) {
     if (error instanceof RequestError) return json(error.status, { error: error.code, message: error.message }, cors);
     console.error("[parse-find]", error);

@@ -63,6 +63,16 @@ function initPlainLanguage({ choosePermit }) {
   const form = $("nl-form"), input = $("nl-text"), mic = $("nl-mic"), go = $("nl-go"), status = $("nl-status");
   if (!form) return;
   const say = (message, warn = false) => { status.textContent = message; status.classList.toggle("warn", warn); };
+  // "Thinking" while the AI reads the sentence: a spinner on the status line (announced through its
+  // aria-live region), the form marked busy, and the text box locked so the question can't change mid-read.
+  // readOnly + aria-disabled instead of disabled keeps keyboard focus in place.
+  const thinking = (on) => {
+    form.classList.toggle("is-thinking", on);
+    status.classList.toggle("thinking", on);
+    if (on) form.setAttribute("aria-busy", "true"); else form.removeAttribute("aria-busy");
+    input.readOnly = on;
+    if (on) input.setAttribute("aria-disabled", "true"); else input.removeAttribute("aria-disabled");
+  };
   let pending = null;
 
   async function run(request) {
@@ -71,7 +81,8 @@ function initPlainLanguage({ choosePermit }) {
     const version = state.authVersion;
     const current = () => pending === controller && version === state.authVersion;
     go.disabled = mic.disabled = true;
-    say("Reading that…");
+    thinking(true);
+    say("Reading that with the AI…");
     try {
       const lists = { permits: state.permits, destinations: state.destinations };
       const { parsed, fallback } = await parseFindWithFallback(state.db, request, lists, { signal: controller.signal });
@@ -87,6 +98,7 @@ function initPlainLanguage({ choosePermit }) {
     } finally {
       if (current()) {
         pending = null;
+        thinking(false);
         go.disabled = mic.disabled = false;
         speech.done();
       }
@@ -110,6 +122,7 @@ function initPlainLanguage({ choosePermit }) {
     pending = null;
     speech.cancel();
     input.value = "";
+    thinking(false);
     go.disabled = mic.disabled = false;
     say("");
   };

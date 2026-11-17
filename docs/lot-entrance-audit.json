@@ -1,0 +1,2648 @@
+[
+ {
+  "area_id": 5,
+  "lot": "59Y",
+  "name": "BYU Lot 59Y",
+  "feature": 5,
+  "stored": [
+   40.243896,
+   -111.649081
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 47.4,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243901,
+   -111.648523
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 14.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.7,
+  "section_area_m2": 4555,
+  "section_span_m": 127
+ },
+ {
+  "area_id": 6,
+  "lot": "30G",
+  "name": "BYU Lot 30G",
+  "feature": 2,
+  "stored": [
+   40.245261,
+   -111.646052
+  ],
+  "stored_inside_gis": false,
+  "stored_off_m": 4.5,
+  "stored_to_entrance_m": 2.3,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245261,
+   -111.64608
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 40.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 2.3,
+  "section_area_m2": 2031,
+  "section_span_m": 93
+ },
+ {
+  "area_id": 7,
+  "lot": "14A",
+  "name": "BYU Lot 14A",
+  "feature": 25,
+  "stored": [
+   40.249006,
+   -111.650913
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": null,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 42.1,
+  "entrance": null,
+  "entrance_way": null,
+  "entrance_to_public_m": null,
+  "snap_road": "service",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 71.4,
+  "section_area_m2": 3062,
+  "section_span_m": 138
+ },
+ {
+  "area_id": 8,
+  "lot": "18U",
+  "name": "BYU Lot 18U",
+  "feature": 167,
+  "stored": [
+   40.2513,
+   -111.657363
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 58.2,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250836,
+   -111.657039
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 8.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 9.9,
+  "section_area_m2": 7924,
+  "section_span_m": 132
+ },
+ {
+  "area_id": 10,
+  "lot": "23A",
+  "name": "BYU Lot 23A (section 3)",
+  "feature": 3,
+  "stored": [
+   40.254307,
+   -111.645493
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 31.8,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.254595,
+   -111.645493
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 9.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.6,
+  "section_area_m2": 190,
+  "section_span_m": 21
+ },
+ {
+  "area_id": 12,
+  "lot": "56Y",
+  "name": "BYU Lot 56Y (section 6)",
+  "feature": 6,
+  "stored": [
+   40.243813,
+   -111.654271
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 59.2,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243932,
+   -111.653591
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 9.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.9,
+  "section_area_m2": 5385,
+  "section_span_m": 131
+ },
+ {
+  "area_id": 13,
+  "lot": "23A",
+  "name": "BYU Lot 23A (section 11)",
+  "feature": 11,
+  "stored": [
+   40.254705,
+   -111.646371
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 14.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25475,
+   -111.646212
+  ],
+  "entrance_way": "1550 North",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "1550 North",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.9,
+  "section_area_m2": 274,
+  "section_span_m": 49
+ },
+ {
+  "area_id": 14,
+  "lot": "55A",
+  "name": "BYU Lot 55A (section 12)",
+  "feature": 12,
+  "stored": [
+   40.245268,
+   -111.64083
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 24.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245048,
+   -111.640805
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 13.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.2,
+  "section_area_m2": 533,
+  "section_span_m": 49
+ },
+ {
+  "area_id": 15,
+  "lot": "42A",
+  "name": "BYU Lot 42A (section 13)",
+  "feature": 13,
+  "stored": [
+   40.264013,
+   -111.65946
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 51.1,
+  "osm_lot_matched": 4,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.26356,
+   -111.659582
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 9.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.2,
+  "section_area_m2": 5502,
+  "section_span_m": 122
+ },
+ {
+  "area_id": 16,
+  "lot": "59G",
+  "name": "BYU Lot 59G (section 21)",
+  "feature": 21,
+  "stored": [
+   40.244109,
+   -111.649076
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 52.3,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243901,
+   -111.648523
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 15.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.4,
+  "section_area_m2": 1866,
+  "section_span_m": 112
+ },
+ {
+  "area_id": 17,
+  "lot": "30A",
+  "name": "BYU Lot 30A (section 22)",
+  "feature": 22,
+  "stored": [
+   40.245641,
+   -111.646045
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 10.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245609,
+   -111.646161
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 23.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.6,
+  "section_area_m2": 249,
+  "section_span_m": 47
+ },
+ {
+  "area_id": 18,
+  "lot": "56A",
+  "name": "BYU Lot 56A (section 24)",
+  "feature": 24,
+  "stored": [
+   40.244117,
+   -111.654252
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 58.9,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243932,
+   -111.653602
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 13.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.3,
+  "section_area_m2": 942,
+  "section_span_m": 118
+ },
+ {
+  "area_id": 20,
+  "lot": "32A",
+  "name": "BYU Lot 32A (section 26)",
+  "feature": 26,
+  "stored": [
+   40.244814,
+   -111.649298
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 44.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.244739,
+   -111.64878
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 8.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 44.8,
+  "section_area_m2": 2142,
+  "section_span_m": 86
+ },
+ {
+  "area_id": 21,
+  "lot": "20A",
+  "name": "BYU Lot 20A (section 29)",
+  "feature": 29,
+  "stored": [
+   40.256497,
+   -111.645572
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 3.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256475,
+   -111.645603
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 11.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.7,
+  "section_area_m2": 139,
+  "section_span_m": 24
+ },
+ {
+  "area_id": 22,
+  "lot": "27A",
+  "name": "BYU Lot 27A (section 30)",
+  "feature": 30,
+  "stored": [
+   40.249481,
+   -111.644154
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 16.3,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249614,
+   -111.644237
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 90.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.2,
+  "section_area_m2": 6781,
+  "section_span_m": 149
+ },
+ {
+  "area_id": 23,
+  "lot": "27A",
+  "name": "BYU Lot 27A (section 31)",
+  "feature": 31,
+  "stored": [
+   40.248746,
+   -111.645123
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 1.0,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248737,
+   -111.645123
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 27.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.0,
+  "section_area_m2": 1388,
+  "section_span_m": 73
+ },
+ {
+  "area_id": 24,
+  "lot": "26A",
+  "name": "BYU Lot 26A (section 33)",
+  "feature": 33,
+  "stored": [
+   40.247707,
+   -111.644075
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 45.3,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24766,
+   -111.643545
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 27.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 9.9,
+  "section_area_m2": 3143,
+  "section_span_m": 141
+ },
+ {
+  "area_id": 25,
+  "lot": "26G",
+  "name": "BYU Lot 26G (section 34)",
+  "feature": 34,
+  "stored": [
+   40.248149,
+   -111.643433
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 34.7,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247887,
+   -111.643657
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 45.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.3,
+  "section_area_m2": 1319,
+  "section_span_m": 84
+ },
+ {
+  "area_id": 26,
+  "lot": "28A",
+  "name": "BYU Lot 28A (section 35)",
+  "feature": 35,
+  "stored": [
+   40.24701,
+   -111.643952
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 7.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.246995,
+   -111.643868
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 51.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.7,
+  "section_area_m2": 574,
+  "section_span_m": 37
+ },
+ {
+  "area_id": 27,
+  "lot": "26A",
+  "name": "BYU Lot 26A (section 37)",
+  "feature": 37,
+  "stored": [
+   40.248013,
+   -111.644868
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 3.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247984,
+   -111.644855
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 58.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.2,
+  "section_area_m2": 959,
+  "section_span_m": 121
+ },
+ {
+  "area_id": 28,
+  "lot": "37Y",
+  "name": "BYU Lot 37Y (section 41)",
+  "feature": 41,
+  "stored": [
+   40.247823,
+   -111.657879
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 7.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24789,
+   -111.65788
+  ],
+  "entrance_way": "1060 North",
+  "entrance_to_public_m": 63.7,
+  "snap_road": "1060 North",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 7.4,
+  "section_area_m2": 451,
+  "section_span_m": 77
+ },
+ {
+  "area_id": 29,
+  "lot": "38Y",
+  "name": "BYU Lot 38Y (section 44)",
+  "feature": 44,
+  "stored": [
+   40.247414,
+   -111.656235
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 8.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247414,
+   -111.65614
+  ],
+  "entrance_way": "150 East",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "150 East",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 8.1,
+  "section_area_m2": 566,
+  "section_span_m": 125
+ },
+ {
+  "area_id": 30,
+  "lot": "38Y",
+  "name": "BYU Lot 38Y (section 45)",
+  "feature": 45,
+  "stored": [
+   40.247289,
+   -111.65603
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 9.2,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24737,
+   -111.656002
+  ],
+  "entrance_way": "service/driveway",
+  "entrance_to_public_m": 3.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 8.9,
+  "section_area_m2": 307,
+  "section_span_m": 61
+ },
+ {
+  "area_id": 31,
+  "lot": "53A",
+  "name": "BYU Lot 53A (section 46)",
+  "feature": 46,
+  "stored": [
+   40.248903,
+   -111.642605
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 47.2,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248519,
+   -111.642847
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 12.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.6,
+  "section_area_m2": 2027,
+  "section_span_m": 104
+ },
+ {
+  "area_id": 32,
+  "lot": "53G",
+  "name": "BYU Lot 53G (section 56)",
+  "feature": 56,
+  "stored": [
+   40.24868,
+   -111.642041
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 38.7,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24852,
+   -111.642446
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 46.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.7,
+  "section_area_m2": 4228,
+  "section_span_m": 115
+ },
+ {
+  "area_id": 33,
+  "lot": "2A",
+  "name": "BYU Lot 2A (section 58)",
+  "feature": 58,
+  "stored": [
+   40.25118,
+   -111.647182
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 36.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.251179,
+   -111.647612
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 125.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 8.8,
+  "section_area_m2": 8761,
+  "section_span_m": 185
+ },
+ {
+  "area_id": 34,
+  "lot": "2A",
+  "name": "BYU Lot 2A (section 59)",
+  "feature": 59,
+  "stored": [
+   40.251647,
+   -111.648153
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 8.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.251726,
+   -111.648163
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 42.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.8,
+  "section_area_m2": 656,
+  "section_span_m": 67
+ },
+ {
+  "area_id": 35,
+  "lot": "8A",
+  "name": "BYU Lot 8A (section 61)",
+  "feature": 61,
+  "stored": [
+   40.247406,
+   -111.645717
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 9.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247332,
+   -111.64578
+  ],
+  "entrance_way": "Campus Drive",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "Campus Drive",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.4,
+  "section_area_m2": 290,
+  "section_span_m": 59
+ },
+ {
+  "area_id": 36,
+  "lot": "22G",
+  "name": "BYU Lot 22G (section 62)",
+  "feature": 62,
+  "stored": [
+   40.252944,
+   -111.647355
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 8.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.252993,
+   -111.647433
+  ],
+  "entrance_way": "1430 North",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "1430 North",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.2,
+  "section_area_m2": 235,
+  "section_span_m": 79
+ },
+ {
+  "area_id": 37,
+  "lot": "15A",
+  "name": "BYU Lot 15A (section 66)",
+  "feature": 66,
+  "stored": [
+   40.248344,
+   -111.652284
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 4.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248337,
+   -111.652229
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 275.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.3,
+  "section_area_m2": 341,
+  "section_span_m": 36
+ },
+ {
+  "area_id": 38,
+  "lot": "3A",
+  "name": "BYU Lot 3A (section 71)",
+  "feature": 71,
+  "stored": [
+   40.249886,
+   -111.646711
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 43.2,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250047,
+   -111.646248
+  ],
+  "entrance_way": "Heritage Drive",
+  "entrance_to_public_m": 162.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.8,
+  "section_area_m2": 8577,
+  "section_span_m": 151
+ },
+ {
+  "area_id": 39,
+  "lot": "24A",
+  "name": "BYU Lot 24A (section 79)",
+  "feature": 79,
+  "stored": [
+   40.254983,
+   -111.644505
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 54.3,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25494,
+   -111.645142
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 4.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.1,
+  "section_area_m2": 1813,
+  "section_span_m": 116
+ },
+ {
+  "area_id": 40,
+  "lot": "22A",
+  "name": "BYU Lot 22A (section 81)",
+  "feature": 81,
+  "stored": [
+   40.254018,
+   -111.647366
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 46.6,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 13.2,
+  "entrance": [
+   40.253796,
+   -111.6469
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 1.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.7,
+  "section_area_m2": 4400,
+  "section_span_m": 113
+ },
+ {
+  "area_id": 41,
+  "lot": "8A",
+  "name": "BYU Lot 8A (section 82)",
+  "feature": 82,
+  "stored": [
+   40.247453,
+   -111.644864
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 72.6,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.246955,
+   -111.645421
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 18.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.7,
+  "section_area_m2": 3494,
+  "section_span_m": 124
+ },
+ {
+  "area_id": 42,
+  "lot": "53A",
+  "name": "BYU Lot 53A (section 83)",
+  "feature": 83,
+  "stored": [
+   40.249466,
+   -111.642071
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 16.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249474,
+   -111.641875
+  ],
+  "entrance_way": "service/driveway",
+  "entrance_to_public_m": 17.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.4,
+  "section_area_m2": 368,
+  "section_span_m": 34
+ },
+ {
+  "area_id": 43,
+  "lot": "4A",
+  "name": "BYU Lot 4A (section 85)",
+  "feature": 85,
+  "stored": [
+   40.247014,
+   -111.647098
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 49.4,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 40.9,
+  "entrance": [
+   40.24735,
+   -111.647483
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 61.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.0,
+  "section_area_m2": 8428,
+  "section_span_m": 188
+ },
+ {
+  "area_id": 44,
+  "lot": "53G",
+  "name": "BYU Lot 53G (section 87)",
+  "feature": 87,
+  "stored": [
+   40.249305,
+   -111.641334
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 49.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249474,
+   -111.641875
+  ],
+  "entrance_way": "service/driveway",
+  "entrance_to_public_m": 17.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.2,
+  "section_area_m2": 2896,
+  "section_span_m": 118
+ },
+ {
+  "area_id": 45,
+  "lot": "8A",
+  "name": "BYU Lot 8A (section 89)",
+  "feature": 89,
+  "stored": [
+   40.247786,
+   -111.645203
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 31.8,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247983,
+   -111.645476
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 16.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.0,
+  "section_area_m2": 1828,
+  "section_span_m": 80
+ },
+ {
+  "area_id": 46,
+  "lot": "24A",
+  "name": "BYU Lot 24A (section 102)",
+  "feature": 102,
+  "stored": [
+   40.256091,
+   -111.642982
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 7.9,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25616,
+   -111.643004
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 25.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.1,
+  "section_area_m2": 874,
+  "section_span_m": 59
+ },
+ {
+  "area_id": 47,
+  "lot": "54A",
+  "name": "BYU Lot 54A (section 105)",
+  "feature": 105,
+  "stored": [
+   40.262881,
+   -111.658206
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 36.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.263211,
+   -111.658207
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 5.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.7,
+  "section_area_m2": 1365,
+  "section_span_m": 96
+ },
+ {
+  "area_id": 48,
+  "lot": "24A",
+  "name": "BYU Lot 24A (section 114)",
+  "feature": 114,
+  "stored": [
+   40.256733,
+   -111.642208
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 0.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256733,
+   -111.642206
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 29.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.1,
+  "section_area_m2": 470,
+  "section_span_m": 40
+ },
+ {
+  "area_id": 49,
+  "lot": "24Y",
+  "name": "BYU Lot 24Y (section 115)",
+  "feature": 115,
+  "stored": [
+   40.255602,
+   -111.642561
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 39.4,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255617,
+   -111.643024
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 23.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.6,
+  "section_area_m2": 1554,
+  "section_span_m": 100
+ },
+ {
+  "area_id": 50,
+  "lot": "50Y",
+  "name": "BYU Lot 50Y (section 117)",
+  "feature": 117,
+  "stored": [
+   40.257979,
+   -111.645214
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 15.4,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.258119,
+   -111.645212
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 121.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.3,
+  "section_area_m2": 1979,
+  "section_span_m": 86
+ },
+ {
+  "area_id": 51,
+  "lot": "50A",
+  "name": "BYU Lot 50A (section 118)",
+  "feature": 118,
+  "stored": [
+   40.257271,
+   -111.64514
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 41.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256895,
+   -111.645145
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 13.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.2,
+  "section_area_m2": 1162,
+  "section_span_m": 75
+ },
+ {
+  "area_id": 52,
+  "lot": "50A",
+  "name": "BYU Lot 50A (section 119)",
+  "feature": 119,
+  "stored": [
+   40.257496,
+   -111.645576
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 66.2,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256905,
+   -111.645444
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 15.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.2,
+  "section_area_m2": 3371,
+  "section_span_m": 153
+ },
+ {
+  "area_id": 53,
+  "lot": "50A",
+  "name": "BYU Lot 50A (section 120)",
+  "feature": 120,
+  "stored": [
+   40.257645,
+   -111.646802
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 59.5,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.258144,
+   -111.646539
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 12.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 11.2,
+  "section_area_m2": 4804,
+  "section_span_m": 181
+ },
+ {
+  "area_id": 54,
+  "lot": "20Y",
+  "name": "BYU Lot 20Y (section 123)",
+  "feature": 123,
+  "stored": [
+   40.256076,
+   -111.647258
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 41.8,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25645,
+   -111.647333
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 9.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.1,
+  "section_area_m2": 21577,
+  "section_span_m": 222
+ },
+ {
+  "area_id": 55,
+  "lot": "19Y",
+  "name": "BYU Lot 19Y (section 125)",
+  "feature": 125,
+  "stored": [
+   40.255636,
+   -111.648799
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 44.9,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255967,
+   -111.648492
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 8.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.4,
+  "section_area_m2": 5414,
+  "section_span_m": 131
+ },
+ {
+  "area_id": 56,
+  "lot": "19A",
+  "name": "BYU Lot 19A (section 126)",
+  "feature": 126,
+  "stored": [
+   40.255546,
+   -111.649204
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 43.0,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255842,
+   -111.648876
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 17.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.6,
+  "section_area_m2": 2729,
+  "section_span_m": 101
+ },
+ {
+  "area_id": 57,
+  "lot": "19Y",
+  "name": "BYU Lot 19Y (section 127)",
+  "feature": 127,
+  "stored": [
+   40.255425,
+   -111.649843
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 43.1,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255105,
+   -111.650133
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 32.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.6,
+  "section_area_m2": 4029,
+  "section_span_m": 101
+ },
+ {
+  "area_id": 58,
+  "lot": "22G",
+  "name": "BYU Lot 22G (section 128)",
+  "feature": 128,
+  "stored": [
+   40.252986,
+   -111.6495
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 15.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.253052,
+   -111.64966
+  ],
+  "entrance_way": "1430 North",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "1430 North",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.4,
+  "section_area_m2": 457,
+  "section_span_m": 150
+ },
+ {
+  "area_id": 59,
+  "lot": "31A",
+  "name": "BYU Lot 31A (section 129)",
+  "feature": 129,
+  "stored": [
+   40.245397,
+   -111.64703
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 22.3,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245364,
+   -111.646771
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 18.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.8,
+  "section_area_m2": 440,
+  "section_span_m": 65
+ },
+ {
+  "area_id": 60,
+  "lot": "31G",
+  "name": "BYU Lot 31G (section 130)",
+  "feature": 130,
+  "stored": [
+   40.245288,
+   -111.646978
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 21.5,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245398,
+   -111.64677
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 18.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 7.1,
+  "section_area_m2": 1374,
+  "section_span_m": 73
+ },
+ {
+  "area_id": 61,
+  "lot": "6A",
+  "name": "BYU Lot 6A (section 132)",
+  "feature": 132,
+  "stored": [
+   40.245632,
+   -111.647172
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 35.9,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24554,
+   -111.646767
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 18.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 7.2,
+  "section_area_m2": 2279,
+  "section_span_m": 96
+ },
+ {
+  "area_id": 62,
+  "lot": "5A",
+  "name": "BYU Lot 5A (section 134)",
+  "feature": 134,
+  "stored": [
+   40.246184,
+   -111.646326
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 37.3,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 18.9,
+  "entrance": [
+   40.24641,
+   -111.646
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 6.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 8.3,
+  "section_area_m2": 3143,
+  "section_span_m": 97
+ },
+ {
+  "area_id": 63,
+  "lot": "33A",
+  "name": "BYU Lot 33A (section 135)",
+  "feature": 135,
+  "stored": [
+   40.2441,
+   -111.650753
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 14.5,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.244136,
+   -111.650917
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 12.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.1,
+  "section_area_m2": 939,
+  "section_span_m": 46
+ },
+ {
+  "area_id": 64,
+  "lot": "33Y",
+  "name": "BYU Lot 33Y (section 136)",
+  "feature": 136,
+  "stored": [
+   40.243674,
+   -111.651164
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 22.1,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243631,
+   -111.651418
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 8.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.3,
+  "section_area_m2": 5572,
+  "section_span_m": 134
+ },
+ {
+  "area_id": 65,
+  "lot": "33G",
+  "name": "BYU Lot 33G (section 137)",
+  "feature": 137,
+  "stored": [
+   40.24415,
+   -111.651191
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 3.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.244126,
+   -111.651167
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 24.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.7,
+  "section_area_m2": 197,
+  "section_span_m": 38
+ },
+ {
+  "area_id": 66,
+  "lot": "7A",
+  "name": "BYU Lot 7A (section 140)",
+  "feature": 140,
+  "stored": [
+   40.246173,
+   -111.649923
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 5.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24622,
+   -111.649924
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 154.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.1,
+  "section_area_m2": 1961,
+  "section_span_m": 76
+ },
+ {
+  "area_id": 67,
+  "lot": "12A",
+  "name": "BYU Lot 12A (section 141)",
+  "feature": 141,
+  "stored": [
+   40.246249,
+   -111.653188
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 54.6,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.245847,
+   -111.653561
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 158.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.7,
+  "section_area_m2": 837,
+  "section_span_m": 114
+ },
+ {
+  "area_id": 68,
+  "lot": "13A",
+  "name": "BYU Lot 13A (section 142)",
+  "feature": 142,
+  "stored": [
+   40.246917,
+   -111.652191
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 72.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.247575,
+   -111.652152
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 332.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 9.5,
+  "section_area_m2": 1855,
+  "section_span_m": 131
+ },
+ {
+  "area_id": 69,
+  "lot": "17A",
+  "name": "BYU Lot 17A (section 143)",
+  "feature": 143,
+  "stored": [
+   40.249792,
+   -111.651469
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 3.9,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249827,
+   -111.651463
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 90.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.5,
+  "section_area_m2": 1289,
+  "section_span_m": 61
+ },
+ {
+  "area_id": 70,
+  "lot": "17A",
+  "name": "BYU Lot 17A (section 145)",
+  "feature": 145,
+  "stored": [
+   40.250103,
+   -111.651366
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 16.2,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249957,
+   -111.651361
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 87.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 16.2,
+  "section_area_m2": 522,
+  "section_span_m": 43
+ },
+ {
+  "area_id": 71,
+  "lot": "16A",
+  "name": "BYU Lot 16A (section 146)",
+  "feature": 146,
+  "stored": [
+   40.250751,
+   -111.650684
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 39.6,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 12.8,
+  "entrance": [
+   40.250751,
+   -111.65115
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 7.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 8.1,
+  "section_area_m2": 7421,
+  "section_span_m": 138
+ },
+ {
+  "area_id": 72,
+  "lot": "1A",
+  "name": "BYU Lot 1A (section 147)",
+  "feature": 147,
+  "stored": [
+   40.251922,
+   -111.648828
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 30.4,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.252125,
+   -111.648586
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 4.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.4,
+  "section_area_m2": 3209,
+  "section_span_m": 106
+ },
+ {
+  "area_id": 73,
+  "lot": "16A",
+  "name": "BYU Lot 16A (section 149)",
+  "feature": 149,
+  "stored": [
+   40.251662,
+   -111.650516
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 19.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.251613,
+   -111.65074
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 7.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 7.9,
+  "section_area_m2": 3371,
+  "section_span_m": 113
+ },
+ {
+  "area_id": 74,
+  "lot": "57Y",
+  "name": "BYU Lot 57Y (section 151)",
+  "feature": 151,
+  "stored": [
+   40.243341,
+   -111.656488
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 14.7,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243215,
+   -111.656434
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 10.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 6.1,
+  "section_area_m2": 1517,
+  "section_span_m": 60
+ },
+ {
+  "area_id": 75,
+  "lot": "34Y",
+  "name": "BYU Lot 34Y (section 152)",
+  "feature": 152,
+  "stored": [
+   40.244783,
+   -111.65566
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 34.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.244525,
+   -111.655434
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 12.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.7,
+  "section_area_m2": 3851,
+  "section_span_m": 96
+ },
+ {
+  "area_id": 76,
+  "lot": "46Y",
+  "name": "BYU Lot 46Y (section 153)",
+  "feature": 153,
+  "stored": [
+   40.247325,
+   -111.66142
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 0.1,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 2.2,
+  "entrance": [
+   40.247324,
+   -111.66142
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 56.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.1,
+  "section_area_m2": 2670,
+  "section_span_m": 114
+ },
+ {
+  "area_id": 77,
+  "lot": "46A",
+  "name": "BYU Lot 46A (section 154)",
+  "feature": 154,
+  "stored": [
+   40.247501,
+   -111.660366
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": null,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": null,
+  "entrance_way": null,
+  "entrance_to_public_m": null,
+  "snap_road": "service",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 60.6,
+  "section_area_m2": 4615,
+  "section_span_m": 177
+ },
+ {
+  "area_id": 78,
+  "lot": "46A",
+  "name": "BYU Lot 46A (section 155)",
+  "feature": 155,
+  "stored": [
+   40.246829,
+   -111.6598
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 4.6,
+  "osm_lot_matched": 0,
+  "osm_gap_m": 16.1,
+  "entrance": [
+   40.246794,
+   -111.659773
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 9.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.3,
+  "section_area_m2": 501,
+  "section_span_m": 45
+ },
+ {
+  "area_id": 79,
+  "lot": "36Y",
+  "name": "BYU Lot 36Y (section 156)",
+  "feature": 156,
+  "stored": [
+   40.246447,
+   -111.656726
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 18.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.246277,
+   -111.656722
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 48.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 18.8,
+  "section_area_m2": 1531,
+  "section_span_m": 85
+ },
+ {
+  "area_id": 80,
+  "lot": "37Y",
+  "name": "BYU Lot 37Y (section 157)",
+  "feature": 157,
+  "stored": [
+   40.247864,
+   -111.656806
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 4.0,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.2479,
+   -111.656807
+  ],
+  "entrance_way": "1060 North",
+  "entrance_to_public_m": 56.8,
+  "snap_road": "1060 North",
+  "snap_road_touches_lot": false,
+  "snap_road_m": 4.0,
+  "section_area_m2": 238,
+  "section_span_m": 87
+ },
+ {
+  "area_id": 81,
+  "lot": "38A",
+  "name": "BYU Lot 38A (section 158)",
+  "feature": 158,
+  "stored": [
+   40.247866,
+   -111.65517
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 62.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.24783,
+   -111.655905
+  ],
+  "entrance_way": "Fieldhouse Drive",
+  "entrance_to_public_m": 7.8,
+  "snap_road": "Fieldhouse Drive",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.7,
+  "section_area_m2": 2528,
+  "section_span_m": 145
+ },
+ {
+  "area_id": 82,
+  "lot": "37Y",
+  "name": "BYU Lot 37Y (section 159)",
+  "feature": 159,
+  "stored": [
+   40.248411,
+   -111.657211
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 54.9,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248033,
+   -111.656792
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 55.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.4,
+  "section_area_m2": 20368,
+  "section_span_m": 241
+ },
+ {
+  "area_id": 83,
+  "lot": "37A",
+  "name": "BYU Lot 37A (section 160)",
+  "feature": 160,
+  "stored": [
+   40.248761,
+   -111.656151
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 24.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248978,
+   -111.656124
+  ],
+  "entrance_way": "150 East",
+  "entrance_to_public_m": 0.0,
+  "snap_road": "150 East",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.0,
+  "section_area_m2": 1663,
+  "section_span_m": 109
+ },
+ {
+  "area_id": 84,
+  "lot": "37Y",
+  "name": "BYU Lot 37Y (section 161)",
+  "feature": 161,
+  "stored": [
+   40.249622,
+   -111.656332
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 23.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.249407,
+   -111.656348
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 3.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 11.8,
+  "section_area_m2": 2790,
+  "section_span_m": 101
+ },
+ {
+  "area_id": 85,
+  "lot": "39A",
+  "name": "BYU Lot 39A (section 162)",
+  "feature": 162,
+  "stored": [
+   40.249263,
+   -111.654328
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 94.7,
+  "osm_lot_matched": 4,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250117,
+   -111.654409
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 59.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.3,
+  "section_area_m2": 8224,
+  "section_span_m": 248
+ },
+ {
+  "area_id": 86,
+  "lot": "39G",
+  "name": "BYU Lot 39G (section 163)",
+  "feature": 163,
+  "stored": [
+   40.250133,
+   -111.65452
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 18.7,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250289,
+   -111.654435
+  ],
+  "entrance_way": "Fieldhouse Drive",
+  "entrance_to_public_m": 52.7,
+  "snap_road": "Fieldhouse Drive",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.8,
+  "section_area_m2": 412,
+  "section_span_m": 64
+ },
+ {
+  "area_id": 87,
+  "lot": "40A",
+  "name": "BYU Lot 40A (section 164)",
+  "feature": 164,
+  "stored": [
+   40.250137,
+   -111.652909
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 42.2,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250225,
+   -111.653393
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 67.8,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.7,
+  "section_area_m2": 2095,
+  "section_span_m": 105
+ },
+ {
+  "area_id": 88,
+  "lot": "46Y",
+  "name": "BYU Lot 46Y (section 165)",
+  "feature": 165,
+  "stored": [
+   40.248379,
+   -111.658944
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 61.9,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.248939,
+   -111.65896
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 16.3,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.2,
+  "section_area_m2": 2883,
+  "section_span_m": 193
+ },
+ {
+  "area_id": 89,
+  "lot": "46Y",
+  "name": "BYU Lot 46Y (section 166)",
+  "feature": 166,
+  "stored": [
+   40.250062,
+   -111.659523
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 63.0,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25038,
+   -111.660138
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 5.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.4,
+  "section_area_m2": 10720,
+  "section_span_m": 184
+ },
+ {
+  "area_id": 91,
+  "lot": "40G",
+  "name": "BYU Lot 40G (section 169)",
+  "feature": 169,
+  "stored": [
+   40.250666,
+   -111.653529
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 10.3,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250712,
+   -111.653424
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 39.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.2,
+  "section_area_m2": 1629,
+  "section_span_m": 62
+ },
+ {
+  "area_id": 92,
+  "lot": "40A",
+  "name": "BYU Lot 40A (section 170)",
+  "feature": 170,
+  "stored": [
+   40.250899,
+   -111.652816
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 54.7,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.250882,
+   -111.653459
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 5.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.7,
+  "section_area_m2": 4962,
+  "section_span_m": 148
+ },
+ {
+  "area_id": 93,
+  "lot": "40G",
+  "name": "BYU Lot 40G (section 171)",
+  "feature": 171,
+  "stored": [
+   40.251263,
+   -111.65251
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 24.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.251463,
+   -111.652636
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 9.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 8.6,
+  "section_area_m2": 2893,
+  "section_span_m": 100
+ },
+ {
+  "area_id": 94,
+  "lot": "58Y",
+  "name": "BYU Lot 58Y (section 180)",
+  "feature": 180,
+  "stored": [
+   40.252251,
+   -111.656793
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 35.8,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.252329,
+   -111.657201
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 91.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.9,
+  "section_area_m2": 3945,
+  "section_span_m": 96
+ },
+ {
+  "area_id": 95,
+  "lot": "58A",
+  "name": "BYU Lot 58A (section 181)",
+  "feature": 181,
+  "stored": [
+   40.252242,
+   -111.658141
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 25.2,
+  "osm_lot_matched": 5,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25245,
+   -111.65802
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 37.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 6.6,
+  "section_area_m2": 3624,
+  "section_span_m": 168
+ },
+ {
+  "area_id": 96,
+  "lot": "58A",
+  "name": "BYU Lot 58A (section 183)",
+  "feature": 183,
+  "stored": [
+   40.252827,
+   -111.656865
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 89.0,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.253177,
+   -111.657809
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 56.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.3,
+  "section_area_m2": 5249,
+  "section_span_m": 168
+ },
+ {
+  "area_id": 97,
+  "lot": "58A",
+  "name": "BYU Lot 58A (section 184)",
+  "feature": 184,
+  "stored": [
+   40.253702,
+   -111.658123
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 4.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.253665,
+   -111.658123
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 42.5,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.1,
+  "section_area_m2": 1575,
+  "section_span_m": 68
+ },
+ {
+  "area_id": 98,
+  "lot": "49Y",
+  "name": "BYU Lot 49Y (section 186)",
+  "feature": 186,
+  "stored": [
+   40.256139,
+   -111.652158
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 27.0,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255959,
+   -111.652373
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 7.1,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 3.1,
+  "section_area_m2": 17111,
+  "section_span_m": 244
+ },
+ {
+  "area_id": 99,
+  "lot": "48Y",
+  "name": "BYU Lot 48Y (section 187)",
+  "feature": 187,
+  "stored": [
+   40.256197,
+   -111.654622
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 85.7,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.255979,
+   -111.653654
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 5.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.9,
+  "section_area_m2": 7921,
+  "section_span_m": 217
+ },
+ {
+  "area_id": 100,
+  "lot": "45Y",
+  "name": "BYU Lot 45Y (section 188)",
+  "feature": 188,
+  "stored": [
+   40.256159,
+   -111.657052
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 27.0,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256049,
+   -111.657335
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 26.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 5.1,
+  "section_area_m2": 4069,
+  "section_span_m": 123
+ },
+ {
+  "area_id": 101,
+  "lot": "45A",
+  "name": "BYU Lot 45A (section 189)",
+  "feature": 189,
+  "stored": [
+   40.256531,
+   -111.657578
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 53.3,
+  "osm_lot_matched": 4,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.256049,
+   -111.657547
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 27.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.3,
+  "section_area_m2": 1994,
+  "section_span_m": 130
+ },
+ {
+  "area_id": 102,
+  "lot": "45U",
+  "name": "BYU Lot 45U (section 191)",
+  "feature": 191,
+  "stored": [
+   40.258529,
+   -111.6573
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 86.6,
+  "osm_lot_matched": 2,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.258797,
+   -111.656342
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 11.0,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 7.9,
+  "section_area_m2": 27490,
+  "section_span_m": 239
+ },
+ {
+  "area_id": 103,
+  "lot": "45Y",
+  "name": "BYU Lot 45Y (section 192)",
+  "feature": 192,
+  "stored": [
+   40.257291,
+   -111.658329
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 31.9,
+  "osm_lot_matched": 3,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.257577,
+   -111.658281
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 15.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.0,
+  "section_area_m2": 1608,
+  "section_span_m": 140
+ },
+ {
+  "area_id": 104,
+  "lot": "47Y",
+  "name": "BYU Lot 47Y (section 193)",
+  "feature": 193,
+  "stored": [
+   40.258165,
+   -111.652825
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 0.4,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.258165,
+   -111.652821
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 61.7,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.4,
+  "section_area_m2": 3086,
+  "section_span_m": 97
+ },
+ {
+  "area_id": 105,
+  "lot": "62Y",
+  "name": "BYU Lot 62Y (section 194)",
+  "feature": 194,
+  "stored": [
+   40.259162,
+   -111.654979
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 34.5,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.25889,
+   -111.654779
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 4.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 6.6,
+  "section_area_m2": 2749,
+  "section_span_m": 78
+ },
+ {
+  "area_id": 106,
+  "lot": "44U",
+  "name": "BYU Lot 44U (section 195)",
+  "feature": 195,
+  "stored": [
+   40.258888,
+   -111.660009
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 95.6,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.258872,
+   -111.658884
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 13.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.8,
+  "section_area_m2": 5567,
+  "section_span_m": 219
+ },
+ {
+  "area_id": 107,
+  "lot": "61Y",
+  "name": "BYU Lot 61Y (section 196)",
+  "feature": 196,
+  "stored": [
+   40.265311,
+   -111.656377
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 25.7,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.265078,
+   -111.656367
+  ],
+  "entrance_way": "service/parking_aisle",
+  "entrance_to_public_m": 11.6,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 1.3,
+  "section_area_m2": 1689,
+  "section_span_m": 102
+ },
+ {
+  "area_id": 108,
+  "lot": "61Y",
+  "name": "BYU Lot 61Y (section 197)",
+  "feature": 197,
+  "stored": [
+   40.263558,
+   -111.657392
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 8.9,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.263586,
+   -111.657294
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 11.4,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 4.4,
+  "section_area_m2": 1785,
+  "section_span_m": 106
+ },
+ {
+  "area_id": 109,
+  "lot": "33Y",
+  "name": "BYU Lot 33Y (section 209)",
+  "feature": 209,
+  "stored": [
+   40.243542,
+   -111.650475
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 23.0,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243519,
+   -111.650206
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 10.2,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 2.5,
+  "section_area_m2": 532,
+  "section_span_m": 64
+ },
+ {
+  "area_id": 110,
+  "lot": "33A",
+  "name": "BYU Lot 33A (section 210)",
+  "feature": 210,
+  "stored": [
+   40.243244,
+   -111.650803
+  ],
+  "stored_inside_gis": true,
+  "stored_off_m": 0,
+  "stored_to_entrance_m": 4.1,
+  "osm_lot_matched": 1,
+  "osm_gap_m": 0.0,
+  "entrance": [
+   40.243207,
+   -111.650804
+  ],
+  "entrance_way": "service",
+  "entrance_to_public_m": 3.9,
+  "snap_road": "service",
+  "snap_road_touches_lot": true,
+  "snap_road_m": 0.0,
+  "section_area_m2": 806,
+  "section_span_m": 77
+ }
+]

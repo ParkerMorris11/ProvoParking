@@ -256,6 +256,17 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .nl-row .secondary { flex: none; margin: 0; white-space: nowrap; }
 .nl-mic { flex: none; display: inline-grid; place-items: center; width: 48px; min-height: 48px; padding: 0; border: 1px solid var(--field); border-radius: 12px; background: var(--card); color: var(--brand-ink); cursor: pointer; }
 .nl-mic[hidden] { display: none; }
+/* AI "thinking" state (find.js): spinner before the status text, locked input, busy button. */
+.nl-status.thinking, .map-search-status.thinking { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--brand-ink); }
+.nl-status.thinking::before, .map-search-status.thinking::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 3px solid currentColor; border-right-color: transparent; animation: nl-spin .8s linear infinite; }
+.nl-find.is-thinking input[type="text"] { opacity: .65; cursor: progress; }
+.nl-find.is-thinking #nl-go { cursor: progress; }
+.map-search-status.thinking[hidden] { display: none; }
+@keyframes nl-spin { to { transform: rotate(360deg); } }
+@keyframes nl-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .nl-status.thinking::before, .map-search-status.thinking::before { animation: nl-pulse 1.6s ease-in-out infinite; border-right-color: currentColor; }
+}
 .nl-mic svg { width: 22px; height: 22px; }
 .nl-mic:hover { border-color: var(--brand); background: var(--brand-wash); }
 .nl-mic[aria-pressed="true"] { background: var(--brand-fill); border-color: var(--brand-fill); color: #fff; }
@@ -796,3 +807,20 @@ img.brand-mark { object-fit: contain; border-radius: 6px; }
 
 /* Narrow phones: a placeholder too long for its field ends with "…" instead of a cut-off letter. */
 input:is([type="text"], [type="email"], [type="password"], [type="search"]) { text-overflow: ellipsis; }
+
+/* Which part of a multi-section lot a card is (lot-names.js); quieter than the title. */
+.lot-subtitle { margin: 2px 0 6px; font-size: .8rem; color: var(--muted); }
+
+/* Empty states with a next step (Favorites, Nearby). */
+.empty-state { display: grid; justify-items: center; gap: 8px; padding: 28px 20px; }
+.empty-state[hidden] { display: none; }
+.empty-state p { margin: 0; max-width: 32ch; }
+.empty-icon { width: 56px; height: 56px; color: var(--brand-ink); }
+.empty-title { margin: 4px 0 0; font-size: 1.1rem; color: var(--text); }
+.empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; }
+.empty-actions .primary { margin-top: 0; }
+.nearby-empty[hidden] { display: none; }
+.nearby-empty .empty-actions { justify-content: flex-start; }
+.near-me-btn { gap: 8px; width: 100%; margin: 4px 0 8px; }
+.near-me-btn svg { width: 20px; height: 20px; }
+.near-me-btn[hidden] { display: none; }

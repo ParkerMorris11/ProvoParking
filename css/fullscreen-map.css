@@ -172,7 +172,7 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .map-status:empty, .fs-shell .map-status[data-routine] { display: none; } /* the tile already shows the count */
 
 /* ---- The sheet ---- */
-.fs-shell .home-sheet { top: max(10px, env(safe-area-inset-top, 0px)); bottom: calc(8px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; border: 1px solid var(--glass-border); border-radius: var(--sheet-radius); overflow: hidden; box-shadow: 0 -2px 30px rgba(15, 30, 55, .18); }
+.fs-shell .home-sheet { top: max(10px, env(safe-area-inset-top, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; border: 1px solid var(--glass-border); border-radius: var(--sheet-radius); overflow: hidden; box-shadow: 0 -2px 30px rgba(15, 30, 55, .18); }
 .fs-shell .home-sheet[data-state="peek"] { --sheet-y: calc(100% - var(--peek)); }
 .fs-shell .home-sheet[data-state="half"] { --sheet-y: 46%; }
 .fs-shell .sheet-handle { flex: none; display: block; min-height: 0; height: 26px; padding: 0; border-radius: var(--sheet-radius) var(--sheet-radius) 0 0; }
@@ -241,11 +241,13 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell #status:not(.error) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
 /* Other screens: a round close button pinned at the top right of the sheet */
-.route-bar { position: sticky; top: 0; z-index: 2; float: right; margin: 6px 0 -44px; }
+/* Its own sticky row with the sheet's background, so it never sits on top of Help text, the guest card
+   or a lot's schedule, at the top or while scrolling. */
+.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); box-shadow: 0 1px 0 var(--glass-border); }
 .route-bar[hidden] { display: none; }
+.fs-shell .route-bar:not([hidden]) ~ section:not([hidden]) { margin-top: 0; }
 .route-close { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--search-fill); color: var(--ink-2); }
 .route-close svg { width: 18px; height: 18px; }
-.fs-shell .route-bar:not([hidden]) ~ section > h2:first-child { padding-right: 46px; }
 
 /* What used to be separate cards now reads as one list */
 .fs-shell .sheet-body .cards { grid-template-columns: minmax(0, 1fr); }
@@ -354,15 +356,12 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .map-search-go { border-radius: 50%; }
   .fs-shell .map-account { width: 48px; height: 48px; }
   .fs-shell .sheet-body { padding-left: 14px; padding-right: 14px; }
-  /* The car button clears the closed sheet (8px gap + 88px peek) by 12px. */
-  .has-fs-home .car-fab { bottom: calc(108px + env(safe-area-inset-bottom, 0px)); }
-  /* Close button: a full 44px tap target, level with each screen's title. */
-  .route-bar { margin: 2px 0 -46px; }
+  /* The car button clears the closed sheet (22px gap + 88px peek) by 12px. */
+  .has-fs-home .car-fab { bottom: calc(122px + env(safe-area-inset-bottom, 0px)); }
+  /* Close button: a full 44px tap target in its own row above the screen. */
+  .route-bar { margin: 0 -14px; padding: 6px 14px 2px; }
   .route-close { width: 44px; height: 44px; }
   .route-close svg { width: 20px; height: 20px; }
-  .fs-shell .route-bar:not([hidden]) ~ section > h2:first-child { padding-right: 54px; }
-  /* Help opens with the account card: leave a 44px row above it for the close button. */
-  .fs-shell #view-help > .drawer-account { margin-top: 46px; }
   /* Find: the trip box gets its own line; the mic and "Fill in form" share the next one. */
   .fs-shell .sheet-body .nl-row .secondary { flex: 1 1 0; }
   /* Small print in the sheet stays at least 12px, and the map tool buttons get full 44px targets. */

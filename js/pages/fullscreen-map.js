@@ -598,6 +598,10 @@ function buildSearch() {
       const text = nlStatus.textContent.trim();
       status.textContent = text;
       status.classList.toggle("warn", nlStatus.classList.contains("warn"));
+      const busy = nlStatus.classList.contains("thinking");
+      status.classList.toggle("thinking", busy);
+      input.readOnly = busy;
+      if (busy) input.setAttribute("aria-disabled", "true"); else input.removeAttribute("aria-disabled");
       if (text.includes("Check the fields")) status.insertAdjacentHTML("beforeend", ` <a href="#find">Review</a>`);
       status.hidden = !text;
     };

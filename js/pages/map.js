@@ -54,7 +54,8 @@ function renderNearby() {
   const candidate = state.find.live ? arrivalSuggestion(nearby, latestPosition, state.areas) : null;
   updateArrivalSuggestion(suggestion, candidate);
   empty.hidden = nearby.length > 0;
-  empty.textContent = "No matching mapped sections in this category within 5 km. Try another category or check your permit and parking time.";
+  const emptyText = document.getElementById("nearby-empty-text") || empty;
+  emptyText.textContent = "No lots near you match this permit and time within 5 km. Change your permit or arrival time, or browse every lot.";
   list.innerHTML = nearby.map((lot, index) => {
     const distance = lot.distanceMeters < 1000 ? `${Math.max(10, Math.round(lot.distanceMeters / 10) * 10)} m` : `${(lot.distanceMeters / 1000).toFixed(1)} km`;
     return `<li class="nearby-card"><div class="nearby-card-head"><h4>${escapeHtml(lot.name)}</h4><span>~${distance}</span></div><p class="nearby-category">Lot category ${escapeHtml(lot.permit)} · Matches listed rules; check signs</p><p class="nearby-description">${escapeHtml(lot.description)}</p><button type="button" data-nearby-index="${index}">Show lot on map <span aria-hidden="true">↗</span></button></li>`;
@@ -89,11 +90,23 @@ function initLocation() {
       if (wasLive) for (const view of Object.values(views)) view.setUser(null);
       firstFix = true;
     }
+    const nearMe = document.getElementById("near-me-btn");
+    if (nearMe) nearMe.hidden = active;
     renderNearby();
     if (typeof document.dispatchEvent === "function") document.dispatchEvent(new CustomEvent("map:location"));
   } });
   button.addEventListener("click", () => {
     if (button.getAttribute("aria-pressed") === "true") tracker.stop(); else tracker.start();
+  });
+  // "Parking near me" (nearby panel, Favorites empty state): turn location on, sort by distance, show the list.
+  document.addEventListener("click", (event) => {
+    const trigger = event.target.closest?.("[data-near-me]");
+    if (!trigger) return;
+    const sort = document.getElementById("area-sort");
+    if (sort) sort.value = "distance";
+    if (button.getAttribute("aria-pressed") !== "true") tracker.start();
+    if (location.hash !== "#areas") location.hash = "#areas";
+    document.getElementById("nearby-heading")?.scrollIntoView?.({ block: "start" });
   });
   const select = document.getElementById("nearby-permit");
   const codes = [...new Set(features.map(f => f.properties?.permit_typ).filter(code => code && !["R", "No BYU Parking"].includes(code)))].sort();
@@ -258,9 +271,11 @@ const cityHost = {
   select(index) { const summary = cityFacilitySummary(index); if (summary) showCard(cityPopupHtml(summary)); },
 };
 
-// Frame every drawn lot (All Lots screen).
+// Frame the lots on the All Lots screen: BYU campus, or the whole valley only when the city layer is on.
+// (Framing all ~600 lots zoomed the 3D view out over the valley, which made campus unreadable.)
 function fitAllLots() {
-  const boxes = shapes.map(shape => shape.bounds || (shape.center && { south: shape.center.lat, north: shape.center.lat, west: shape.center.lng, east: shape.center.lng })).filter(Boolean);
+  const framed = cityVisible ? shapes : shapes.filter((shape) => shape.source?.type !== "city");
+  const boxes = (framed.length ? framed : shapes).map(shape => shape.bounds || (shape.center && { south: shape.center.lat, north: shape.center.lat, west: shape.center.lng, east: shape.center.lng })).filter(Boolean);
   if (!boxes.length) return;
   activeView()?.fitBounds({
     south: Math.min(...boxes.map(b => b.south)), west: Math.min(...boxes.map(b => b.west)),
@@ -272,7 +287,12 @@ function fitAllLots() {
 function syncAllLots() {
   const on = showingAllLots();
   refreshMapEligibility();
-  if (!on) { allLotsFitted = false; return; }
+  if (!on) {
+    // Leaving All Lots: go back to the normal campus camera (3D tilt and heading included).
+    if (allLotsFitted) { for (const view of Object.values(views)) view.resetCamera(); }
+    allLotsFitted = false;
+    return;
+  }
   if (!allLotsFitted && shapes.length) { allLotsFitted = true; fitAllLots(); }
 }
 
@@ -449,7 +469,11 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
     drawShapes();
   }
   if (all) {
-    setMapStatus(`All lots: ${visibleFeatures.length} BYU ${visibleFeatures.length === 1 ? "section" : "sections"}${cityFacilities.length ? ` + ${cityFacilities.length} Provo lots` : ""}`);
+    // Same 102 as the All Lots list (sections with checked rules); the rest of BYU's map layer (housing,
+    // service, reserved stalls) is outlined but has no rules here, so it's counted separately.
+    const checked = new Set(state.areas.filter((a) => a.operator === "BYU" && !a.is_sample_data && a.source_feature_id != null).map((a) => a.source_feature_id)).size;
+    const outlinedOnly = Math.max(0, visibleFeatures.length - checked);
+    setMapStatus(`All lots: ${checked} BYU ${checked === 1 ? "section" : "sections"} with checked rules${outlinedOnly ? ` + ${outlinedOnly} other BYU areas outlined` : ""}${cityFacilities.length ? ` + ${cityFacilities.length} Provo lots` : ""}`);
     renderNearby();
     return;
   }

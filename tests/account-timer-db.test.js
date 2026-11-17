@@ -32,6 +32,9 @@ test("account timer migration: RLS, server timestamps, one active session and co
  const buildingMigration = file("supabase/migrations/20261116230000_byu_campus_destinations.sql");
  sql(buildingMigration);
  sql(buildingMigration);
+ const demoBudget = file("supabase/migrations/20261117160000_raise_parse_find_demo_budget.sql");
+ sql(demoBudget);
+ sql(demoBudget);
  assert.equal(sql("SELECT destination_id || ':' || name FROM public.destination WHERE building_code='HBLL'"), oldLibrary);
  assert.ok(Number(sql("SELECT count(*) FROM public.destination")) > 200);
  assert.ok(Number(sql("SELECT count(*) FROM public.destination")) <= 300);
@@ -69,10 +72,13 @@ test("account timer migration: RLS, server timestamps, one active session and co
   assert.equal(sql("SELECT has_function_privilege('anon','public.consume_parse_find_budget(text)','EXECUTE')"),"f");
   assert.equal(sql("SELECT has_function_privilege('authenticated','public.consume_parse_find_budget(text)','EXECUTE')"),"f");
   assert.equal(sql(server(call)),"t");
-  sql("UPDATE visit_metrics_private.ingress_budget SET uses=20 WHERE kind='find-client'");
+  // 199 earlier calls from this address still leave room (the old limit was 20); the 200th is refused.
+  sql("UPDATE visit_metrics_private.ingress_budget SET uses=199 WHERE kind='find-client'");
+  assert.equal(sql(server(call)),"t");
   assert.equal(sql(server(call)),"f");
-  assert.equal(sql("SELECT uses FROM visit_metrics_private.ingress_budget WHERE kind='find-day'"),"1");
-  sql("UPDATE visit_metrics_private.ingress_budget SET uses=499 WHERE kind='find-day'");
+  assert.equal(sql(server(call)),"f");
+  assert.equal(sql("SELECT uses FROM visit_metrics_private.ingress_budget WHERE kind='find-day'"),"2");
+  sql("UPDATE visit_metrics_private.ingress_budget SET uses=1499 WHERE kind='find-day'");
   const results = await Promise.all([
    concurrent(server("SELECT public.consume_parse_find_budget('192.0.2.2')")),
    concurrent(server("SELECT public.consume_parse_find_budget(NULL)")),

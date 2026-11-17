@@ -3,6 +3,7 @@
 // My car session load only for a signed-in user, and row security returns only their rows.
 import { state } from "../state.js";
 import { syncParkingClock } from "../lib/server-clock.js";
+import { labelAreas } from "../domain/lot-names.js";
 
 // PP has only a legacy sample street, with no verified residential permit zones on the map.
 // Hide it from both pickers without deleting permits, rules, or existing account links.
@@ -33,7 +34,7 @@ export async function loadData() {
   if (version !== state.authVersion) return false;
   for (const res of [areasRes, favRes, permitRes, ruleRes, towRes, sessRes, destRes]) if (res.error) throw res.error;
 
-  state.areas = areasRes.data;
+  state.areas = labelAreas(areasRes.data, destRes.data);
   state.permits = selectablePermits(permitRes.data);
   state.destinations = destRes.data;
   state.favoriteIds = new Set(favRes.data.map((f) => f.area_id));

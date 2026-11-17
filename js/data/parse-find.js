@@ -54,6 +54,8 @@ const FRIENDLY = {
 // Busy-model answers worth one more try from the page (the function also retries on its side).
 const RETRY_CODES = new Set(["model_unavailable", "bad_model_output"]);
 export const CLIENT_RETRY_DELAY_MS = 2500;
+// A typed search waits this long for the AI before the backup reader answers instead (busy class Wi-Fi, slow model).
+export const TYPED_TIMEOUT_MS = 9000;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function requestParseFind(db, input, lists, { sleep = wait, retries = 1, signal } = {}) {
@@ -137,15 +139,23 @@ export function applyParsedToForm(parsed, els, { permits = [], destinations = []
  */
 export async function parseFindWithFallback(db, input, lists, options = {}, now = new Date()) {
   const local = input.text ? localParseFind(input.text, lists, now) : null;
+  const { timeoutMs = TYPED_TIMEOUT_MS, ...requestOptions } = options;
+  let timer;
   try {
-    const parsed = await requestParseFind(db, input, lists, options);
-    return { parsed: mergeParsed(parsed, local), fallback: false };
+    const request = requestParseFind(db, input, lists, requestOptions);
+    // Only typed text has a backup reader, so only typed text stops waiting on a slow or rate-limited AI.
+    const parsed = await (local && local.found > 0 && timeoutMs > 0
+      ? Promise.race([request, new Promise((_, reject) => { timer = setTimeout(() => reject(new ParseFindError("timeout", "The AI took too long.")), timeoutMs); })])
+      : request);
+    return { parsed: stripLocal(mergeParsed(parsed, local)), fallback: false };
   } catch (error) {
     if (error?.name === "AbortError") throw error;
-    if (local && local.found > 0) {
-      const { found, ...parsed } = local;
-      return { parsed, fallback: true };
-    }
+    // Rate limited, busy, offline or slow: the backup reader answers so the search still works.
+    if (local && local.found > 0) return { parsed: stripLocal(local), fallback: true, reason: error?.code || "failed" };
     throw error;
+  } finally {
+    clearTimeout(timer);
   }
 }
+
+const stripLocal = ({ found, permit_explicit, ...parsed }) => parsed;
