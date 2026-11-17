@@ -110,7 +110,7 @@ The planned rule-extraction AI requires human approval before any rule change is
 
 ## Data flow diagrams
 
-Logical names (what happens to the data), not product names. Dashed lines are planned or optional (voice). Processes 5.0 and 6.0 are planned.
+Logical names (what happens to the data), not product names. These match the live app on `main` as of 2026-11-17. Dashed flows run only when the team re-imports lot data from BYU and Provo GIS (scripts in `scripts/` plus Supabase migrations). The planned rule-change AI and AWS admin portal are not in these diagrams because they are not built.
 
 **Level 0 (context diagram)**
 
@@ -118,28 +118,33 @@ Logical names (what happens to the data), not product names. Dashed lines are pl
 flowchart LR
   Driver([Driver])
   Admin([Team admin])
-  Sites([Parking rule websites])
-  AI([AI service: Gemini Flash])
-  Maps([Map service: Google Maps])
-  Speech([Browser speech service])
-  Places([Place search: Google Places])
+  Phone([Phone / browser: speech + GPS])
+  GSign([Google sign-in])
+  AI([Gemini Flash])
+  Maps([Google Maps])
+  Places([Google Places])
+  Dir([Directions app: Apple / Google Maps])
+  BYU([BYU parking GIS])
+  City([Provo GIS + OpenStreetMap])
 
   P0((0 Provo Parking))
 
-  Driver -->|sign-up details, trip details, parking start/end, favorite pick| P0
-  Driver -->|typed or spoken trip| P0
-  P0 -->|eligible lots, time left, filled-in Find form| Driver
-  Driver -.->|voice| Speech
-  Speech -.->|transcript| P0
-  P0 -->|trip text or audio, allowed permit and building IDs| AI
-  AI -->|structured fields: permit, building, live, day, time, confidence| P0
-  P0 -->|map load request| Maps
-  Maps -->|2D tiles, 3D scene| P0
-  P0 -->|typed place text| Places
-  Places -->|suggestions, location of the picked place| P0
-  Admin -->|approval decisions, goal edits| P0
-  P0 -->|proposals, KR values| Admin
-  Sites -.->|rule page text, planned| P0
+  Driver -->|sign-in, permit choice, trip request, Find choices, search text, favorite pick, nickname, parking start/end| P0
+  P0 -->|signed-in account, filled-in Find form, eligible lots on map, search results, favorites list, time left| Driver
+  Phone -->|voice transcript, GPS location| P0
+  P0 -->|sign-in request| GSign
+  GSign -->|Google identity| P0
+  P0 -->|trip + allowed names| AI
+  AI -->|structured fields| P0
+  P0 -->|map request| Maps
+  Maps -->|map tiles, 3D scene| P0
+  P0 -->|place text| Places
+  Places -->|place suggestions| P0
+  P0 -->|lot coordinates| Dir
+  Admin -->|login, goal edits| P0
+  P0 -->|KR values vs goals| Admin
+  BYU -.->|on update: lot polygons, permits, buildings| P0
+  City -.->|on update: city lot outlines| P0
 ```
 
 **Level 1**
@@ -148,85 +153,109 @@ flowchart LR
 flowchart TB
   Driver([Driver])
   Admin([Team admin])
-  Sites([Parking rule websites])
-  AI([AI service: Gemini Flash])
-  Maps([Map service: Google Maps])
-  Speech([Browser speech service])
-  Places([Place search: Google Places])
+  Phone([Phone / browser: speech + GPS])
+  GSign([Google sign-in])
+  AI([Gemini Flash])
+  Maps([Google Maps])
+  Places([Google Places])
+  Dir([Directions app: Apple / Google Maps])
+  BYU([BYU parking GIS])
+  City([Provo GIS + OpenStreetMap])
 
-  P1(1.0 Register driver)
-  P2(2.0 Find eligible parking)
-  P3(3.0 Save favorite lots)
-  P4(4.0 Track parking session)
-  P5(5.0 Extract rule changes - planned)
-  P6(6.0 Approve rule changes - planned)
-  P7(7.0 Report key results)
-  P8(8.0 Interpret trip request)
-  P9(9.0 Draw map)
-  P10(10.0 Search lots, buildings and places)
+  subgraph Browser[Browser app - GitHub Pages / Vercel]
+    P1(1.0 Sign in driver)
+    P2(2.0 Read trip request - checks IDs, backup reader)
+    P4(4.0 Find and map eligible lots)
+    P5(5.0 Search lots and places)
+    P6(6.0 Save favorite lots)
+    P7(7.0 Track parking timer)
+  end
+  subgraph Edge[Supabase Edge Functions]
+    P3(3.0 Parse trip with AI - parse-find)
+  end
+  P8(8.0 Report key results - admin dashboard)
+  P9(9.0 Import lot data - team scripts)
 
   D1[(D1 Drivers)]
-  D2[(D2 Parking areas and rules)]
-  D3[(D3 Favorites)]
-  D4[(D4 Sessions and visits)]
-  D5[(D5 Destinations)]
-  D6[(D6 Rule change proposals - planned)]
+  D2[(D2 Lots, rules and buildings)]
+  D3[(D3 Lot outline files)]
+  D4[(D4 Favorites)]
+  D5[(D5 Sessions and visits)]
+  D6[(D6 Admin accounts and goals)]
+  D7[(D7 AI search budget)]
 
-  Driver -->|sign-up details| P1
+  Driver -->|sign-in, permit choice| P1
+  P1 -->|signed-in account| Driver
+  P1 -->|sign-in request| GSign
+  GSign -->|Google identity| P1
   P1 -->|driver record| D1
-  D1 -->|saved permit| P8
-  Driver -->|typed trip| P8
-  Driver -.->|voice| Speech
-  Speech -.->|transcript| P8
-  D5 -->|building list| P8
-  D2 -->|permit list| P8
-  P8 -->|text or audio + allowed IDs| AI
-  AI -->|permit, building, live, day, time, confidence| P8
-  P8 -->|filled-in Find form for review| Driver
-  Driver -->|reviewed or typed permit, building, day, time| P2
-  D2 -->|lot rules| P2
-  D5 -->|destination| P2
-  P2 -->|eligible lots| Driver
-  P2 -->|eligible lots| P9
-  D2 -->|lot outlines| P9
-  P9 -->|map load request| Maps
-  Maps -->|2D tiles, 3D scene| P9
-  P9 -->|map, selected lot| Driver
-  Driver -->|typed search| P10
-  D2 -->|lot names| P10
-  D5 -->|building names and nicknames| P10
-  P10 -->|typed place text| Places
-  Places -->|suggestions, location of picked place| P10
-  P10 -->|picked building| P2
-  P10 -->|picked lot or place pin| P9
-  Driver -->|favorite pick, nickname| P3
-  P3 -->|favorite record| D3
-  Driver -->|parking start/end| P4
-  P4 -->|session record| D4
-  P4 -->|time left| Driver
-  D4 -->|session and visit times| P7
-  D1 -->|sign-ups| P7
-  D3 -->|favorites per user| P7
-  P7 -->|KR values| Admin
-  Sites -.->|rule page text| P5
-  D2 -.->|current rules| P5
-  P5 -.->|extracted changes| P6
-  P6 -.->|proposal| D6
-  Admin -->|approval decisions| P6
-  D6 -.->|pending proposals| P6
-  P6 -.->|approved rules| D2
+
+  Driver -->|trip request| P2
+  Phone -->|voice transcript| P2
+  D1 -->|saved permit| P2
+  D2 -->|permit + building lists| P2
+  P2 -->|trip, allowed IDs| P3
+  D2 -->|ID labels| P3
+  P3 -->|request count| D7
+  D7 -->|budget left| P3
+  P3 -->|trip + allowed names| AI
+  AI -->|structured fields| P3
+  P3 -->|AI fields or error| P2
+  P2 -->|filled-in Find form| Driver
+
+  Driver -->|Find choices| P4
+  Phone -->|GPS location| P4
+  D2 -->|lot rules, buildings| P4
+  D3 -->|lot outlines| P4
+  P4 -->|map request| Maps
+  Maps -->|map tiles, 3D scene| P4
+  P4 -->|eligible lots on map| Driver
+  P4 -->|lot coordinates| Dir
+
+  Driver -->|search text| P5
+  D2 -->|lot + building names| P5
+  P5 -->|place text| Places
+  Places -->|place suggestions| P5
+  P5 -->|search results| Driver
+  P5 -->|picked result| P4
+
+  Driver -->|favorite pick, nickname| P6
+  P6 -->|favorite record| D4
+  D4 -->|saved favorites| P6
+  P6 -->|favorites list| Driver
+
+  Driver -->|parking start/end| P7
+  P7 -->|session + visit record| D5
+  D5 -->|active session| P7
+  P7 -->|time left| Driver
+
+  D1 -->|sign-ups| P8
+  D4 -->|favorites per user| P8
+  D5 -->|visit + session times| P8
+  Admin -->|login, goal edits| P8
+  D6 -->|admin account, goals| P8
+  P8 -->|goal edits| D6
+  P8 -->|KR values vs goals| Admin
+
+  BYU -.->|on update: lot polygons, permits, buildings| P9
+  City -.->|on update: city lot outlines| P9
+  P9 -.->|lots + rules| D2
+  P9 -.->|outline files| D3
 ```
 
-| Data store | Tables today |
-|---|---|
-| D1 Drivers | `app_user`, `user_permit` |
-| D2 Parking areas and rules | `parking_area`, `parking_rule`, `permit`, `tow_company` (plus the `data/*.json` lot outlines the map draws) |
-| D3 Favorites | `favorite_area` |
-| D4 Sessions and visits | `parking_session`, `app_visit` |
-| D5 Destinations | `destination` |
-| D6 Rule change proposals | `rule_change_proposal` (planned) |
+2.0 runs in the browser: it sends the trip to `parse-find`, re-checks every permit and building ID that comes back, and falls back to the rule-based reader (`js/domain/local-parse.js`) when Gemini is busy or fails. 3.0 spends one unit of the shared search budget (D7) before each Gemini call, so the AI key cannot be drained. Eligibility (4.0) is always decided by `js/domain/eligibility.js`, never by the AI.
 
-PNG and HTML versions of both diagrams are in [`docs/dfd/`](docs/dfd/). They were exported before search (10.0) and Google Places were added, so the Mermaid diagrams above are the current ones.
+| Data store | Tables or files today |
+|---|---|
+| D1 Drivers | `app_user`, `user_permit` (plus Supabase Auth users) |
+| D2 Lots, rules and buildings | `parking_area`, `parking_rule`, `permit`, `tow_company`, `destination` |
+| D3 Lot outline files | `data/byu-campus-parking.json` (BYU GIS snapshot), `data/provo-city-parking.json` (Provo GIS + OSM snapshot) |
+| D4 Favorites | `favorite_area` (including `nickname`) |
+| D5 Sessions and visits | `parking_session`, `app_visit`, `visit_metrics_private.visit_link` |
+| D6 Admin accounts and goals | `parking_private.admin_account`, `parking_private.okr_goals` |
+| D7 AI search budget | `visit_metrics_private.ingress_budget` |
+
+PNG and HTML versions of both diagrams (light and dark) are in [`docs/dfd/`](docs/dfd/) and match the Mermaid diagrams above.
 
 ## Data model (ERD)
 
@@ -374,7 +403,7 @@ docs/                 design notes, DFD, ERD, screenshots, sprint evidence
 - **Reminders are on-screen only.** Closing the app does not schedule a push notification or alarm; the saved countdown resumes when reopened.
 - **AI search can be wrong or unavailable.** It depends on Gemini and the deployed `parse-find` function. The person always reviews the filled-in form, and the form works without AI. In the last full test (before the backup reader and prompt hints) exact answers matched on 83% of 24 queries; it has not been re-measured since.
 - **Nicknames and typo tolerance cover BYU buildings only,** and place search needs Google Places enabled on the Maps key. Places and long-press pins were checked with stand-in data, not a real Google map.
-- **Rule-change extraction (DFD 5.0/6.0) and the AWS admin portal are planned,** not built.
+- **Rule-change extraction and the AWS admin portal are planned,** not built (so they are not in the DFDs).
 - `parking-setup.html` and `parking-timer.html` are the older local-only timer pages kept for the P5/P6 course contract. They do not sync with My Car.
 - Some README screenshots were taken against stubbed data, as noted under each one.
 
