@@ -1,76 +1,130 @@
-# Provo Parking — IS 403 full-stack project
+# Provo Parking — IS 403
 
-This folder is a **separate** Express app for the IS 403 assignment. It lives on the `is403-express` branch and does **not** replace the live static Provo Parking site at the repo root. Do not merge this branch to `main` or point it at the live Supabase project.
+A full-stack admin site for the Provo Parking project, built with Node.js, Express, EJS, Knex, and PostgreSQL. It lives in this `is403/` folder on the `is403-express` branch and does not replace the live static app on `main`.
 
-Built the class way: **Node.js + Express**, **EJS** views, **Knex** with **PostgreSQL**, and **express-session** logins.
+## Stack
 
-- Landing page with images of the Provo Parking app and live counts from the database.
-- Login with `user_email` and `user_password` (bcrypt hashes; plain passwords are never stored).
-- After login, hidden buttons appear, one per table: **Maintain Users**, **Maintain Records** (lots), **Maintain Permits**.
-  Each one has Create, Read, Update and Delete.
-- **Log out** destroys the session in the database, clears the `pp403.sid` cookie and hides the buttons.
+![Provo Parking IS 403 stack: the browser talks to Express routes on Render (planned). Express uses EJS views, express-session with a Postgres session store, and bcrypt auth middleware, then Knex, then a Supabase Postgres database (planned) with users, lots, permits, and session tables.](docs/stack-diagram.png)
 
-## Files
+```mermaid
+flowchart TB
+  Browser["Browser"]
+  Browser --> Routes
 
+  subgraph Render["Render (planned)"]
+    direction TB
+    Routes["Express routes"]
+    Routes --> Views["EJS views"]
+    Routes --> Sess["express-session<br/>Postgres session store"]
+    Routes --> Auth["bcrypt auth middleware"]
+    Routes --> Knex["Knex"]
+  end
+
+  subgraph Postgres["Supabase Postgres (planned)"]
+    direction LR
+    Users["users"]
+    Lots["lots"]
+    Permits["permits"]
+    SessTbl["session"]
+  end
+
+  Knex --> Users
+  Knex --> Lots
+  Knex --> Permits
+  Sess --> SessTbl
+
+  classDef client fill:#002E5D,stroke:#002E5D,color:#FFFFFF
+  classDef route fill:#FFFFFF,stroke:#002E5D,color:#002E5D
+  classDef knex fill:#0062B8,stroke:#0062B8,color:#FFFFFF
+  classDef table fill:#002E5D,stroke:#002E5D,color:#FFFFFF
+  classDef sess fill:#FFFFFF,stroke:#002E5D,color:#002E5D
+  class Browser client
+  class Routes,Views,Sess,Auth route
+  class Knex knex
+  class Users,Lots,Permits table
+  class SessTbl sess
 ```
-is403/
-  index.js                 Express app: setup, sessions, every route
-  knexfile.js              Knex settings (reads DATABASE_URL)
-  db/knex.js               shared Knex instance
-  db/migrations/           creates users, permits, lots and session tables
-  db/seeds/                BYU permits + 73 verified lots, and the TA admin user
-  data/                    verified lot JSON used by the seed (copy of the static site data)
-  views/                   EJS pages (partials/, users/, lots/, permits/)
-  public/                  CSS and images
-  tests/app.test.js        end-to-end tests against a local Postgres
-```
 
-## Run it locally
+## How it meets the assignment
+
+- [x] Landing page with images — wordmark plus desktop and phone screenshots of the app
+- [x] Login with `user_email` and `user_password` — passwords are stored as bcrypt hashes, never in plain text
+- [x] Hidden **Maintain Users**, **Maintain Records** (lots), and **Maintain Permits** buttons, shown only after login
+- [x] Add, view, edit, and delete on every table, including users
+- [x] Logout clears the `pp403.sid` cookie, removes the session, and hides the buttons
+- [x] Comments in the server, database, and views
+- [ ] Deployed — not hosted yet. Plan is Render for the app and a separate Supabase Postgres database.
+
+## For TAs
+
+| | |
+|---|---|
+| **Live URL** | TBD — not deployed yet |
+| **Test login** | TBD — will be provided when the site is hosted |
+
+This app is only on the `is403-express` branch. Please do not use the live Provo Parking site or its database.
+
+## Run locally
 
 From this folder (`is403/`):
 
 ```bash
 npm install
-cp .env.example .env          # then fill in DATABASE_URL, SESSION_SECRET, SEED_ADMIN_*
+cp .env.example .env
+# fill in the variables in the table below
 npm run migrate
-npm run seed                  # adds permits, lots and the admin login from SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD
-npm start                     # http://localhost:3000
+npm run seed
+npm start
 ```
 
-Use a **separate** local Postgres database, never the live Provo Parking Supabase project.
-
-Tests also need a disposable **local** database:
-
-```bash
-TEST_DATABASE_URL=postgres://postgres:PASSWORD@localhost:5432/is403_test npm test
-```
+Then open http://localhost:3000. Use a **local** Postgres database, never the live Provo Parking database.
 
 ## Environment variables
 
 | Name | What it is |
 |---|---|
-| `DATABASE_URL` | Postgres connection string for the IS 403 database (separate from the live Provo Parking database) |
-| `DATABASE_SSL` | `true` for hosted Postgres (Supabase, Neon, RDS) |
-| `DB_SCHEMA` | Optional schema name (default `public`) |
-| `SESSION_SECRET` | Long random string that signs the session cookie (required in production) |
-| `NODE_ENV` | `production` when deployed (turns on secure cookies) |
-| `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | The TA login created by `npm run seed` |
+| `DATABASE_URL` | Postgres connection string for this project's database |
+| `DATABASE_SSL` | Set to `true` for hosted Postgres |
+| `SESSION_SECRET` | Random string used to sign the session cookie |
+| `NODE_ENV` | Set to `production` when deployed |
+| `SEED_ADMIN_EMAIL` | Email for the TA login created by `npm run seed` |
+| `SEED_ADMIN_PASSWORD` | Password for that TA login |
 
-## Rubric checklist
+Optional: `PORT` (default 3000) and `DB_SCHEMA` (default `public`).
 
-| Requirement | Where it is |
+## Folder layout
+
+```
+is403/
+  index.js                 Express app, sessions, and routes
+  knexfile.js              Knex config (reads DATABASE_URL)
+  db/knex.js               Shared Knex instance
+  db/migrations/           users, permits, lots, and session tables
+  db/seeds/                BYU permits, verified lots, and the admin user
+  data/                    Lot JSON used by the seed
+  views/                   EJS pages (landing, login, users, lots, permits)
+  public/                  CSS and images
+  tests/app.test.js        End-to-end tests
+  docs/stack-diagram.png   Stack diagram used above
+```
+
+## Database tables
+
+| Table | Purpose |
 |---|---|
-| Hand-written back end (not a site generator) | `index.js` — Express routes written by hand |
-| Login with email and password | `POST /login` uses `user_email` and `user_password`; hashes stored with bcrypt |
-| Sessions | `express-session` + `connect-pg-simple`; session rows in Postgres; cookie `pp403.sid` |
-| Logout that ends the session | `POST /logout` destroys the session and clears the cookie |
-| Two or more Maintain screens with add, view, edit, delete | Maintain Users (`/users`), Maintain Records / lots (`/lots`), Maintain Permits (`/permits`) |
-| Knex talking to PostgreSQL | `knexfile.js`, `db/migrations/`, `db/seeds/`, queries in `index.js` |
+| `users` | Logins. Key columns: `user_email`, `user_password` (bcrypt hash), name, and `created_at` |
+| `permits` | Permit types (A, Y, U, and others) |
+| `lots` | Parking lots. Optional link to a permit (`ON DELETE SET NULL`) |
+| `session` | `express-session` store used by `connect-pg-simple` |
 
-## Deploying (not done yet)
+`npm run seed` loads the permit types and 73 verified lots, then creates the admin user from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`.
 
-This is a normal long-running Express server (`npm start`), so any Node host works (Render free is a good fit; AWS also works). It needs its **own** database — a new free Supabase project, or Postgres on the host. Do not use the live Provo Parking database, and do not merge this branch to `main`.
+## Tests
 
-1. Create the separate database, set `DATABASE_URL` and `DATABASE_SSL=true`, then run `npm run migrate` and `npm run seed` once from this folder.
-2. Create the web service with build `npm install`, start `npm start`, root directory `is403`, and the variables above.
-3. Log in with the TA account and check every Maintain page.
+Eight end-to-end tests in `tests/app.test.js` cover the landing page, login and hashed passwords, hidden Maintain buttons, add/view/edit/delete for lots, users, and permits, and logout clearing the session cookie.
+
+They need a disposable **local** database:
+
+```bash
+TEST_DATABASE_URL=postgres://USER:PASSWORD@localhost:5432/is403_test npm test
+```

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1480" height="720" viewBox="0 0 1480 720" role="img" aria-label="Provo Parking IS 403 stack diagram">
+  <defs>
+    <filter id="shadow" x="-8%" y="-8%" width="116%" height="124%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#002E5D" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" orient="auto">
+      <path d="M 0 1 L 12 6 L 0 11 Z" fill="#002E5D"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M 0 1 L 12 6 L 0 11 Z" fill="#5A6878"/>
+    </marker>
+  </defs>
+
+  <rect width="1480" height="720" fill="#FFFFFF"/>
+
+  <text x="56" y="54" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="15" font-weight="600" fill="#0062B8" letter-spacing="0.08em">IS 403 FULL-STACK PROJECT</text>
+  <text x="56" y="98" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="34" font-weight="700" fill="#002E5D">Provo Parking stack</text>
+  <text x="56" y="132" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="16" fill="#5A6878">Browser → Express routes → Knex → PostgreSQL</text>
+
+  <!-- Browser -->
+  <g filter="url(#shadow)">
+    <rect x="56" y="330" width="196" height="100" rx="16" fill="#002E5D"/>
+  </g>
+  <text x="154" y="376" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="13" font-weight="600" fill="#8FB4D9">Client</text>
+  <text x="154" y="404" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">Browser</text>
+
+  <line x1="252" y1="380" x2="318" y2="380" stroke="#002E5D" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Render frame -->
+  <rect x="332" y="188" width="620" height="424" rx="20" fill="#F4F7FB" stroke="#C5D3E3" stroke-width="1.5"/>
+  <text x="356" y="224" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="13" font-weight="700" fill="#0062B8" letter-spacing="0.06em">RENDER (PLANNED)</text>
+
+  <!-- Express routes -->
+  <g filter="url(#shadow)">
+    <rect x="356" y="244" width="572" height="214" rx="16" fill="#FFFFFF" stroke="#002E5D" stroke-width="1.75"/>
+  </g>
+  <text x="642" y="280" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="22" font-weight="700" fill="#002E5D">Express routes</text>
+
+  <rect x="376" y="304" width="164" height="128" rx="12" fill="#E8F0F8" stroke="#C5D3E3" stroke-width="1"/>
+  <text x="458" y="376" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="15" font-weight="600" fill="#002E5D">EJS views</text>
+
+  <rect x="552" y="304" width="196" height="128" rx="12" fill="#E8F0F8" stroke="#C5D3E3" stroke-width="1"/>
+  <text x="650" y="362" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="15" font-weight="600" fill="#002E5D">express-session</text>
+  <text x="650" y="384" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="12" fill="#5A6878">Postgres session store</text>
+
+  <rect x="760" y="304" width="148" height="128" rx="12" fill="#E8F0F8" stroke="#C5D3E3" stroke-width="1"/>
+  <text x="834" y="362" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="15" font-weight="600" fill="#002E5D">bcrypt auth</text>
+  <text x="834" y="384" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="12" fill="#5A6878">middleware</text>
+
+  <line x1="642" y1="458" x2="642" y2="496" stroke="#002E5D" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Knex -->
+  <g filter="url(#shadow)">
+    <rect x="534" y="504" width="216" height="80" rx="14" fill="#0062B8"/>
+  </g>
+  <text x="642" y="552" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="22" font-weight="700" fill="#FFFFFF">Knex</text>
+
+  <!-- Solid: Knex → lots (stands for users, lots, permits). Orthogonal, stays below Express and in the gutter. -->
+  <path d="M 750 544 L 980 544 L 980 368 L 1046 368" fill="none" stroke="#002E5D" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Dashed: express-session → session table. Second gutter lane, no cross with the solid arrow. -->
+  <path d="M 700 432 L 700 448 L 1024 448 L 1024 536 L 1046 536" fill="none" stroke="#5A6878" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrowMuted)"/>
+
+  <!-- Postgres frame -->
+  <rect x="1060" y="188" width="360" height="424" rx="20" fill="#F4F7FB" stroke="#C5D3E3" stroke-width="1.5"/>
+  <text x="1084" y="224" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="13" font-weight="700" fill="#0062B8" letter-spacing="0.04em">SUPABASE POSTGRES (PLANNED)</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1084" y="248" width="312" height="72" rx="12" fill="#002E5D"/>
+  </g>
+  <text x="1240" y="292" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">users</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1084" y="332" width="312" height="72" rx="12" fill="#002E5D"/>
+  </g>
+  <text x="1240" y="376" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">lots</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1084" y="416" width="312" height="72" rx="12" fill="#002E5D"/>
+  </g>
+  <text x="1240" y="460" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF">permits</text>
+
+  <g filter="url(#shadow)">
+    <rect x="1084" y="500" width="312" height="72" rx="12" fill="#FFFFFF" stroke="#002E5D" stroke-width="1.75"/>
+  </g>
+  <text x="1240" y="544" text-anchor="middle" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="20" font-weight="700" fill="#002E5D">session</text>
+
+  <text x="56" y="676" font-family="Inter, IBM Plex Sans, Liberation Sans, sans-serif" font-size="13" fill="#5A6878">Solid arrow: Knex reads and writes users, lots, and permits. Dashed arrow: express-session stores logins in the session table.</text>
+</svg>
