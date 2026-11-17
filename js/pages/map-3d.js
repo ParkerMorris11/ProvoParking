@@ -1,6 +1,7 @@
 // Google Maps Photorealistic 3D view (<gmp-map-3d>), same adapter shape as map-2d.js.
 // Lots are extruded polygons; tapping one fires `gmp-click`. Needs v=beta with the maps3d library.
 import { CAMPUS_CENTER, withAlpha } from "../domain/map-geometry.js";
+import { paddedCamera } from "../domain/map-focus.js";
 
 const ALTITUDE = 1415;
 // North-up and a moderate tilt, so the middle of the screen is campus itself. The old 65° tilt facing
@@ -179,7 +180,12 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });
     },
     focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level) }); },
-    fitBounds(bounds) {
+    fitBounds(bounds, padding) {
+      if (padding && typeof padding === "object") {
+        // Padding (sheet, chip, buttons): shift the camera so the lots sit in the uncovered part of the map.
+        fly(paddedCamera(bounds, padding, { width: container.clientWidth || 390, height: container.clientHeight || 844 }));
+        return;
+      }
       const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
       fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 1.3)) });
     },

@@ -7,7 +7,7 @@ import { eligibleAreas, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint, arrangeAreas } from "../domain/area-list.js";
 import { bestPickReason } from "../domain/best-pick.js";
 import { evaluateArea } from "../components/area-card.js";
-import { refreshMapEligibility, currentPosition, showAreaOnMap } from "./map.js";
+import { refreshMapEligibility, currentPosition, showAreaOnMap, openLot } from "./map.js";
 
 export const PAGE_SIZE = 12;
 export const BYU_PARKING_MAP = "https://map.byu.edu/?layer=parking";
@@ -40,7 +40,13 @@ function initTools() {
   });
   list.addEventListener("click", (event) => {
     const button = event.target.closest("[data-map-area]");
-    if (!button) return;
+    // A tap anywhere else on a card (not a link or button) opens that lot and flies the map to it.
+    if (!button) {
+      if (event.target.closest("a, button, input, select")) return;
+      const link = event.target.closest(".card")?.querySelector('a[href^="#area/"]');
+      if (link) openLot(Number(link.getAttribute("href").split("/")[1]));
+      return;
+    }
     const area = state.areas.find((a) => a.area_id === Number(button.dataset.mapArea));
     if (area) showAreaOnMap(area);
   });

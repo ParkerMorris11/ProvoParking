@@ -839,3 +839,5 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 .best-reason { margin: 2px 0 6px; font-weight: 600; }
 .card.is-best { outline: 2px solid var(--brand-fill); outline-offset: -2px; }
 .areas-empty-link { margin: 6px 0 0; }
+/* Lot cards open their lot (and fly the map there) when tapped anywhere outside their links and buttons. */
+#area-list .card, #nearby-list .nearby-card { cursor: pointer; }
