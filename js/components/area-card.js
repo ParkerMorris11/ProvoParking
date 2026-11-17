@@ -31,15 +31,17 @@ export function heartHtml(area) {
               aria-pressed="${saved}" aria-label="${escapeHtml(label)}">${HEART_ICON}</button>`;
 }
 
-export function cardHtml(area, { showDirections = false, showOnMap = false } = {}) {
+export function cardHtml(area, { showDirections = false, showOnMap = false, best = null } = {}) {
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
   const directions = showDirections ? directionsUrl(area, "driving") : null;
   const appleDirections = showDirections ? appleDirectionsUrl(area, "driving") : null;
   return `
-    <li class="card">
+    <li class="card${best ? " is-best" : ""}">
       <div class="card-body">
+        ${best ? `<p class="best-pick">Best pick</p>` : ""}
         <h3>${escapeHtml(area.area_name)}</h3>
+        ${best ? `<p class="best-reason">${escapeHtml(best)}</p>` : ""}
         ${area.section_note ? `<p class="lot-subtitle">${escapeHtml(area.section_note)}</p>` : ""}
         <p class="meta">${escapeHtml(area.operator)}${area.is_free ? " · Free" : ""}${Number.isFinite(area.distanceMeters) ? ` · <span class="distance">~${formatDistance(area.distanceMeters)} away</span>` : ""}</p>
         <p class="elig ${ev.kind}"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}</p>

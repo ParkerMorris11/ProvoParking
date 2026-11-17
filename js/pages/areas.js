@@ -5,9 +5,12 @@ import { DAY_NAMES, fmtTime } from "../lib/format.js";
 import { cardHtml } from "../components/area-card.js";
 import { eligibleAreas, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint, arrangeAreas } from "../domain/area-list.js";
+import { bestPickReason } from "../domain/best-pick.js";
+import { evaluateArea } from "../components/area-card.js";
 import { refreshMapEligibility, currentPosition, showAreaOnMap } from "./map.js";
 
 export const PAGE_SIZE = 12;
+export const BYU_PARKING_MAP = "https://map.byu.edu/?layer=parking";
 let renderedList, renderedHtml, expanded = false, toolsReady = false, autoSorted = false;
 
 function listOptions() {
@@ -65,7 +68,9 @@ export function renderAreas() {
   const focusedLink = document.activeElement?.matches?.("#area-list .link") ? document.activeElement.getAttribute("href") : null;
   const building = state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
   const permit = state.permits.find((p) => p.permit_id === selection.permitId);
-  const list = $("area-list"), html = shown.map((area) => cardHtml(area, { showOnMap: true })).join("");
+  // The top row of a distance-ranked list gets a "Best pick" reason. The list itself is already only eligible lots.
+  const best = searching ? null : bestPickReason(shown[0], { sortedBy, permitCode: permit?.permit_code, place: building, kind: shown[0] ? evaluateArea(shown[0]).kind : "ok" });
+  const list = $("area-list"), html = shown.map((area, i) => cardHtml(area, { showOnMap: true, best: i === 0 ? best : null })).join("");
   // Keep pending heart requests and keyboard focus intact when only the clock changes.
   if (list !== renderedList || html !== renderedHtml) {
     list.innerHTML = html;
@@ -98,10 +103,15 @@ export function renderAreas() {
   const empty = $("areas-empty");
   if (empty) {
     empty.hidden = eligible.length > 0;
+    const visitor = String(permit?.permit_code || "").toUpperCase() === "V";
+    // Honest about gaps: BYU visitor lots (2V, 26V) are not in the verified data yet.
     empty.textContent = selection.permitId == null
       ? "No lots are open to everyone at this time. Choose your permit."
-      : "No verified lots match this permit at this time. Try another time.";
+      : visitor ? "Visitor lots aren't in this app yet. Check BYU's parking map."
+      : "No verified lots match this permit at this time. Try another time or check BYU's parking map.";
   }
+  const emptyMore = $("areas-empty-more");
+  if (emptyMore) emptyMore.hidden = eligible.length > 0;
   const { day, time } = selection;
   $("areas-summary").textContent = `${permit ? permit.permit_name : "No permit selected"} · ${selection.live ? "Right now" : "Planned arrival"}: ${DAY_NAMES[day]} at ${fmtTime(time)} (Provo time) · ${eligible.length} matching ${eligible.length === 1 ? "section" : "sections"}`;
   refreshMapEligibility(selection, eligible);

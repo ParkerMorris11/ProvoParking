@@ -76,6 +76,7 @@ test('Areas renders only eligible cards and gives useful empty states without de
   state.find={...selection,time:'03:00'};renderAreas();assert.equal(fields['area-list'].innerHTML,'');assert.equal(fields['areas-empty'].hidden,false);
   assert.match(fields['areas-empty'].textContent,/No verified lots match/);
   state.find={...selection,permitId:null};renderAreas();assert.match(fields['areas-empty'].textContent,/Choose your permit/);
+  state.permits=[{permit_id:2,permit_name:'G permit'},{permit_id:9,permit_code:'V',permit_name:'Visitor'}];state.find={...selection,permitId:9};renderAreas();assert.match(fields['areas-empty'].textContent,/Visitor lots aren't in this app yet/);
   assert.equal(state.favoriteIds.has(3),true);assert.equal(state.areas.length,lots.length);
  }finally{Object.assign(state,oldState);if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;}
 });

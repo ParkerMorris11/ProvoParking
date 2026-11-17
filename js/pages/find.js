@@ -4,7 +4,7 @@ import { $, setStatus } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, nowHHMM } from "../lib/format.js";
 import { savePermit } from "../lib/storage.js";
 import { parkingSelection } from "../domain/parking-results.js";
-import { parseFindWithFallback, applyParsedToForm } from "../data/parse-find.js";
+import { parseFindWithFallback, applyParsedToForm, afterFill } from "../data/parse-find.js";
 import { createSpeech } from "../lib/speech.js";
 import { setAccountPermit } from "../data/auth.js";
 
@@ -92,7 +92,17 @@ function initPlainLanguage({ choosePermit }) {
       if (parsed.destination_id) state.find.customDestination = null;
       syncTimeControls();
       renderPermitInfo();
-      say([fallback ? "AI busy, read by the backup reader." : "Read by Gemini.", result.summary, ...result.warnings, "Check the fields, then Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
+      const lead = fallback ? "AI busy, read by the backup reader." : "Read by Gemini.";
+      const next = afterFill({ permit: els.permit.value, destination: els.destination.value, ...result });
+      if (next.autoSearch) {
+        // Permit and building are both known: show the matching lots right away. The button stays for edits.
+        const findForm = $("find-form");
+        if (findForm.requestSubmit) findForm.requestSubmit(); else findForm.dispatchEvent(new Event("submit", { cancelable: true }));
+        say(`${lead} ${result.summary}`);
+      } else {
+        const need = next.missing.length ? `Add your ${next.missing.join(" and ")}, then Show parking areas.` : "Check the fields, then Show parking areas.";
+        say([lead, result.summary, ...result.warnings, need].filter(Boolean).join(" "), true);
+      }
     } catch (error) {
       if (current()) say(error.message || "I couldn't read that. Use the form below.", true);
     } finally {
