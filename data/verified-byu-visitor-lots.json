@@ -1,0 +1,36 @@
+{
+  "verified_on": "2026-11-17",
+  "regulations_url": "https://security.byu.edu/parking-regulations",
+  "regulations_released": "2026-07-23",
+  "regulations_sha256": "bd30b8791168f1d94bf01277eec5255f7bc514b1707bdb28b88a6cbb116dfff6",
+  "campus_map_url": "https://map.byu.edu/?layer=parking",
+  "layer_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Campus_Parking_Lots/FeatureServer/0",
+  "nutshell_url": "https://security.byu.edu/parking-in-a-nutshell",
+  "notes": "Interior points use the same horizontal scan-line method as data/verified-byu-sections.json. They are not verified entrances. Capacity, payment machines, validation, and stay limits are not listed on these two GIS features. Official sources describe lots 2V and 26V as free visitor parking; current students and employees may not use visitor parking at any time; overnight parking is prohibited 01:00–05:00. Weekday hours come from the live GIS descriptions, which matched the checked-in campus parking snapshot. After-hours and weekend eligibility are left unknown rather than assumed open or visitor-only.",
+  "sections": [
+    {
+      "object_id": 15,
+      "global_id": "7f6b3fc5-7fd8-493d-b35a-8fc27b385698",
+      "lot_code": "2V",
+      "permit_type": "V",
+      "end": "18:00",
+      "latitude": 40.251904,
+      "longitude": -111.647447,
+      "is_free": true,
+      "source_description": "Non-student visitor parking  from 7:00 a.m. to 6:00 p.m. Monday through Friday.",
+      "feature_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Campus_Parking_Lots/FeatureServer/0/15"
+    },
+    {
+      "object_id": 88,
+      "global_id": "a71c40c0-b1f3-4003-9ac6-ea3dbf822e0a",
+      "lot_code": "26V",
+      "permit_type": "V",
+      "end": "16:00",
+      "latitude": 40.248169,
+      "longitude": -111.644898,
+      "is_free": true,
+      "source_description": "Non-student visitor parking  from 7:00 a.m. to 4:00 p.m. Monday through Friday.",
+      "feature_url": "https://services.arcgis.com/FvF9MZKp3JWPrSkg/arcgis/rest/services/Campus_Parking_Lots/FeatureServer/0/88"
+    }
+  ]
+}
