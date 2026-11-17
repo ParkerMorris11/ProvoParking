@@ -388,12 +388,12 @@ function buildSearch() {
       return;
     }
     if (id === "free-now") {
+      // Only turns on the Provo city lots layer. It never changes the person's saved permit.
       const toggle = document.getElementById("city-toggle");
-      if (toggle && !toggle.checked) toggle.click();
-      const openPermit = (state.permits || []).find(p => /public|visitor|none/i.test(String(p.permit_name || "")));
-      if (openPermit && !state.find.permitId) applyPermit(openPermit.permit_id);
+      if (!toggle) return;
+      if (!toggle.checked) toggle.click();
       if (!isDesktop()) setSheet("peek");
-      status.textContent = "Showing Provo city parking and open areas.";
+      status.textContent = "Showing Provo city lots on the map. They are unverified, so check posted signs.";
       status.hidden = false;
     }
   };
@@ -415,7 +415,9 @@ function buildSearch() {
     chipRow.className = "map-search-chips";
     chipRow.setAttribute("role", "group");
     chipRow.setAttribute("aria-label", "Quick parking filters");
-    for (const qf of QUICK_FILTERS) {
+    // "Visitor" needs a visitor permit (code V) in the permit list; without one the chip would do nothing.
+    const hasVisitor = (state.permits || []).some(p => String(p.permit_code || "").toUpperCase() === "V");
+    for (const qf of QUICK_FILTERS.filter(q => q.id !== "visitor" || hasVisitor)) {
       const chipBtn = document.createElement("button");
       chipBtn.type = "button";
       chipBtn.className = "map-search-chip";
