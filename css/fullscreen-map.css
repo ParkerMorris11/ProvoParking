@@ -424,3 +424,8 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .home-sheet[data-route="find"] :is(.sheet-search-row, .map-search-status, .map-search-results) { display: none; }
 /* After a search the ranked list (Best pick first) leads; Browse and Nearby return with the close button. */
 .home-sheet[data-results] :is(#app-nav, .nearby-panel) { display: none; }
+
+/* Lot page: no separate close strip. The round close button floats on the back link's line. */
+.home-sheet[data-route="area"] .route-bar { height: 0; padding: 0; background: none; box-shadow: none; pointer-events: none; }
+.home-sheet[data-route="area"] .route-close { pointer-events: auto; margin-top: 8px; box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
+.home-sheet[data-route="area"] #area-back { margin-top: 8px; margin-right: 56px; }
