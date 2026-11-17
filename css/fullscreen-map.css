@@ -369,3 +369,19 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell :is(.key-title, .results-heading .eyebrow, .map-legend li, .map-note, .nearby-category, .lot-popup-type, .sample-label, .day-scale) { font-size: .75rem; }
   .fs-shell :is(.map-reset, .map-tools .location-button) { min-height: 44px; }
 }
+
+/* ---- Slimmer menus: lead with the answer, keep the long explanations out of the way ---- */
+/* Home: no title block (the status tile already says permit, time and count). The h2 stays for screen readers. */
+.fs-shell #view-areas .areas-heading .eyebrow, .fs-shell #view-areas .areas-heading .summary { display: none; }
+.fs-shell #view-areas .areas-heading { margin: 0 0 12px; }
+.fs-shell #view-areas .areas-heading h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.fs-shell #view-areas .map-panel .map-toolbar h3, .fs-shell #view-areas #map-note, .fs-shell #view-areas .city-lots { display: none; }
+.fs-shell #view-areas .results-heading .eyebrow, .fs-shell #view-areas .results-heading .sample-label, .fs-shell #view-areas .results-note { display: none; }
+.fs-shell .nearby-panel .eyebrow, .fs-shell .nearby-panel .location-privacy, .fs-shell .nearby-panel .nearby-note { display: none; }
+.fs-shell .nearby-panel { padding: 12px 14px; }
+/* Find: the trip box and the form; one-line hints go. */
+.fs-shell #view-find #nl-hint, .fs-shell #view-find #destination-hint, .fs-shell #view-find .check + .hint, .fs-shell #view-find .form-note { display: none; }
+/* All Lots: no intro line or per-section blurb. */
+.fs-shell #view-lots .summary, .fs-shell #view-lots .catalog-group > .hint { display: none; }
+.fs-shell #view-lots .areas-heading .eyebrow { display: none; }
+.fs-shell #view-lots .nearby-card .nearby-description + .nearby-description { font-size: .78rem; opacity: .8; }

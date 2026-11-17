@@ -6,7 +6,7 @@ import { evaluateArea } from "../components/area-card.js";
 import { facilitySummary } from "../domain/city-parking.js";
 import { loadCitySnapshot } from "../data/city-snapshot.js";
 
-const PAGE = 24;
+const PAGE = 8; // a short first list; "Show more" adds another page
 let city = null, cityStatus = "idle", initialized = false;
 let byuLimit = PAGE, cityLimit = PAGE;
 
@@ -23,8 +23,7 @@ function results() {
   $("all-city-lots").innerHTML = facilities.slice(0, cityLimit).map(s => `<li class="nearby-card">
     <h4>${escapeHtml(s.name)}</h4>
     <p class="nearby-description">${escapeHtml(s.kind)} · ${escapeHtml(s.hours)}</p>
-    <p class="nearby-description">${escapeHtml(s.access || "City record; rules not verified")}</p>
-    ${s.sourceUrl ? `<a class="link" href="${escapeHtml(s.sourceUrl)}" target="_blank" rel="noopener">Source: ${escapeHtml(s.sourceLabel)} ↗</a>` : ""}
+    <p class="nearby-description">${escapeHtml(s.access || "Rules not verified")}${s.sourceUrl ? ` · <a class="link" href="${escapeHtml(s.sourceUrl)}" target="_blank" rel="noopener" aria-label="Source: ${escapeHtml(s.sourceLabel)} (opens in a new tab)">Source ↗</a>` : ""}</p>
   </li>`).join("") || (cityStatus === "ready" ? '<li class="empty">No city facilities match your search.</li>' : "");
   $("all-byu-more").hidden = byuLimit >= byu.length;
   $("all-city-more").hidden = cityLimit >= facilities.length;
