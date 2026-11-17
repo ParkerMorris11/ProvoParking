@@ -1,0 +1,30 @@
+<%# Maintain Users: read (list) every user, with links to add, edit and delete. Passwords are never shown. %>
+<%- include("../partials/header") %>
+<div class="page-head">
+  <h1>Maintain Users</h1>
+  <a class="btn primary" href="/users/add">Add user</a>
+</div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>ID</th><th>Email</th><th>Name</th><th>Created</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+    <% users.forEach((u) => { %>
+      <tr>
+        <td><%= u.user_id %></td>
+        <td><%= u.user_email %></td>
+        <td><%= [u.first_name, u.last_name].filter(Boolean).join(" ") %></td>
+        <td><%= new Date(u.created_at).toLocaleDateString("en-US", { timeZone: "America/Denver" }) %></td>
+        <td class="row-actions">
+          <a class="btn small" href="/users/edit/<%= u.user_id %>">Edit</a>
+          <% if (user.user_id !== u.user_id) { %>
+            <form action="/users/delete/<%= u.user_id %>" method="post" class="inline" data-confirm="Delete <%= u.user_email %>?">
+              <button class="btn small danger" type="submit">Delete</button>
+            </form>
+          <% } else { %><span class="muted small">You</span><% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include("../partials/footer") %>

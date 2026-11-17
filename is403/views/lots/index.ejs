@@ -1,0 +1,37 @@
+<%# Maintain Records (lots): list with search, plus add, edit and delete. %>
+<%- include("../partials/header") %>
+<div class="page-head">
+  <h1>Maintain Records: Lots</h1>
+  <a class="btn primary" href="/lots/add">Add lot</a>
+</div>
+<form action="/lots" method="get" class="search" role="search">
+  <label for="q" class="visually-hidden">Search lots</label>
+  <input id="q" name="q" placeholder="Search by code or name, e.g. 59Y" value="<%= search %>">
+  <button class="btn" type="submit">Search</button>
+  <% if (search) { %><a class="btn ghost" href="/lots">Clear</a><% } %>
+</form>
+<p class="muted"><%= lots.length %> <%= lots.length === 1 ? "lot" : "lots" %></p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Code</th><th>Name</th><th>Permit</th><th>Location</th><th>Spaces</th><th>Free</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+    <% lots.forEach((l) => { %>
+      <tr>
+        <td><strong><%= l.lot_code %></strong></td>
+        <td><%= l.lot_name %></td>
+        <td><%= l.permit_code || "—" %></td>
+        <td class="small"><%= l.latitude != null ? `${Number(l.latitude).toFixed(4)}, ${Number(l.longitude).toFixed(4)}` : "—" %></td>
+        <td><%= l.total_spaces ?? "Unknown" %></td>
+        <td><%= l.is_free ? "Yes" : "No" %></td>
+        <td class="row-actions">
+          <a class="btn small" href="/lots/edit/<%= l.lot_id %>">Edit</a>
+          <form action="/lots/delete/<%= l.lot_id %>" method="post" class="inline" data-confirm="Delete lot <%= l.lot_code %>?">
+            <button class="btn small danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include("../partials/footer") %>

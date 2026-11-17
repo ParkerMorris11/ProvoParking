@@ -1,0 +1,18 @@
+<%# Add or edit one permit type. %>
+<%- include("../partials/header") %>
+<section class="card narrow">
+  <h1><%= title %></h1>
+  <% if (error) { %><p class="flash error" role="alert"><%= error %></p><% } %>
+  <form action="<%= action %>" method="post" class="form">
+    <label for="permit_code">Permit code</label>
+    <input id="permit_code" name="permit_code" value="<%= record.permit_code || '' %>" placeholder="e.g. Y" required>
+    <label for="permit_name">Permit name</label>
+    <input id="permit_name" name="permit_name" value="<%= record.permit_name || '' %>" required>
+    <label for="description">Where it's valid</label>
+    <textarea id="description" name="description" rows="3"><%= record.description || '' %></textarea>
+    <label for="price">Price</label>
+    <input id="price" name="price" value="<%= record.price || '' %>" placeholder="e.g. $60 per semester">
+    <div class="actions"><button class="btn primary" type="submit">Save</button><a class="btn ghost" href="/permits">Cancel</a></div>
+  </form>
+</section>
+<%- include("../partials/footer") %>

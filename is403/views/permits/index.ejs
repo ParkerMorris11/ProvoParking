@@ -1,0 +1,29 @@
+<%# Maintain Permits: list every permit type with how many lots use it. %>
+<%- include("../partials/header") %>
+<div class="page-head">
+  <h1>Maintain Permits</h1>
+  <a class="btn primary" href="/permits/add">Add permit</a>
+</div>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Code</th><th>Name</th><th>Where it's valid</th><th>Price</th><th>Lots</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+    <% permits.forEach((p) => { %>
+      <tr>
+        <td><strong><%= p.permit_code %></strong></td>
+        <td><%= p.permit_name %></td>
+        <td class="small"><%= p.description || "" %></td>
+        <td><%= p.price || "" %></td>
+        <td><%= p.lot_count %></td>
+        <td class="row-actions">
+          <a class="btn small" href="/permits/edit/<%= p.permit_id %>">Edit</a>
+          <form action="/permits/delete/<%= p.permit_id %>" method="post" class="inline" data-confirm="Delete permit <%= p.permit_code %>? Its <%= p.lot_count %> lots will have no permit.">
+            <button class="btn small danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+</div>
+<%- include("../partials/footer") %>

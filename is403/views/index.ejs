@@ -1,0 +1,32 @@
+<%# Landing page: what Provo Parking is, a screenshot of the app, and live counts from the database. %>
+<%- include("partials/header") %>
+<section class="hero">
+  <div class="hero-text">
+    <img class="wordmark" src="/images/provo-parking-wordmark.png" alt="Provo Parking" width="320">
+    <h1>Know where your BYU permit lets you park, before you drive.</h1>
+    <p class="lead">Provo Parking reads BYU's official lot map and parking rules, then shows only the lots your permit can use at the time you arrive. This admin site keeps the lot and permit records up to date.</p>
+    <div class="actions">
+      <% if (user) { %>
+        <a class="btn primary" href="/lots">Maintain Records</a>
+        <a class="btn" href="/users">Maintain Users</a>
+      <% } else { %>
+        <a class="btn primary" href="/login">Log in to maintain records</a>
+      <% } %>
+    </div>
+    <ul class="stats" aria-label="Live database counts">
+      <li><strong><%= counts.lots %></strong> lots</li>
+      <li><strong><%= counts.permits %></strong> permit types</li>
+      <li><strong><%= counts.users %></strong> admin users</li>
+    </ul>
+  </div>
+  <figure class="hero-shots">
+    <img class="shot desktop" src="/images/app-desktop.jpg" alt="Provo Parking on a laptop: a campus map with matching lots highlighted and a Best pick card">
+    <img class="shot phone" src="/images/app-phone.jpg" alt="Provo Parking on a phone, showing visitor lots on the map">
+  </figure>
+</section>
+<section class="features">
+  <article><h2>Permit-aware</h2><p>Pick A, G, Y, U or another BYU permit and only the lots it allows are shown.</p></article>
+  <article><h2>Time-aware</h2><p>Rules change by hour and day, so results follow the time you plan to arrive.</p></article>
+  <article><h2>Official sources</h2><p>Every lot comes from BYU's campus parking map, with rules from the July 2026 regulations.</p></article>
+</section>
+<%- include("partials/footer") %>

@@ -1,0 +1,30 @@
+<%# Add or edit one lot. The permit list comes from the permits table. %>
+<%- include("../partials/header") %>
+<section class="card narrow">
+  <h1><%= title %></h1>
+  <% if (error) { %><p class="flash error" role="alert"><%= error %></p><% } %>
+  <form action="<%= action %>" method="post" class="form">
+    <label for="lot_code">Lot code</label>
+    <input id="lot_code" name="lot_code" value="<%= record.lot_code || '' %>" placeholder="e.g. 59Y" required>
+    <label for="lot_name">Lot name</label>
+    <input id="lot_name" name="lot_name" value="<%= record.lot_name || '' %>" placeholder="e.g. BYU Lot 59Y" required>
+    <label for="permit_id">Permit</label>
+    <select id="permit_id" name="permit_id">
+      <option value="">No permit</option>
+      <% permits.forEach((p) => { %>
+        <option value="<%= p.permit_id %>" <%= Number(record.permit_id) === p.permit_id ? 'selected' : '' %>><%= p.permit_code %> · <%= p.permit_name %></option>
+      <% }) %>
+    </select>
+    <div class="two">
+      <div><label for="latitude">Latitude</label><input id="latitude" name="latitude" inputmode="decimal" value="<%= record.latitude ?? '' %>"></div>
+      <div><label for="longitude">Longitude</label><input id="longitude" name="longitude" inputmode="decimal" value="<%= record.longitude ?? '' %>"></div>
+    </div>
+    <label for="total_spaces">Total spaces <span class="muted">(blank if unknown)</span></label>
+    <input id="total_spaces" name="total_spaces" inputmode="numeric" value="<%= record.total_spaces ?? '' %>">
+    <label class="check"><input type="checkbox" name="is_free" <%= record.is_free ? 'checked' : '' %>> Free to park (no per-visit charge)</label>
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" rows="3"><%= record.notes || '' %></textarea>
+    <div class="actions"><button class="btn primary" type="submit">Save</button><a class="btn ghost" href="/lots">Cancel</a></div>
+  </form>
+</section>
+<%- include("../partials/footer") %>

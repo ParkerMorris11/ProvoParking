@@ -1,0 +1,12 @@
+  </main>
+  <footer class="footer">
+    <p>IS 403 project · Team 007 · Lot and permit data from BYU's official parking map and Parking Rules and Regulations.</p>
+  </footer>
+  <script>
+    // Ask before any delete. The message comes from the form's data-confirm attribute.
+    document.querySelectorAll("form[data-confirm]").forEach((form) => {
+      form.addEventListener("submit", (event) => { if (!confirm(form.dataset.confirm)) event.preventDefault(); });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<%# Login form. Field names match the assignment: user_email and user_password. %>
+<%- include("partials/header") %>
+<section class="card narrow">
+  <h1>Log in</h1>
+  <p class="muted">Admins can maintain users, lots and permits.</p>
+  <% if (error) { %><p class="flash error" role="alert"><%= error %></p><% } %>
+  <form action="/login" method="post" class="form">
+    <label for="user_email">Email</label>
+    <input id="user_email" name="user_email" type="email" autocomplete="username" value="<%= email %>" required>
+    <label for="user_password">Password</label>
+    <input id="user_password" name="user_password" type="password" autocomplete="current-password" required>
+    <button class="btn primary" type="submit">Log in</button>
+  </form>
+</section>
+<%- include("partials/footer") %>
