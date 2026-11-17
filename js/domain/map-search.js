@@ -6,7 +6,7 @@ const normalize = value => String(value || '').toLowerCase().normalize('NFKD')
 export const BUILDING_NICKNAMES = {
   JRCB: ['law school', 'law building', 'law library', 'clark building'], MC: ['marriott center', 'the marriott', 'marriott', 'basketball arena'],
   HBLL: ['library', 'hbll', 'lee library', 'harold b lee library'], WSC: ['wilk', 'wilkinson center', 'student center', 'the wilk'],
-  JKB: ['jkb', 'jesse knight', 'knight building', 'business school'], TNRB: ['tanner', 'tanner building', 'marriott school'],
+  JKB: ['jkb', 'jesse knight', 'knight building'], TNRB: ['tanner', 'tanner building', 'marriott school', 'business school'],
   JFSB: ['jfsb', 'smith building', 'joseph f smith'], JSB: ['jsb', 'joseph smith building'], KMBL: ['kimball tower', 'kimball'],
   TMCB: ['tmcb', 'talmage', 'math building', 'math sciences'], MSRB: ['maeser', 'msrb'], BNSN: ['benson', 'benson building'],
   LVES: ['stadium', 'football stadium', 'lavell edwards'], CB: ['clyde building', 'engineering building'], BRMB: ['brimhall', 'brmb'],
