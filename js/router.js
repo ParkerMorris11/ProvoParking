@@ -10,7 +10,8 @@ import { renderAllLots } from "./pages/all-lots.js";
 import { renderFavorites } from "./pages/favorites.js";
 import { renderCar, stopTimer, openCarSheet, closeCarSheet } from "./pages/car.js";
 
-import { syncFullscreenRoute } from "./pages/fullscreen-map.js";
+import { syncFullscreenRoute, isResultsMode } from "./pages/fullscreen-map.js";
+import { nextOrigin } from "./domain/lot-facts.js";
 
 import { initMap, pauseMapLocation, focusAreaOnMap } from "./pages/map.js";
 
@@ -34,7 +35,10 @@ export function showView() {
   const carSheet = name === "car";
   // The sheet opens over whatever page is already showing (or the default page on a direct link).
   const viewName = carSheet ? (state.currentView || (state.find.permitId ? "areas" : "find")) : name;
-  state.currentView = VIEWS.includes(viewName) ? viewName : "find";
+  const nextView = VIEWS.includes(viewName) ? viewName : "find";
+  // Remember which screen a lot page was opened from, so its back link can return there.
+  state.lotOrigin = nextOrigin(state.lotOrigin, { from: state.currentView, to: nextView, results: isResultsMode() });
+  state.currentView = nextView;
   for (const v of VIEWS) $(`view-${v}`).hidden = v !== state.currentView;
   const tabFor = state.currentView === "area" ? "areas" : state.currentView;
   document.querySelectorAll(".tab").forEach((t) => {

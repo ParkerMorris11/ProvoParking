@@ -58,6 +58,23 @@ html:has(body.has-fs-home #view-areas:not([hidden])) { scrollbar-gutter: auto; }
 .permit-pop[hidden] { display: none; }
 .permit-pop label { display: block; margin: 0 0 6px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--label, #455a75); }
 .permit-pop select { width: 100%; min-height: 44px; }
+/* Permit list = the map's color legend: one row per permit with its lot color. */
+.permit-options { margin: 0; padding: 0; border: 0; min-width: 0; }
+.permit-options legend { padding: 0; margin: 0 0 6px; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--label, #455a75); }
+.permit-option-list { display: grid; gap: 2px; max-height: min(56vh, calc(100dvh - 240px), 440px); overflow-y: auto; margin: 0 -6px; padding: 0 2px; overscroll-behavior: contain; }
+.permit-pop .permit-option { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 0; padding: 6px 8px; border-radius: 12px; font-size: .9rem; font-weight: 550; letter-spacing: 0; text-transform: none; color: var(--text, #002E5D); cursor: pointer; }
+.permit-option:hover { background: var(--hover, #0000000d); }
+.permit-option:has(input:checked) { background: var(--brand-wash, #e6effa); box-shadow: inset 0 0 0 1.5px var(--brand, #0062b8); }
+.permit-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.permit-option:has(input:focus-visible) { outline: 3px solid var(--focus, #4c9aff); outline-offset: 1px; }
+.permit-option .permit-swatch, .permit-pop-other .permit-swatch { display: inline-block; flex: 0 0 auto; width: 14px; height: 14px; border-radius: 4px; box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 20%, transparent); }
+.permit-option .permit-swatch.none { background: transparent; border: 1.5px dashed var(--muted, #6b7a8c); box-shadow: none; }
+.permit-option-text { min-width: 0; line-height: 1.25; }
+.permit-option-code { font-weight: 800; }
+.permit-option-cat { display: block; font-size: .72rem; font-weight: 500; color: var(--muted, #5b6b7f); }
+.permit-pop-other { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--border, #dbe2eb); font-size: .72rem; color: var(--muted, #5b6b7f); }
+.permit-pop-other .permit-swatch { width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; }
+.permit-other { display: inline-flex; align-items: center; }
 .permit-pop-more { display: inline-block; margin-top: 8px; font-size: .84rem; font-weight: 650; color: var(--brand-ink, #002E5D); }
 
 /* Permit chip (top left): permit + time, tap to change */
@@ -127,6 +144,8 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 
 /* ---- Top-left status tile: permit + time, and how many areas are open ---- */
 .fs-shell .map-tile { position: absolute; z-index: 1000; top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: flex-start; gap: 8px; max-width: calc(100% - 100px); }
+/* While the permit list is open it sits above the sheet, so every row can be tapped. */
+.fs-shell .map-tile:has(.permit-pop:not([hidden])) { z-index: 1005; }
 .fs-shell .permit-chip { max-width: 100%; min-height: 52px; padding: 7px 12px 7px 8px; gap: 9px; border-radius: 16px; background: var(--glass-strong); box-shadow: var(--glass-shadow); }
 .fs-shell .permit-chip .chip-code { min-width: 34px; height: 34px; border-radius: 10px; font-size: .9rem; }
 .fs-shell .chip-lines { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }

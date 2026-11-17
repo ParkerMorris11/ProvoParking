@@ -17,6 +17,7 @@ export const state = {
   favoriteNames: new Map(), // area_id -> nickname the user gave that favorite
   activeSession: null,
   currentView: null,
+  lotOrigin: null, // { view, results } of the screen a lot page was opened from (for its back link)
   // What the user picked on the Find screen.
   find: { permitId: null, destinationId: null, customDestination: null, live: true, day: new Date().getDay(), time: nowHHMM() },
 };

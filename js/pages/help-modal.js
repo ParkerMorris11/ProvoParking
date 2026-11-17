@@ -1,12 +1,9 @@
 // Quick-guide dialog (#help-modal): permit colors, the 2D/3D switch, live location and directions.
-// Opened by any element with [data-help-open] (Quick guide in the profile menu beside the map search bar). The legend is copied from the
-// map's own #map-legend each time, so the colors here can never drift from the map.
+// Opened by any element with [data-help-open] (Quick guide in the profile menu beside the map search bar).
+// Permit colors are not repeated here: the permit list on the map chip is the one color legend.
 let dialog;
 
 function open(trigger) {
-  const legend = document.getElementById("map-legend");
-  const copy = document.getElementById("help-legend");
-  if (legend && copy) copy.innerHTML = legend.innerHTML;
   if (typeof dialog.showModal === "function") dialog.showModal(); else dialog.setAttribute("open", "");
   // A trigger inside a menu that closes can name a steadier element to get focus back (data-help-return).
   dialog.returnTarget = document.getElementById(trigger?.dataset?.helpReturn || "") || trigger;

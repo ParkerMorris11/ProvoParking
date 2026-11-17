@@ -1,10 +1,14 @@
-// Page: Area details — parking status, 24-hour rules timeline, sources, tow contact, Park here.
+// Page: Area details. Top to bottom: lot name with directions + favorite, a colored status pill and time,
+// a short grid of key facts, Park here, then the 24-hour rules timeline, sources and towing.
 import { state, rulesFor } from "../state.js";
 import { $ } from "../lib/dom.js";
-import { DAY_NAMES, escapeHtml, fmtTime, timeAgo, directionsUrl, appleDirectionsUrl, deviceDirections } from "../lib/format.js";
+import { DAY_NAMES, escapeHtml, fmtTime, timeAgo, deviceDirections } from "../lib/format.js";
 import { availabilityText, evaluateArea, heartHtml, DIRECTIONS_ICON } from "../components/area-card.js";
 import { parkingSelection } from "../domain/parking-results.js";
 import { ruleScheduleHtml } from "../components/rule-schedule.js";
+import { backTarget, lotFacts } from "../domain/lot-facts.js";
+import { areaPoint } from "../domain/area-list.js";
+import { currentPosition } from "./map.js";
 
 let dayChoice = { areaId: null, day: null };
 const fullDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -22,17 +26,40 @@ function sourcesHtml(rules) {
   }).join("")}</ul>` : '<p class="hint">No source links on file.</p>';
 }
 
+// Short status for the pill; the full sentence (ev.text) stays in the pill for screen readers and tests.
+const PILL_ICON = { ok: "✓", limit: "!", "no-permit": "✕", blocked: "✕", pick: "?", unknown: "?" };
+
+function factsHtml(facts, area) {
+  const rows = [];
+  if (facts.permits.length) {
+    rows.push(["Permits", `<ul class="fact-permits" aria-label="Permits accepted here">${facts.permits.map(p =>
+      `<li title="${escapeHtml(p.name)}"><span class="permit-swatch" style="background:${p.color}" aria-hidden="true"></span>${escapeHtml(p.code)}</li>`).join("")}</ul>`]);
+  }
+  rows.push(["Permit hours", facts.permitHours ? escapeHtml(facts.permitHours) : "None listed this day"]);
+  if (facts.closedHours) rows.push(["No parking", escapeHtml(facts.closedHours)]);
+  if (facts.distance) rows.push(["Distance", `${escapeHtml(facts.distance.text)} <span class="fact-sub">${escapeHtml(facts.distance.from)}</span>`]);
+  if (facts.section) rows.push(["Section", `${facts.section.index} of ${facts.section.total}${facts.section.near ? ` <span class="fact-sub">near ${escapeHtml(facts.section.near)}</span>` : ""}`]);
+  rows.push(["Cost", facts.free ? "Free with a valid permit" : area.is_sample_data ? "Sample data" : "Check posted signs"]);
+  return `<dl class="lot-facts">${rows.map(([k, v]) => `<div class="lot-fact"><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>`;
+}
+
 export function renderAreaDetail(areaId) {
   const area = state.areas.find((a) => a.area_id === areaId);
   const box = $("area-detail");
+  // The back link names the screen the lot was opened from (Favorites, results, All Lots, or the map).
+  const back = $("area-back");
+  if (back && back !== box && typeof back.setAttribute === "function") {
+    const target = backTarget(state.lotOrigin);
+    back.setAttribute("href", target.href);
+    back.textContent = `← ${target.label}`;
+  }
   if (!area) {
     box.innerHTML = `<h2 id="h-area" tabindex="-1">Area not found</h2><p class="empty">That parking area does not exist. Go back to the list.</p>`;
     return;
   }
   const avail = availabilityText(area);
   const ev = evaluateArea(area);
-  const directions = directionsUrl(area, "driving");
-  const appleDirections = appleDirectionsUrl(area, "driving");
+  // One directions control, next to the heart: Apple Maps on iPhone/iPad, Google Maps elsewhere.
   const quickDirections = area.is_sample_data ? null : deviceDirections(area, "driving");
   const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
@@ -43,25 +70,27 @@ export function renderAreaDetail(areaId) {
   const focusIndex = controls.indexOf(document.activeElement);
   const disclosures = [...(box.querySelectorAll?.("details") || [])].map((el) => el.open);
   const byu = area.operator === "BYU" && !area.is_sample_data;
+  const building = (state.destinations || []).find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
+  const facts = lotFacts({ area, rules, permits: state.permits || [], day: selection.day, position: currentPosition(), destination: building ? { point: areaPoint(building), name: building.name } : null });
   box.innerHTML = `
     <div class="detail-head">
-      <div>
+      <div class="detail-title">
         <h2 id="h-area" tabindex="-1">${escapeHtml(area.area_name)}</h2>
-        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · ${escapeHtml(area.lot_code)}` : ""}${area.is_free ? " · Free" : ""}${area.section_note ? ` · ${escapeHtml(area.section_note)}` : ""}</p>
+        <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · Lot ${escapeHtml(area.lot_code)}` : ""}</p>
       </div>
       <div class="detail-head-actions">
-        ${quickDirections ? `<a class="icon-btn directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)">${DIRECTIONS_ICON}</a>` : ""}
+        ${quickDirections ? `<a class="icon-btn directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)" title="Directions in ${quickDirections.app}">${DIRECTIONS_ICON}</a>` : ""}
         ${heartHtml(area)}
       </div>
     </div>
-    <p class="elig ${ev.kind} big"><span aria-hidden="true">${ev.icon}</span> ${escapeHtml(ev.text)}
-      <span class="when">(${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time)</span></p>
-    <p class="avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
-
-    <div class="actions detail-primary-actions">
-      ${!area.is_sample_data ? `<a class="primary" href="#car/${area.area_id}">Park here · set timer</a>` : ""}
-      ${quickDirections ? `<a class="secondary" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener">Directions · ${escapeHtml(quickDirections.app)}</a>` : ""}
+    <div class="detail-status-row">
+      <p class="elig status-pill ${ev.kind}"><span class="pill-icon" aria-hidden="true">${PILL_ICON[ev.kind] || ev.icon}</span><span>${escapeHtml(ev.text)}</span></p>
+      <p class="when">${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time</p>
     </div>
+    ${factsHtml(facts, area)}
+    ${!area.is_sample_data ? `<div class="actions detail-primary-actions"><a class="primary" href="#car/${area.area_id}">Park here · set timer</a></div>` : ""}
+    <p class="avail detail-avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
+
     <section class="detail-schedule" aria-labelledby="detail-schedule-title">
       <div class="schedule-heading"><div><p class="detail-eyebrow">Ordinary parking stalls</p><h3 id="detail-schedule-title">24-hour parking rules</h3></div>
         <div class="schedule-day-control"><label for="rules-day">Day</label><select id="rules-day">${fullDays.map((name, i) => `<option value="${i}"${i === day ? " selected" : ""}>${name}</option>`).join("")}</select></div>
@@ -77,11 +106,7 @@ export function renderAreaDetail(areaId) {
     </details>
 
     <details class="detail-source-disclosure"><summary>Towing information</summary>
-    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p></details>
-
-    <details class="detail-source-disclosure"><summary>Other directions options</summary><div class="actions detail-more-directions">
-      ${directions ? `<a class="secondary" href="${escapeHtml(directions)}" target="_blank" rel="noopener">${area.is_sample_data ? "Driving directions (sample location)" : "Driving directions · Google Maps"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirections)}" target="_blank" rel="noopener">Apple Maps</a>` : `<p class="hint">Directions unavailable — this lot has no valid map location.</p>`}
-    </div></details>`;
+    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p></details>`;
   $("rules-day").addEventListener("change", (event) => {
     dayChoice.day = Number(event.target.value);
     renderAreaDetail(areaId);

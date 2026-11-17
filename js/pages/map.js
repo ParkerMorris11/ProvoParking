@@ -9,7 +9,7 @@ import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint } from "../domain/area-list.js";
-import { PERMIT_CATEGORIES, CAMPUS_CENTER, byuShape, cityShape } from "../domain/map-geometry.js";
+import { CAMPUS_CENTER, byuShape, cityShape } from "../domain/map-geometry.js";
 import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-maps.js";
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
@@ -482,8 +482,7 @@ export async function initMap() {
       if (button) { button.disabled = false; button.addEventListener("click", () => void setMode(m)); }
     }
 
-    const legend = document.getElementById("map-legend");
-    if (legend) legend.innerHTML = PERMIT_CATEGORIES.map((item) => `<li><span class="legend-dot" style="background:${item.color}" aria-hidden="true"></span>${escapeHtml(item.label)}</li>`).join("");
+    // The permit color legend lives in the permit chip list (fullscreen-map.js), not here.
     const reset = document.getElementById("map-reset");
     if (reset) {
       reset.disabled = false;
