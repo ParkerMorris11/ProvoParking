@@ -256,6 +256,17 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .nl-row .secondary { flex: none; margin: 0; white-space: nowrap; }
 .nl-mic { flex: none; display: inline-grid; place-items: center; width: 48px; min-height: 48px; padding: 0; border: 1px solid var(--field); border-radius: 12px; background: var(--card); color: var(--brand-ink); cursor: pointer; }
 .nl-mic[hidden] { display: none; }
+/* AI "thinking" state (find.js): spinner before the status text, locked input, busy button. */
+.nl-status.thinking, .map-search-status.thinking { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--brand-ink); }
+.nl-status.thinking::before, .map-search-status.thinking::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 3px solid currentColor; border-right-color: transparent; animation: nl-spin .8s linear infinite; }
+.nl-find.is-thinking input[type="text"] { opacity: .65; cursor: progress; }
+.nl-find.is-thinking #nl-go { cursor: progress; }
+.map-search-status.thinking[hidden] { display: none; }
+@keyframes nl-spin { to { transform: rotate(360deg); } }
+@keyframes nl-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) {
+  .nl-status.thinking::before, .map-search-status.thinking::before { animation: nl-pulse 1.6s ease-in-out infinite; border-right-color: currentColor; }
+}
 .nl-mic svg { width: 22px; height: 22px; }
 .nl-mic:hover { border-color: var(--brand); background: var(--brand-wash); }
 .nl-mic[aria-pressed="true"] { background: var(--brand-fill); border-color: var(--brand-fill); color: #fff; }
