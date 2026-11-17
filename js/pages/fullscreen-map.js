@@ -14,7 +14,8 @@ import { DAY_NAMES, escapeHtml, fmtTime } from "../lib/format.js";
 import { parkingSelection, eligibleAreas } from "../domain/parking-results.js";
 import { evaluate } from "../domain/eligibility.js";
 import { parkingNow } from "../lib/server-clock.js";
-import { initMap, refreshMap, toggleMapStyle, zoomMap } from "./map.js";
+import { initMap, refreshMap, toggleMapStyle, zoomMap, showSearchedPlace } from "./map.js";
+import { createPlacesSearch } from "../lib/places-search.js";
 
 const STATES = ["peek", "half", "full"];
 const DESKTOP = "(min-width: 601px)";
@@ -387,6 +388,37 @@ function buildSearch() {
       results.append(button);
     }
     results.hidden = matches.length === 0;
+    placesLater(matches.length);
+  };
+  // Google Places fills in below our own results for any address or business (only once someone types 3+ letters).
+  const places = createPlacesSearch();
+  let placesTimer = 0, placesRun = 0;
+  const placesLater = (localCount) => {
+    clearTimeout(placesTimer);
+    const run = ++placesRun, text = input.value.trim();
+    if (text.length < 3 || localCount >= 5 || !places.available) return;
+    placesTimer = setTimeout(async () => {
+      const found = await places.suggest(text);
+      if (run !== placesRun || !found.length || input.value.trim() !== text) return;
+      if (results.hidden) results.hidden = false;
+      const label = document.createElement("span"); label.className = "map-search-recent-label"; label.textContent = "Places (Google)";
+      results.append(label);
+      for (const place of found) {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "map-search-result";
+        const title = document.createElement("strong"); title.textContent = place.title;
+        const subtitle = document.createElement("span"); subtitle.textContent = place.subtitle;
+        button.append(title, subtitle);
+        button.addEventListener("click", async () => {
+          clearResults(); input.value = place.title; status.hidden = false; status.textContent = "Finding that place…";
+          const spot = await places.resolve(place);
+          if (!spot) { status.textContent = "I couldn't open that place. Try another."; return; }
+          if (!isDesktop()) setSheet("peek");
+          status.textContent = showSearchedPlace(spot) ? `Showing ${spot.title} and the closest BYU lots.` : "The map isn't ready yet.";
+        });
+        results.append(button);
+      }
+    }, 300);
   };
   input.addEventListener("input", suggest);
   document.addEventListener("pointerdown", e => {

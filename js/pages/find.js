@@ -78,7 +78,7 @@ function initPlainLanguage({ choosePermit }) {
       const result = applyParsedToForm(parsed, els, { ...lists, choosePermit, getPermitId: () => state.find.permitId });
       syncTimeControls();
       renderPermitInfo();
-      say([fallback ? "The AI is busy, so I read this myself." : "", result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
+      say([fallback ? "The AI is busy, so I read this myself." : "Read by the AI (Gemini).", result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
     } catch (error) {
       if (current()) say(error.message || "I couldn't read that. Use the form below.", true);
     } finally {
