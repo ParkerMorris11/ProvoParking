@@ -315,7 +315,7 @@ New project (once):
 | `20261113002000_single_account_timer` | One active timer per user, server-owned timing, timer RPCs |
 | `20261116050000_favorite_nicknames` | `favorite_area.nickname` and the rename policy |
 | `20261116210000_bound_guest_writes_and_model_usage` | Limits on guest writes and the `consume_parse_find_budget` counter used by AI search |
-| `20261116230000_byu_campus_destinations` | 236 more BYU building records for Find and AI search, from BYU's Campus Buildings layer (retrieved 2026-11-16; coordinates are approximate geometry centers, not entrances; source links in `data/byu-campus-buildings.json`) |
+| `20261116230000_byu_campus_destinations` | BYU building records for Find and AI search (236 buildings total; 10 were already in the database and are kept), from BYU's Campus Buildings layer (retrieved 2026-11-16; coordinates are approximate geometry centers, not entrances; source links in `data/byu-campus-buildings.json`) |
 
 3. Copy the Project URL and anon key from **Project Settings > API** into `config.js`.
 

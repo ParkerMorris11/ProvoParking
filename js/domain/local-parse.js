@@ -39,6 +39,7 @@ function readTime(text) {
   if (m) return `${pad(Number(m[1]))}:${m[2]}`;
   // "at 3", "tnrb 9", "3 o'clock": a bare hour. Class hours are 7-11 morning, 12-6 afternoon.
   m = text.match(/\b(?:at|around|by|before|for)\s+(\d{1,2})\b(?!\s?(?:min|hour|hr|h\b|day|mile))/)
+    || text.match(/\b(?:tonight|this evening|this morning|this afternoon|tomorrow|today)\s+(?:at\s+)?(\d{1,2})\b(?!\s?(?:min|hour|hr|h\b|day|mile))/)
     || text.match(/\b(\d{1,2}) o clock\b/);
   const bare = m ? Number(m[1]) : null;
   if (bare == null || bare < 1 || bare > 12) return null;
@@ -96,6 +97,35 @@ function findBuilding(text, destinations) {
   return best;
 }
 
+
+// Edit distance, stopped early once clearly above `max`.
+function editDistance(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/** A misspelled building word ("librery", "tanr") when nothing matched exactly. Words of 5+ letters only. */
+function findBuildingByTypo(text, destinations) {
+  const words = text.split(" ").filter((w) => w.length >= 5 && !/\d/.test(w));
+  let best = null;
+  for (const destination of destinations) {
+    const phrases = [norm(destination.name), ...(BUILDING_NICKNAMES[String(destination.building_code || "").toUpperCase()] || []).map(norm)];
+    const vocab = new Set(phrases.flatMap((p) => p.split(" ")).filter((w) => w.length >= 5 && !["building", "center", "centre", "student"].includes(w)));
+    for (const word of words) for (const known of vocab) {
+      const limit = known.length >= 8 ? 2 : 1;
+      const d = editDistance(word, known, limit);
+      if (d > 0 && d <= limit && (!best || d < best.d)) best = { destination, phrase: word, score: 10, d };
+    }
+  }
+  return best;
+}
+
 function findPermit(text, permits) {
   for (const permit of permits) {
     const code = norm(permit.permit_code);
@@ -126,7 +156,7 @@ export function localParseFind(text, { permits = [], destinations = [] } = {}, n
   if (!clean) return empty;
 
   const permit = findPermit(clean, permits);
-  const building = findBuilding(clean, destinations);
+  const building = findBuilding(clean, destinations) || findBuildingByTypo(clean, destinations);
   let time = readTime(clean);
   if (time == null && building) time = readBareAfterBuilding(clean, [building.phrase]);
   const day = readDay(clean, today);
