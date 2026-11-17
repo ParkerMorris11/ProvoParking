@@ -146,8 +146,10 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   applyStyle();
 
   const clear = () => { for (const { el } of drawn) el.remove(); drawn = []; };
+  let lastTarget = null; // the camera last asked for (the live one is mid-flight for a second)
   const fly = (camera, durationMillis = 1000) => {
     const endCamera = { tilt: DEFAULT_CAMERA.tilt, heading: DEFAULT_CAMERA.heading, ...camera, center: { ...camera.center, altitude: ALTITUDE } };
+    lastTarget = endCamera;
     if (typeof map.flyCameraTo === "function") map.flyCameraTo({ endCamera, durationMillis });
     else Object.assign(map, endCamera);
   };
@@ -191,13 +193,14 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     fitBounds(bounds, padding) {
       if (padding && typeof padding === "object") {
         // Padding (sheet, chip, buttons): shift the camera so the lots sit in the uncovered part of the map.
-        fly(paddedCamera(bounds, padding, { width: container.clientWidth || 390, height: container.clientHeight || 844 }));
+        fly(paddedCamera(bounds, padding, { width: container.clientWidth || 390, height: container.clientHeight || 844, maxRange: 6000 }));
         return;
       }
       const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
       fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 1.3)) });
     },
     getView() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng }; },
+    getCamera() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng, range: map.range, target: lastTarget && { lat: lastTarget.center.lat, lng: lastTarget.center.lng, range: lastTarget.range } }; },
     zoomBy(delta) { map.range = Math.min(20000, Math.max(150, (map.range ?? DEFAULT_CAMERA.range) / 2 ** delta)); },
     setDark(on) { darkOn = !!on; applyStyle(); },
     setStyle(style) { mapStyle = style === "hybrid" ? "hybrid" : "roadmap"; applyStyle(); },

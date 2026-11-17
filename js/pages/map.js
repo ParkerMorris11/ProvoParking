@@ -14,7 +14,7 @@ import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
 import { createMap3D } from "./map-3d.js";
-import { mapPadding, unionBounds, selectionKey } from "../domain/map-focus.js";
+import { mapPadding, unionBounds, selectionKey, fitDecision } from "../domain/map-focus.js";
 
 let maps, started = false, mode = "3d", centeredDestinationId;
 let mapStyle = "roadmap";
@@ -31,7 +31,7 @@ const showingAllLots = () => state.currentView === "lots";
 let allLotsFitted = false, drewAllLots = false;
 let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
 // BYU sections that don't match the chosen permit and time: drawn faint so the matching ones stand out.
-let dimFeatures = [], lastFitKey = null;
+let dimFeatures = [], lastFitKey = null, lastFitDest = null;
 
 const PHONE = "(max-width: 600px)";
 // What part of the map is uncovered for a given sheet position (phones) or with the sidebar (laptops).
@@ -283,6 +283,7 @@ export function resetPersonalMap() {
   centeredDestinationId = undefined;
   selectedKey = null;
   lastFitKey = null;
+  lastFitDest = null;
   hideCard();
   for (const view of Object.values(views)) {
     view.setSelected?.(null);
@@ -339,12 +340,13 @@ function fitAllLots() {
 
 // A new permit or planned time re-frames the map on the matching sections (same eligibility.js result as
 // the list and the chip). No matches: the camera stays put and the sheet shows the empty state.
-// A chosen building or a lot page keeps its own camera.
+// Works from every view (Find, results, Favorites, Help, map home); a lot page or a new building keeps its camera.
 function fitToMatches(selection, matching) {
-  const key = selectionKey(selection);
-  if (key === lastFitKey) return;
-  lastFitKey = key;
-  if (!matching.length || state.currentView !== "areas" || state.find.destinationId || state.find.customDestination) return;
+  const dest = state.find.destinationId ?? state.find.customDestination?.name ?? null;
+  const next = fitDecision({ key: selectionKey(selection), lastKey: lastFitKey, dest, lastDest: lastFitDest, view: state.currentView, count: matching.length, hasPermit: selection.permitId != null });
+  lastFitKey = next.key;
+  lastFitDest = next.dest;
+  if (!next.fit) return;
   const bounds = unionBounds(shapes.filter((shape) => !shape.dim && shape.source?.type === "byu").map((shape) => shape.bounds));
   if (bounds) activeView()?.fitBounds(bounds, currentPadding());
 }
@@ -549,4 +551,11 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   }
   setMapStatus(`${visibleFeatures.length} matching mapped ${visibleFeatures.length === 1 ? "boundary" : "boundaries"}`, { routine: true });
   renderNearby();
+}
+
+/** Read-only snapshot for tests and the QA harness: what the map is showing right now. */
+export function mapSnapshot() {
+  const lit = shapes.filter((shape) => !shape.dim && shape.source?.type === "byu");
+  return { mode, view: state.currentView, highlighted: lit.length, dimmed: shapes.filter((s) => s.dim).length,
+    bounds: unionBounds(lit.map((s) => s.bounds)), camera: activeView()?.getCamera?.() || activeView()?.getView?.() || null, lastFitKey };
 }

@@ -133,6 +133,7 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
       maps.event.addListenerOnce(map, "idle", () => { if (map.getZoom() > 18) map.setZoom(18); });
     },
     getView() { const c = map.getCenter(); return { lat: c.lat(), lng: c.lng() }; },
+    getCamera() { const c = map.getCenter(); return { lat: c.lat(), lng: c.lng(), zoom: map.getZoom(), bounds: map.getBounds()?.toJSON?.() }; },
     setDark(on) { darkOn = on; applyStyle(); },
     setStyle(style) { mapStyle = style === "hybrid" ? "hybrid" : "roadmap"; applyStyle(); },
     zoomBy(delta) { map.setZoom(Math.min(21, Math.max(3, (map.getZoom() ?? zoom) + delta))); },

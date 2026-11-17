@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mapPadding, unionBounds, selectionKey, paddedCamera } from '../js/domain/map-focus.js';
+import { mapPadding, unionBounds, selectionKey, fitDecision, paddedCamera } from '../js/domain/map-focus.js';
 
 test('phone padding keeps a tapped lot above the half-height sheet and below the permit chip', () => {
   const half = mapPadding({ phone: true, sheetState: 'half', width: 390, height: 844 });
@@ -26,4 +26,30 @@ test('union of lot boxes, and 3D camera shifted into the uncovered part of the m
   const padded = paddedCamera(b, { top: 96, bottom: 480, left: 16, right: 64 }, { width: 390, height: 844 });
   assert.ok(padded.center.lat < plain.center.lat, 'camera moves south so the lots sit above the sheet');
   assert.ok(padded.range > plain.range, 'and backs off so they still fit');
+});
+
+test('a permit change frames its sections from every view, including Find (Parker: C showed nothing)', () => {
+  for (const view of ['find', 'areas', 'favorites', 'help']) {
+    const d = fitDecision({ key: '3|now', lastKey: '1|now', view, count: 3 });
+    assert.equal(d.fit, true, view);
+    assert.equal(d.key, '3|now');
+  }
+  // Same permit again (clock tick, re-render): no jump.
+  assert.equal(fitDecision({ key: '3|now', lastKey: '3|now', view: 'find', count: 3 }).fit, false);
+});
+
+test('framing waits on a lot page or All Lots, then happens when you go back', () => {
+  const onLot = fitDecision({ key: '3|now', lastKey: '1|now', view: 'area', count: 3 });
+  assert.equal(onLot.fit, false);
+  assert.equal(onLot.key, '1|now', 'the change is not used up');
+  assert.equal(fitDecision({ key: '3|now', lastKey: onLot.key, view: 'areas', count: 3 }).fit, true);
+  assert.equal(fitDecision({ key: '3|now', lastKey: '1|now', view: 'lots', count: 3 }).key, '1|now');
+});
+
+test('no permit, no matches, or a new building search keep the camera', () => {
+  assert.equal(fitDecision({ key: 'none|now', lastKey: null, view: 'find', count: 12, hasPermit: false }).fit, false);
+  const empty = fitDecision({ key: '9|now', lastKey: '1|now', view: 'areas', count: 0 });
+  assert.equal(empty.fit, false); assert.equal(empty.key, '9|now');
+  assert.equal(fitDecision({ key: '1|2|15:00', lastKey: null, dest: 7, lastDest: null, view: 'areas', count: 33 }).fit, false, 'AI/Find search with a building: building camera wins');
+  assert.equal(fitDecision({ key: '2|2|15:00', lastKey: '1|2|15:00', dest: 7, lastDest: 7, view: 'areas', count: 45 }).fit, true, 'then a chip change still frames');
 });

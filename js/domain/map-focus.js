@@ -47,3 +47,20 @@ export function paddedCamera(bounds, padding = {}, { width = 390, height = 844, 
   const scale = Math.max(height / visH, width / visW);
   return { center, range: Math.min(maxRange, Math.max(minRange, span * 111000 * 1.3 * scale)) };
 }
+
+/**
+ * Should a permit/time change re-frame the map on its matching sections? Pure, so it is unit tested.
+ * - Every view counts (map home, Find, results, Favorites, Help): the map behind the sheet follows the chip.
+ * - A lot's page keeps its own camera and does not use up the change, so going back home frames it then.
+ * - No matches: the camera stays put (the sheet shows the empty state), but the change is used up.
+ * - No permit chosen: no framing.
+ * - A search that picks a new building at the same moment lets the building camera win.
+ * Returns { fit, key, dest }: whether to frame, and the key/destination to remember.
+ */
+export function fitDecision({ key, lastKey = null, dest = null, lastDest = null, view = "areas", count = 0, hasPermit = true }) {
+  if (view === "area" || view === "lots") return { fit: false, key: lastKey, dest: lastDest };
+  if (key === lastKey) return { fit: false, key, dest };
+  const newBuilding = dest != null && dest !== lastDest;
+  // No permit yet: the opening campus camera stays (the "open to everyone" set is not a choice the user made).
+  return { fit: hasPermit && count > 0 && !newBuilding, key, dest };
+}
