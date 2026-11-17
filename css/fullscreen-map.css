@@ -405,3 +405,9 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell #view-area .back { display: none; }
 /* Every card said "Availability unknown"; the fine print says it once. Real estimates still show. */
 .fs-shell .card .avail:not(.ok):not(.low) { display: none; }
+
+/* One focus ring on the search bar: the pill (:focus-within, above) shows focus; the text box inside it
+   draws nothing of its own. The generic .fs-shell input:focus-visible ring used to add a second, inner one. */
+.fs-shell .map-search input:focus, .fs-shell .map-search input:focus-visible { outline: none; border: 0; border-radius: 0; box-shadow: none; -webkit-appearance: none; appearance: none; }
+.fs-shell .map-search:focus-within { box-shadow: 0 0 0 3px var(--brand); }
+@media (forced-colors: active) { .fs-shell .map-search:focus-within { outline: 2px solid CanvasText; } }
