@@ -63,3 +63,21 @@ export function searchMapCatalog(query, { areas = [], destinations = [], facilit
   return merged.sort((a, b) => a.rank - b.rank || a.title.localeCompare(b.title) || String(a.id).localeCompare(String(b.id)))
     .slice(0, 8).map(({ rank, ...entry }) => entry);
 }
+
+
+export const QUICK_FILTERS = [
+  { id: 'near-me', label: 'Near me', hint: 'Sort lots closest to your GPS location' },
+  { id: 'visitor', label: 'Visitor', hint: 'Show BYU visitor parking options' },
+  { id: 'free-now', label: 'Free now', hint: 'Open-to-all & Provo city parking' },
+];
+
+const NL_TIME_PATTERN = /\b(\d{1,2}(:\d{2})?\s*(am|pm)|tomorrow|tonight|today|this\s+(morning|afternoon|evening)|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\b/i;
+const NL_INTENT_PATTERN = /\b(permit|class|classes|exam|until|till|for\s+\d+\s*(h|hr|hrs|hour|hours|min|mins|minutes)|where\s+can\s+i|allowed|with\s+my)\b/i;
+
+/** Returns true when a query reads like a trip sentence best handled by the AI trip finder (#nl-form). */
+export function isNaturalLanguageTripQuery(query) {
+  const raw = String(query || '').trim();
+  const words = normalize(raw).split(' ').filter(Boolean);
+  if (words.length < 2) return false;
+  return NL_TIME_PATTERN.test(raw) || NL_INTENT_PATTERN.test(raw) || words.length >= 5;
+}

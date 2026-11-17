@@ -1,4 +1,4 @@
-import { searchMapCatalog } from "../domain/map-search.js";
+import { searchMapCatalog, QUICK_FILTERS, isNaturalLanguageTripQuery } from "../domain/map-search.js";
 import { cityFacilityNames } from "./city-layer.js";
 import { loadRecents, rememberRecent } from "../lib/recent-searches.js";
 import { findExactLot } from "../domain/lot-search.js";
@@ -280,11 +280,13 @@ function initDrag() {
 // that form and opens Find so the person can review the filled-in fields. It never searches for them.
 const SEARCH_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 const MIC_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const CLEAR_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>`;
 const GO_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 export function resetMapSearch() {
-  const input = document.getElementById("map-search-text"), status = document.getElementById("map-search-status");
+  const input = document.getElementById("map-search-text"), status = document.getElementById("map-search-status"), clearBtn = document.getElementById("map-search-clear");
   if (input) input.value = "";
+  if (clearBtn) clearBtn.hidden = true;
   const results = document.getElementById("map-search-results");
   if (results) { results.replaceChildren(); results.hidden = true; }
   if (status) {
@@ -307,6 +309,7 @@ function buildSearch() {
   const bar = el("form", { class: "map-search", id: "map-search", role: "search", "aria-label": "Search parking and campus buildings" },
     `<span class="map-search-icon">${SEARCH_ICON}</span>` +
     `<input type="text" id="map-search-text" maxlength="500" autocomplete="off" enterkeyhint="search" aria-label="Search lots, buildings, or describe your trip" aria-describedby="map-search-status" placeholder="${searchPlaceholder()}">` +
+    `<button type="button" id="map-search-clear" class="map-search-btn map-search-clear" aria-label="Clear search" title="Clear search" hidden>${CLEAR_ICON}</button>` +
     `<button type="button" id="map-search-mic" class="map-search-btn map-search-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>${MIC_ICON}</button>` +
     `<button type="submit" class="map-search-btn map-search-go" aria-label="Search" title="Search">${GO_ICON}</button>`);
   // Round account button beside the search bar: initials when signed in, a person icon for guests.
@@ -325,7 +328,8 @@ function buildSearch() {
   if (accountName) new MutationObserver(syncAccount).observe(accountName, { childList: true, characterData: true, subtree: true });
   syncAccount();
   const status = el("p", { class: "map-search-status", id: "map-search-status", role: "status", "aria-live": "polite" });
-  const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic");
+  const input = bar.querySelector("#map-search-text"), mic = bar.querySelector("#map-search-mic"), clearBtn = bar.querySelector("#map-search-clear");
+  const syncClear = () => { if (clearBtn) clearBtn.hidden = !input.value.trim(); };
   for (const query of [PHONE, "(max-width: 359px)"]) window.matchMedia?.(query).addEventListener?.("change", () => { input.placeholder = searchPlaceholder(); });
   const results = el("div", { class: "map-search-results", id: "map-search-results", "aria-label": "Search suggestions", hidden: "" });
   const clearResults = () => { results.replaceChildren(); results.hidden = true; };
@@ -343,6 +347,7 @@ function buildSearch() {
     // With a permit chosen, go straight to the parking list sorted by distance to this building.
     if (state.find.permitId && state.destinations.some(d => d.destination_id === result.id)) {
       state.find.destinationId = result.id;
+      state.find.customDestination = null;
       const sort = document.getElementById("area-sort");
       if (sort) sort.value = "destination";
       document.dispatchEvent(new CustomEvent("parking:show-results"));
@@ -359,24 +364,86 @@ function buildSearch() {
     if (location.hash === "#find") chooseDestination();
     else { window.addEventListener("hashchange", chooseDestination, { once: true }); location.hash = "#find"; }
   };
-  const showRecents = () => {
+  const applyQuickFilter = (id) => {
     clearResults();
+    status.hidden = true;
+    if (id === "near-me") {
+      const sort = document.getElementById("area-sort");
+      if (sort) sort.value = "distance";
+      document.getElementById("locate-me")?.click();
+      status.textContent = "Sorting lots closest to your location.";
+      status.hidden = false;
+      return;
+    }
+    if (id === "visitor") {
+      const visitor = (state.permits || []).find(p => String(p.permit_code || "").toUpperCase() === "V");
+      if (visitor) {
+        applyPermit(visitor.permit_id);
+        setSheet("half");
+        document.dispatchEvent(new CustomEvent("parking:show-results"));
+        if (location.hash !== "#areas") location.hash = "#areas";
+        status.textContent = "Showing BYU visitor parking areas.";
+        status.hidden = false;
+      }
+      return;
+    }
+    if (id === "free-now") {
+      const toggle = document.getElementById("city-toggle");
+      if (toggle && !toggle.checked) toggle.click();
+      const openPermit = (state.permits || []).find(p => /public|visitor|none/i.test(String(p.permit_name || "")));
+      if (openPermit && !state.find.permitId) applyPermit(openPermit.permit_id);
+      if (!isDesktop()) setSheet("peek");
+      status.textContent = "Showing Provo city parking and open areas.";
+      status.hidden = false;
+    }
+  };
+  const askTripFinder = (text) => {
+    clearResults();
+    setSheet("half");
+    nlText.value = text;
+    const version = state.authVersion;
+    const send = () => {
+      if (version !== state.authVersion) return;
+      if (nlForm.requestSubmit) nlForm.requestSubmit();
+      else nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
+    };
+    if (location.hash === "#find") send(); else { window.addEventListener("hashchange", send, { once: true }); location.hash = "#find"; }
+  };
+  const showEmptySuggestions = () => {
+    clearResults();
+    const chipRow = document.createElement("div");
+    chipRow.className = "map-search-chips";
+    chipRow.setAttribute("role", "group");
+    chipRow.setAttribute("aria-label", "Quick parking filters");
+    for (const qf of QUICK_FILTERS) {
+      const chipBtn = document.createElement("button");
+      chipBtn.type = "button";
+      chipBtn.className = "map-search-chip";
+      chipBtn.textContent = qf.label;
+      chipBtn.title = qf.hint;
+      chipBtn.addEventListener("click", () => applyQuickFilter(qf.id));
+      chipRow.append(chipBtn);
+    }
+    results.append(chipRow);
     const recents = loadRecents();
-    if (!recents.length) return;
-    const label = document.createElement("span"); label.className = "map-search-recent-label"; label.textContent = "Recent";
-    results.append(label);
-    for (const result of recents) {
+    if (recents.length) {
+      const label = document.createElement("span"); label.className = "map-search-recent-label"; label.textContent = "Recent";
+      results.append(label);
+      for (const result of recents) {
       const button = document.createElement("button");
       button.type = "button"; button.className = "map-search-result";
       const title = document.createElement("strong"); title.textContent = result.title;
       const subtitle = document.createElement("span"); subtitle.textContent = result.subtitle;
       button.append(title, subtitle); button.addEventListener("click", () => selectResult(result));
-      results.append(button);
+        results.append(button);
+      }
     }
     results.hidden = false;
   };
   const suggest = () => {
-    if (!input.value.trim()) { showRecents(); return; }
+    syncClear();
+    const raw = input.value.trim();
+    if (!raw) { showEmptySuggestions(); return; }
     clearResults();
     const matches = searchMapCatalog(input.value, { areas: state.areas, destinations: state.destinations, facilities: cityFacilityNames() });
     for (const result of matches) {
@@ -387,18 +454,33 @@ function buildSearch() {
       button.append(title, subtitle); button.addEventListener("click", () => selectResult(result));
       results.append(button);
     }
-    results.hidden = matches.length === 0;
-    placesLater(matches.length);
+    const nlTrip = isNaturalLanguageTripQuery(raw);
+    if (nlTrip) {
+      const nlBtn = document.createElement("button");
+      nlBtn.type = "button";
+      nlBtn.className = "map-search-result map-search-result--nl";
+      const t = document.createElement("strong");
+      t.textContent = `Ask trip finder: "${raw}"`;
+      const sub = document.createElement("span");
+      sub.textContent = "Parse permit, arrival day, and time";
+      nlBtn.append(t, sub);
+      nlBtn.addEventListener("click", () => askTripFinder(raw));
+      results.append(nlBtn);
+    }
+    results.hidden = matches.length === 0 && !nlTrip;
+    placesLater(matches);
   };
   // Google Places fills in below our own results for any address or business (only once someone types 3+ letters).
   const places = createPlacesSearch();
   let placesTimer = 0, placesRun = 0;
-  const placesLater = (localCount) => {
+  const placesLater = (localMatches) => {
     clearTimeout(placesTimer);
     const run = ++placesRun, text = input.value.trim();
-    if (text.length < 3 || localCount >= 5 || !places.available) return;
+    if (text.length < 3 || localMatches.length >= 5 || !places.available) return;
     placesTimer = setTimeout(async () => {
-      const found = await places.suggest(text);
+      const rawFound = await places.suggest(text);
+      const localTitles = new Set(localMatches.filter(m => m.type === "destination").map(m => m.title.toLowerCase()));
+      const found = rawFound.filter(p => !localTitles.has(p.title.toLowerCase())).slice(0, 4);
       if (run !== placesRun || !found.length || input.value.trim() !== text) return;
       if (results.hidden) results.hidden = false;
       const label = document.createElement("span"); label.className = "map-search-recent-label"; label.textContent = "Places (Google)";
@@ -413,14 +495,27 @@ function buildSearch() {
           clearResults(); input.value = place.title; status.hidden = false; status.textContent = "Finding that place…";
           const spot = await places.resolve(place);
           if (!spot) { status.textContent = "I couldn't open that place. Try another."; return; }
-          if (!isDesktop()) setSheet("peek");
-          status.textContent = showSearchedPlace(spot) ? `Showing ${spot.title} and the closest BYU lots.` : "The map isn't ready yet.";
+          const pinned = showSearchedPlace(spot);
+          if (state.find.permitId) {
+            state.find.destinationId = null;
+            state.find.customDestination = { name: spot.title, latitude: spot.lat, longitude: spot.lng };
+            const sort = document.getElementById("area-sort");
+            if (sort) sort.value = "destination";
+            setSheet("half");
+            document.dispatchEvent(new CustomEvent("parking:show-results"));
+            if (location.hash === "#areas") window.dispatchEvent(new HashChangeEvent("hashchange")); else location.hash = "#areas";
+            status.textContent = `Showing ${spot.title} and eligible BYU lots nearest first.`;
+          } else {
+            if (!isDesktop()) setSheet("peek");
+            status.textContent = pinned ? `Showing ${spot.title} and the closest BYU lots.` : "The map isn't ready yet.";
+          }
         });
         results.append(button);
       }
     }, 300);
   };
   input.addEventListener("input", suggest);
+  clearBtn?.addEventListener("click", () => { places.reset(); resetMapSearch(); input.focus(); showEmptySuggestions(); });
   document.addEventListener("pointerdown", e => {
     if (!bar.contains(e.target) && !results.contains(e.target)) clearResults();
   });
@@ -428,7 +523,17 @@ function buildSearch() {
     if (e.key === "Escape") clearResults();
     if (e.key === "ArrowDown" && !results.hidden) { e.preventDefault(); results.querySelector("button")?.focus(); }
   });
-  results.addEventListener("keydown", e => { if (e.key === "Escape") { clearResults(); input.focus(); } });
+  results.addEventListener("keydown", e => {
+    if (e.key === "Escape") { clearResults(); input.focus(); return; }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      const buttons = [...results.querySelectorAll("button")];
+      const idx = buttons.indexOf(document.activeElement);
+      if (idx < 0) return;
+      e.preventDefault();
+      if (e.key === "ArrowDown" && idx + 1 < buttons.length) buttons[idx + 1].focus();
+      else if (e.key === "ArrowUp") { if (idx > 0) buttons[idx - 1].focus(); else input.focus(); }
+    }
+  });
   // Like other map apps, starting a search raises the sheet so suggestions and results have room.
   input.addEventListener("focus", () => { if (!isDesktop() && sheet?.dataset.state === "peek") setSheet("half"); suggest(); });
 
@@ -472,16 +577,7 @@ function buildSearch() {
       status.hidden = false;
       return;
     }
-    setSheet("half");
-    nlText.value = text;
-    const version = state.authVersion;
-    const send = () => {
-      if (version !== state.authVersion) return;
-      if (nlForm.requestSubmit) nlForm.requestSubmit();
-      else nlForm.dispatchEvent(new Event("submit", { cancelable: true }));
-    };
-    // Open Find first (it redraws its fields), then let the existing form read the text.
-    if (location.hash === "#find") send(); else { window.addEventListener("hashchange", send, { once: true }); location.hash = "#find"; }
+    askTripFinder(text);
   });
 
   // Mirror the microphone and the status line of the Find form, so the one speech engine is shared.

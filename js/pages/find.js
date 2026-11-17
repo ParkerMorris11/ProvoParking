@@ -21,6 +21,8 @@ export function renderFind() {
   $("arrive-now").checked = Boolean(state.find.live);
   syncTimeControls();
   renderPermitInfo();
+  const hint = $("destination-hint");
+  if (hint && state.find.customDestination && !state.find.destinationId) hint.textContent = `Sorting by distance to ${state.find.customDestination.name}.`;
 }
 
 export function renderDestinationOptions(id, selected, placeholder = "Choose a BYU building…") {
@@ -76,6 +78,7 @@ function initPlainLanguage({ choosePermit }) {
       if (!current()) return;
       const els = { permit: $("permit-select"), destination: $("find-destination"), now: $("arrive-now"), day: $("arrive-day"), time: $("arrive-time") };
       const result = applyParsedToForm(parsed, els, { ...lists, choosePermit, getPermitId: () => state.find.permitId });
+      if (parsed.destination_id) state.find.customDestination = null;
       syncTimeControls();
       renderPermitInfo();
       say([fallback ? "The AI is busy, so I read this myself." : "Read by the AI (Gemini).", result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
@@ -162,6 +165,7 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     applyPermitChoice($("permit-select").value, refresh);
   });
   $("arrive-now").addEventListener("change", syncTimeControls);
+  $("find-destination")?.addEventListener("change", () => { state.find.customDestination = null; });
   $("find-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const id = Number($("permit-select").value);
@@ -169,6 +173,7 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     // The building is optional here; the timer form still requires it before a timer can start.
     const destinationId = Number($("find-destination").value);
     state.find.destinationId = state.destinations.some(d => d.destination_id === destinationId) ? destinationId : null;
+    if (state.find.destinationId) state.find.customDestination = null;
     if (state.find.destinationId) $("area-sort").value = "destination";
     applyPermitChoice(id);
     state.find.live = $("arrive-now").checked;

@@ -15,7 +15,7 @@ function listOptions() {
     query: $("area-search")?.value || "",
     sort: $("area-sort")?.value || "name",
     position: currentPosition(),
-    destination: areaPoint(state.destinations.find(d => d.destination_id === state.find.destinationId)),
+    destination: areaPoint(state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination),
   };
 }
 
@@ -85,8 +85,8 @@ export function renderAreas() {
   }
   const count = $("areas-count");
   if (count) {
-    const building = state.destinations.find(d => d.destination_id === state.find.destinationId);
-    const order = sortedBy === "distance" ? "nearest to you first" : sortedBy === "destination" ? `nearest to ${building.name} first` : "by lot number";
+    const building = state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
+    const order = sortedBy === "distance" ? "nearest to you first" : sortedBy === "destination" && building?.name ? `nearest to ${building.name} first` : "by lot number";
     const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on “Use my location” to sort by distance."
       : sortedBy === "name" && options.sort === "destination" ? " Choose a building in Find to sort by destination."
       : sortedBy !== "name" ? " Distances are approximate, measured in a straight line." : "";
