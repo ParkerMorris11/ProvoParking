@@ -194,11 +194,16 @@ export function suggestionRows({ session, favorites, nearby, areaById, describe 
     if (area) rows.push({ icon: "heart", tone: "fav", href: `#area/${area.area_id}`, title: fav.nickname || area.area_name, sub: `Favorite · ${describe(area.area_id)}`, id: area.area_id });
   }
   const shown = new Set(rows.map(r => r.id));
+  // A lot can be split into several mapped sections that share one name (e.g. four "BYU Lot 19Y" parts).
+  // Suggestions list each lot once, using its nearest section; the Areas list still shows every section.
+  const lotName = (area) => String(area?.area_name || "").trim().toLowerCase();
+  const shownNames = new Set(rows.map(r => r.id != null ? lotName(areaById.get(r.id)) : "").filter(Boolean));
   for (const id of nearby) {
     if (rows.length >= 5 || rows.filter(r => r.icon === "lot").length >= 3) break;
     const area = areaById.get(id);
-    if (!area || shown.has(id)) continue;
+    if (!area || shown.has(id) || shownNames.has(lotName(area))) continue;
     shown.add(id);
+    shownNames.add(lotName(area));
     rows.push({ icon: "lot", tone: "lot", href: `#area/${id}`, title: area.area_name, sub: describe(id), id });
   }
   return rows;
