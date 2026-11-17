@@ -243,7 +243,7 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 /* Other screens: a round close button pinned at the top right of the sheet */
 /* Its own sticky row with the sheet's background, so it never sits on top of Help text, the guest card
    or a lot's schedule, at the top or while scrolling. */
-.route-bar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--glass-strong, var(--card)); }
+.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); box-shadow: 0 1px 0 var(--glass-border); }
 .route-bar[hidden] { display: none; }
 .fs-shell .route-bar:not([hidden]) ~ section:not([hidden]) { margin-top: 0; }
 .route-close { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--search-fill); color: var(--ink-2); }
