@@ -103,6 +103,22 @@ test('guests with no favorites get up to three nearby lots; the tile counts open
   assert.equal(matchText(33), '33 matching sections');
 });
 
+test('a lot split into several sections shows once in suggestions (Parker: "BYU Lot 19Y" twice)', () => {
+  const areaById = new Map([
+    [10, { area_id: 10, area_name: 'BYU Lot 18U' }],
+    [21, { area_id: 21, area_name: 'BYU Lot 19Y' }], // section 1 of 4
+    [22, { area_id: 22, area_name: 'BYU Lot 19Y' }], // section 2 of 4, same name
+    [30, { area_id: 30, area_name: 'BYU Lot 20Y' }],
+    [40, { area_id: 40, area_name: 'BYU Lot 21Y' }],
+  ]);
+  const rows = suggestionRows({ session: null, favorites: [{ id: 10, nickname: '' }], nearby: [21, 22, 30, 40], areaById, describe: () => 'Allowed now' });
+  assert.deepEqual(rows.map(r => r.title), ['BYU Lot 18U', 'BYU Lot 19Y', 'BYU Lot 20Y', 'BYU Lot 21Y']);
+  assert.equal(rows[1].href, '#area/21', 'keeps the nearest section (first in the ranked list)');
+  // A favorite already names the lot: its other sections are not suggested again.
+  const fav = suggestionRows({ session: null, favorites: [{ id: 22, nickname: 'My spot' }], nearby: [21, 30], areaById, describe: () => 'Allowed now' });
+  assert.deepEqual(fav.map(r => r.title), ['My spot', 'BYU Lot 20Y']);
+});
+
 test('the status tile never shows a bare "0 areas open"', () => {
   assert.equal(matchText(0, false), 'Choose a permit');
   assert.equal(matchText(0, true, { day: 6 }), 'Weekend: check signs');
