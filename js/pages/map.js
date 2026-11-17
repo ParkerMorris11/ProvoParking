@@ -157,6 +157,24 @@ function showDroppedPin(point) {
   showCard(`<div class="lot-popup"><span class="lot-popup-type">Dropped pin</span><h3>Selected location</h3><p>Parking rules and availability are unknown here. Check posted signs before parking.</p><a class="lot-popup-link" href="${escapeHtml(directions.url)}" target="_blank" rel="noopener">Get directions in ${escapeHtml(directions.app)} →</a></div>`);
 }
 
+/** A place found by the Google Places search: pin it, fly there, and list the closest lots plus directions. */
+export function showSearchedPlace({ lat, lng, title, address }) {
+  const view = activeView();
+  if (!view) return false;
+  clearPins();
+  markSelected(null);
+  view.setPin?.({ lat, lng });
+  view.focus({ lat, lng }, 16);
+  const point = { latitude: lat, longitude: lng };
+  const close = nearbyLots(features, point, "", 3);
+  const directions = deviceDirections(point, "driving");
+  const lots = close.map(lot => `<li>${escapeHtml(lot.name)} · category ${escapeHtml(lot.permit)} · ~${lot.distanceMeters < 1609 ? `${Math.max(1, Math.round(lot.distanceMeters / 80) * 80)} m` : `${(lot.distanceMeters / 1609.34).toFixed(1)} mi`}</li>`).join("");
+  showCard(`<div class="lot-popup"><span class="lot-popup-type">Searched place</span><h3>${escapeHtml(title)}</h3><p>${escapeHtml(address || "")}</p>`
+    + (lots ? `<p><strong>Closest BYU lots</strong></p><ul>${lots}</ul><p>Lot categories only; check your permit and posted signs.</p>` : "<p>No BYU lots within 3 miles. Check posted signs wherever you park.</p>")
+    + (directions ? `<a class="lot-popup-link" href="${escapeHtml(directions.url)}" target="_blank" rel="noopener">Get directions in ${escapeHtml(directions.app)} →</a>` : "") + "</div>");
+  return true;
+}
+
 function showFeatureCard(feature) { showCard(lotCardHtml(feature)); }
 
 function selectShape(shape) {

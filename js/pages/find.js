@@ -4,7 +4,7 @@ import { $, setStatus } from "../lib/dom.js";
 import { DAY_NAMES, escapeHtml, fmtTime, nowHHMM } from "../lib/format.js";
 import { savePermit } from "../lib/storage.js";
 import { parkingSelection } from "../domain/parking-results.js";
-import { requestParseFind, applyParsedToForm } from "../data/parse-find.js";
+import { parseFindWithFallback, applyParsedToForm } from "../data/parse-find.js";
 import { createSpeech } from "../lib/speech.js";
 import { setAccountPermit } from "../data/auth.js";
 
@@ -72,13 +72,13 @@ function initPlainLanguage({ choosePermit }) {
     say("Reading that…");
     try {
       const lists = { permits: state.permits, destinations: state.destinations };
-      const parsed = await requestParseFind(state.db, request, lists, { signal: controller.signal });
+      const { parsed, fallback } = await parseFindWithFallback(state.db, request, lists, { signal: controller.signal });
       if (!current()) return;
       const els = { permit: $("permit-select"), destination: $("find-destination"), now: $("arrive-now"), day: $("arrive-day"), time: $("arrive-time") };
       const result = applyParsedToForm(parsed, els, { ...lists, choosePermit, getPermitId: () => state.find.permitId });
       syncTimeControls();
       renderPermitInfo();
-      say([result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].join(" "), result.needsReview || result.warnings.length > 0);
+      say([fallback ? "The AI is busy, so I read this myself." : "Read by the AI (Gemini).", result.summary, ...result.warnings, "Check the fields below, then press Show parking areas."].filter(Boolean).join(" "), result.needsReview || result.warnings.length > 0);
     } catch (error) {
       if (current()) say(error.message || "I couldn't read that. Use the form below.", true);
     } finally {

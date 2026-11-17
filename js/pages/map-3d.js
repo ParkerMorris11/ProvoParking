@@ -172,6 +172,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       drawUser(); startPulse();
     },
     clearPin() { pinPoint = null; drawPin(); },
+    setPin(point) { pinPoint = { lat: point.lat, lng: point.lng }; drawPin(); },
     resetCamera() {
       map.stopCameraAnimation?.();
       Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });

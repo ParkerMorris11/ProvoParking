@@ -89,6 +89,11 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   return {
     mode: "2d",
     clearPin() { droppedPin?.setMap(null); droppedPin = null; },
+    /** Marks a searched place (same red dot as a dropped pin) without opening the directions card. */
+    setPin(point) {
+      droppedPin?.setMap(null);
+      droppedPin = new lib.Circle({ map, center: point, radius: 10, strokeColor: "#ffffff", strokeWeight: 3, fillColor: "#e11d48", fillOpacity: 1, clickable: false, zIndex: 1100 });
+    },
     setShapes(shapes) {
       clear();
       for (const shape of shapes) {

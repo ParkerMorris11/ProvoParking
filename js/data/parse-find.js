@@ -2,6 +2,7 @@
 // The model only suggests. This file re-checks every ID, and the person reviews the form and submits it,
 // so eligibility is still decided by domain/eligibility.js and never by the AI.
 import { DAY_NAMES, fmtTime } from "../lib/format.js";
+import { localParseFind, mergeParsed } from "../domain/local-parse.js";
 
 export const PARSE_FIND_FUNCTION = "parse-find";
 export const LOW_CONFIDENCE = 0.5;
@@ -127,4 +128,24 @@ export function applyParsedToForm(parsed, els, { permits = [], destinations = []
   let summary = said.length ? `Filled in: ${said.join(", ")}.` : "I couldn't find anything to fill in.";
   if (keptPermit) summary += ` Kept your ${keptPermit.permit_code} permit.`;
   return { summary, warnings, needsReview };
+}
+
+/**
+ * Asks the model, then lets the local reader fill in anything the model missed. When the model can't be
+ * reached at all (busy, over its limit, offline), the local reader answers alone so the search still works.
+ * Resolves to { parsed, fallback } where fallback is true when only the local reader answered.
+ */
+export async function parseFindWithFallback(db, input, lists, options = {}, now = new Date()) {
+  const local = input.text ? localParseFind(input.text, lists, now) : null;
+  try {
+    const parsed = await requestParseFind(db, input, lists, options);
+    return { parsed: mergeParsed(parsed, local), fallback: false };
+  } catch (error) {
+    if (error?.name === "AbortError") throw error;
+    if (local && local.found > 0) {
+      const { found, ...parsed } = local;
+      return { parsed, fallback: true };
+    }
+    throw error;
+  }
 }
