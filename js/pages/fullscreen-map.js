@@ -1,3 +1,4 @@
+import { sharedLotsTag } from "../domain/permit-coverage.js";
 import { searchMapCatalog, QUICK_FILTERS, isNaturalLanguageTripQuery } from "../domain/map-search.js";
 import { cityFacilityNames } from "./city-layer.js";
 import { loadRecents, rememberRecent } from "../lib/recent-searches.js";
@@ -136,10 +137,12 @@ export function sheetTitle(count, hasPermit, selection = {}) {
 }
 
 // Second line of the status tile, e.g. "33 areas open". Never a bare "0" (same rule as sheetTitle).
-export function matchText(count, hasPermit = true, selection = {}) {
+// For permits whose home lots aren't in the data yet (B, C, D, YM, YV) it says the matches are shared lots.
+export function matchText(count, hasPermit = true, selection = {}, permitCode = null) {
   if (!count && !hasPermit) return "Choose a permit";
   if (!count) return selection.day === 0 || selection.day === 6 ? "Weekend: check signs" : "No lots match now";
-  return `${count} matching ${count === 1 ? "section" : "sections"}`;
+  const shared = hasPermit ? sharedLotsTag(permitCode) : "";
+  return `${count} ${shared ? `${shared} ` : "matching "}${count === 1 ? "section" : "sections"}`;
 }
 
 function updateChrome() {
@@ -151,7 +154,8 @@ function updateChrome() {
     chip.querySelector(".chip-code").textContent = info.code;
     chip.querySelector(".chip-text").textContent = info.text;
     const hasPermit = Boolean(state.find.permitId);
-    chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection);
+    const permitCode = (state.permits || []).find(p => p.permit_id === state.find.permitId)?.permit_code;
+    chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection, permitCode);
     chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
     const home = state.currentView === "areas" && !resultsMode;
     routeBar.hidden = home;

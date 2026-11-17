@@ -1,4 +1,5 @@
 // Page: Areas — only verified lots allowed for this permit and parking time.
+import { permitCoverageNote } from "../domain/permit-coverage.js";
 import { state } from "../state.js";
 import { $ } from "../lib/dom.js";
 import { DAY_NAMES, fmtTime } from "../lib/format.js";
@@ -114,6 +115,13 @@ export function renderAreas() {
     empty.textContent = selection.permitId == null
       ? "No verified lots are confirmed open to everyone at this time. Choose your permit to see more options."
       : "No verified parking areas match your permit at this time. Check your permit or choose another arrival time.";
+  }
+  // B, C, D, YM and YV home lots aren't verified yet, so say the list is only the shared lots.
+  const coverage = $("areas-coverage");
+  const note = selection.permitId == null ? "" : permitCoverageNote(permit?.permit_code);
+  if (coverage) {
+    coverage.hidden = !note;
+    coverage.querySelector(".coverage-text").textContent = note;
   }
   const emptyMore = $("areas-empty-more");
   if (emptyMore) emptyMore.hidden = eligible.length > 0;
