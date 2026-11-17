@@ -224,29 +224,30 @@
       <h2 id="h-find" tabindex="-1">Find parking</h2>
       <!-- Plain-language / voice search: fills the form below for review. It never submits for you. -->
       <form id="nl-form" class="panel nl-find" aria-labelledby="nl-label">
-        <label id="nl-label" for="nl-text"><span class="ai-badge" aria-hidden="true">AI</span> Describe your trip</label>
+        <label id="nl-label" for="nl-text">Tell us about your trip</label>
         <div class="nl-row">
-          <input type="text" id="nl-text" maxlength="500" autocomplete="off" aria-describedby="nl-hint" placeholder="Y permit, class at 3 pm at the JKB">
+          <input type="text" id="nl-text" maxlength="500" autocomplete="off" aria-describedby="nl-hint" placeholder="Hey, I have class at 3 pm at the JKB with my current permit...">
           <button type="button" id="nl-mic" class="nl-mic" aria-pressed="false" aria-label="Speak your trip" title="Speak your trip" hidden>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
           <button type="submit" id="nl-go" class="secondary">Fill in form</button>
         </div>
-        <p id="nl-hint" class="visually-hidden">Fills in the form below and shows matching lots.</p>
+        <p id="nl-hint" class="hint">Enter your permit, destination and time. Review the form before searching.</p>
         <p id="nl-status" class="hint nl-status" role="status" aria-live="polite"></p>
       </form>
       <form id="find-form" class="panel">
-        <label for="permit-select">Permit</label>
+        <label for="permit-select">Your permit</label>
         <select id="permit-select"></select>
         <p id="permit-info" class="hint"></p>
-        <label for="find-destination">Destination (optional)</label>
+        <label for="find-destination">Where are you going? (optional)</label>
         <select id="find-destination" aria-describedby="destination-hint"></select>
-        <p id="destination-hint" class="hint"></p>
-        <label class="check"><input type="checkbox" id="arrive-now" checked> Park now</label>
+        <p id="destination-hint" class="hint">Choose a BYU building to sort matching lots by distance.</p>
+        <label class="check"><input type="checkbox" id="arrive-now" checked> Parking right now (Provo time)</label>
+        <p class="hint">Uncheck to choose another day and time.</p>
 
-        <div class="row arrive-when">
+        <div class="row">
           <div>
-            <label for="arrive-day">Day</label>
+            <label for="arrive-day">Arrival day</label>
             <select id="arrive-day" disabled>
               <option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option>
               <option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option>
@@ -254,10 +255,11 @@
             </select>
           </div>
           <div>
-            <label for="arrive-time">Time</label>
+            <label for="arrive-time">Arrival time</label>
             <input type="time" id="arrive-time" required disabled>
           </div>
         </div>
+        <p class="hint form-note">Matches use published rules; verify your permit and posted signs.</p>
         <button type="submit" class="primary">Show parking areas</button>
       </form>
     </section>
@@ -292,7 +294,7 @@
         </div>
         <aside class="parking-results" aria-labelledby="results-heading">
           <section class="nearby-panel" aria-labelledby="nearby-heading">
-            <h3 id="nearby-heading">Nearby lots</h3>
+            <p class="eyebrow">CLOSE TO YOU</p><h3 id="nearby-heading">Nearby lots</h3>
             <p id="arrival-suggestion" class="hint" hidden></p>
             <p id="location-status" class="location-status">Use your location to find nearby mapped lots.</p>
             <button type="button" id="near-me-btn" class="primary near-me-btn" data-near-me><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2v3m0 14v3M2 12h3m14 0h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>Parking near me</button>
@@ -302,17 +304,17 @@
             <div id="nearby-empty" class="nearby-empty" hidden><p id="nearby-empty-text" class="nearby-note"></p><div class="empty-actions"><a class="secondary" href="#find">Change permit or time</a><a class="secondary" href="#lots">Browse all lots</a></div></div>
             <p class="nearby-note">Distances are estimates. Open spaces are unknown.</p>
           </section>
-          <div class="results-heading"><div><h3 id="results-heading" tabindex="-1">Matching lots</h3></div><span class="sample-label">BYU source checked</span></div>
+          <div class="results-heading"><div><p class="eyebrow">YOUR PERMIT CHECK</p><h3 id="results-heading" tabindex="-1">Parking areas matching listed rules</h3></div><span class="sample-label">BYU source checked</span></div>
           <p class="results-note">Regular BYU schedule for ordinary stalls. Register your vehicle and check signs; open spaces are unknown.</p>
           <div class="list-tools">
             <div class="list-search">
-              <label for="area-search" class="visually-hidden">Filter matching lots</label>
-              <input type="search" id="area-search" autocomplete="off" placeholder="Filter, e.g. 24Y">
+              <label for="area-search">Search lots</label>
+              <input type="search" id="area-search" autocomplete="off" placeholder="e.g. 20 or 24Y">
             </div>
             <div class="list-sort">
-              <label for="area-sort" class="visually-hidden">Sort</label>
+              <label for="area-sort">Sort</label>
               <select id="area-sort">
-                <option value="destination">Nearest to building</option>
+                <option value="destination">Nearest to destination</option>
                 <option value="name" selected>Lot number</option>
                 <option value="distance">Nearest to me</option>
               </select>
@@ -329,23 +331,25 @@
 
     <section id="view-lots" aria-labelledby="h-lots" hidden>
       <div class="areas-heading">
-        <div><h2 id="h-lots" tabindex="-1">All Lots</h2></div>
+        <div><p class="eyebrow">PARKING DIRECTORY</p><h2 id="h-lots" tabindex="-1">All Lots</h2></div>
+        <a class="permit-link" href="#areas">See permit matches →</a>
       </div>
+      <p class="summary">Explore mapped lots. Check signs; open spaces are not verified.</p>
       <div class="list-tools"><div class="list-search">
-        <label for="all-lots-search" class="visually-hidden">Search all lots</label>
-        <input type="search" id="all-lots-search" placeholder="Search lots, e.g. 37Y or Covey" autocomplete="off">
+        <label for="all-lots-search">Search all lots</label>
+        <input type="search" id="all-lots-search" placeholder="e.g. 37Y, Covey or Airport" autocomplete="off">
       </div></div>
       <p id="all-lots-count" class="areas-count" role="status"></p>
       <section class="catalog-group" aria-labelledby="all-byu-heading">
         <h3 id="all-byu-heading">BYU sections</h3>
         <ul class="nearby-list" id="all-byu-lots"></ul>
-        <button type="button" class="secondary" id="all-byu-more" hidden>Show more</button>
+        <button type="button" class="secondary" id="all-byu-more" hidden>Show more BYU sections</button>
       </section>
       <section class="catalog-group" aria-labelledby="all-city-heading">
         <h3 id="all-city-heading">Provo city facilities</h3>
         <p class="hint">City and OpenStreetMap records. Check posted signs.</p>
         <ul class="nearby-list" id="all-city-lots"></ul>
-        <button type="button" class="secondary" id="all-city-more" hidden>Show more</button>
+        <button type="button" class="secondary" id="all-city-more" hidden>Show more city facilities</button>
       </section>
     </section>
 
@@ -362,7 +366,7 @@
       <div id="fav-empty" class="empty empty-state" hidden>
         <svg class="empty-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="24" cy="24" r="23" fill="currentColor" opacity=".12"/><path d="M24 35s-10-6.2-10-13.3A5.7 5.7 0 0 1 24 18a5.7 5.7 0 0 1 10 3.7C34 28.8 24 35 24 35Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
         <h3 class="empty-title">No favorite lots yet</h3>
-        <p>Tap the heart on any lot to save it here.</p>
+        <p>Tap the heart on any lot to keep it here with one-tap directions.</p>
         <div class="empty-actions"><button type="button" class="primary" data-near-me>Find parking near me</button><a class="secondary" href="#lots">Browse all lots</a></div>
       </div>
     </section>
@@ -370,8 +374,8 @@
     <!-- Screen 6 tab: Help — BYU permits, how to read results, Provo rules, citations -->
     <section id="view-help" aria-labelledby="h-help" hidden>
       <h2 id="h-help" tabindex="-1">Help</h2>
-      <div class="panel help">
-        <details class="help-topic"><summary id="help-permits">BYU permits</summary>
+      <div class="panel help"><p class="hint">Choose a topic for parking guidance and sources.</p>
+        <details class="help-topic"><summary id="help-permits">Which BYU permit parks where</summary>
         <p class="hint">Your permit is valid only in the lot letters listed. Every other lettered lot can get you a ticket during enforcement hours.</p>
         <div class="table-wrap">
           <table class="permit-table" aria-describedby="help-permits">
@@ -400,7 +404,7 @@
         <p class="hint"><a href="https://security.byu.edu/parking-regulations" target="_blank" rel="noopener">BYU Parking Regulations</a> (released July 23, 2026) · checked 2026-11-05</p>
 
         </details>
-        <details class="help-topic"><summary>Reading results</summary>
+        <details class="help-topic"><summary>How to read the Areas page</summary>
         <ul>
           <li><strong>Matches listed rules</strong> means the permit and time you picked fit the rules BYU publishes for that lot section. It does not mean a space is open.</li>
           <li><strong>Map colors</strong> show the lot category (student, employee, visitor and so on), not availability.</li>
@@ -418,7 +422,7 @@
         <p class="hint"><a href="https://www.provo.gov/273/Parking" target="_blank" rel="noopener">Provo Parking</a> · city GIS and OSM map snapshot checked 2026-11-06</p>
 
         </details>
-        <details class="help-topic"><summary>Provo citations</summary>
+        <details class="help-topic"><summary>If you get a Provo citation</summary>
         <ul>
           <li>Respond within <strong>5 business days</strong>.</li>
           <li>No late fees while an appeal filed in time is pending.</li>
@@ -442,18 +446,19 @@
       <div class="help-modal-body">
         <section aria-labelledby="hm-colors">
           <h3 id="hm-colors">Permit colors</h3>
-          <p>Each outline is a lot section, colored by permit type. Color is not availability.</p>
+          <p>Each outline on the map is a lot section. Its color is the permit category allowed there, not whether a space is open. The permit chip on the map filters the lots for your permit and time.</p>
           <ul id="help-legend" class="map-legend" aria-label="Permit colors"></ul>
         </section>
         <section aria-labelledby="hm-3d">
-          <h3 id="hm-3d">Map</h3>
-          <p>Switch <strong>2D / 3D</strong> and map style from the right-side buttons. In 2D, touch and hold to drop a pin.</p>
+          <h3 id="hm-3d">2D and 3D</h3>
+          <p>The map starts in <strong>2D on phones</strong> and <strong>3D on larger screens</strong> and follows the app theme, including a native dark road map in dark mode. Use the <strong>2D / 3D</strong> switch to change views. 2D offers a dark road map or satellite imagery with street and place labels. Use the map-style button to switch. 3D also offers a photorealistic satellite view of campus with buildings and labels. The style button works in both views. Dark theme gently tints 3D satellite imagery to match the app. Drag to pan, pinch or scroll to zoom. In 2D, touch and hold the map (or right-click) to drop a pin and get directions. A dropped pin does not confirm parking is allowed. If 3D is not available on your device, the app shows the 2D map.</p>
         </section>
         <section aria-labelledby="hm-live">
-          <h3 id="hm-live">Location and directions</h3>
-          <p>The <strong>location</strong> button sorts lots nearest first; it is never saved. <strong>Directions</strong> opens Google or Apple Maps.</p>
+          <h3 id="hm-live">Live location and directions</h3>
+          <p>Tap the round <strong>location</strong> button to show a blue dot with your accuracy circle on either map and sort lots nearest first. It stays on while you use the app map and is never saved.</p>
+          <p>On any lot, <strong>Get Directions</strong> opens driving directions to that lot in Google Maps or Apple Maps, starting from where you are.</p>
         </section>
-        <p class="hint">Always check posted signs. <a href="#help" id="help-modal-more">Full Help</a></p>
+        <p class="hint">Always check posted signs. <a href="#help" id="help-modal-more">Open the full Help page</a></p>
       </div>
     </dialog>
 
@@ -465,19 +470,20 @@
         <h2 id="h-car" tabindex="-1">Parking timer</h2>
         <p id="car-action-status" class="hint" role="status" hidden></p>
         <div id="car-guest" class="panel car-guest" hidden>
-          <p class="hint">Sign in to save your spot and start a timer.</p>
+          <h3>Start a parking timer</h3>
+          <p class="hint">Sign in to save your parking location and start a timer.</p>
           <button type="button" class="primary" id="car-signup">Create a free account</button>
         </div>
         <div id="car-active" hidden></div>
         <form id="car-form" class="panel" hidden>
-          <label for="car-area">Lot</label>
+          <label for="car-area">Where are you parking?</label>
           <select id="car-area" required></select>
-          <label for="car-destination">Destination</label>
+          <label for="car-destination">Destination building</label>
           <select id="car-destination" required></select>
 
           <div class="row">
             <div>
-              <label for="car-minutes">Stay</label>
+              <label for="car-minutes">How long?</label>
               <select id="car-minutes">
                 <option value="30">30 minutes</option>
                 <option value="60">1 hour</option>
@@ -498,12 +504,13 @@
             </div>
           </div>
 
-          <label for="car-note">Note (optional)</label>
+          <label for="car-note">Where is your car? (optional)</label>
           <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
           <p id="car-warning" class="hint warn" hidden></p>
           <button type="submit" class="primary">Start parking timer</button>
-          <p class="hint">Reminders show only while the app is open.</p>
+          <p class="hint">Reminders appear only while the app is open; no notifications are sent.</p>
         </form>
+        <p class="summary car-local-links">One saved timer per account.</p>
       </section>
     </div>
 

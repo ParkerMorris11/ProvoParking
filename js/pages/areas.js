@@ -94,27 +94,26 @@ export function renderAreas() {
   const more = $("areas-more");
   if (more) {
     more.hidden = shown.length >= items.length;
-    more.textContent = `Show all ${items.length}`;
+    more.textContent = `Show all ${items.length} sections`;
   }
   const count = $("areas-count");
   if (count) {
-    const order = sortedBy === "distance" ? "nearest to you" : sortedBy === "destination" && building?.name ? `nearest to ${building.name}` : "by lot number";
-    const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on location to sort by distance."
-      : sortedBy === "name" && options.sort === "destination" ? " Pick a building in Find to sort by it." : "";
+    const building = state.destinations.find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
+    const order = sortedBy === "distance" ? "nearest to you first" : sortedBy === "destination" && building?.name ? `nearest to ${building.name} first` : "by lot number";
+    const sortNote = sortedBy === "name" && options.sort === "distance" ? " Turn on “Use my location” to sort by distance."
+      : sortedBy === "name" && options.sort === "destination" ? " Choose a building in Find to sort by destination."
+      : sortedBy !== "name" ? " Distances are approximate, measured in a straight line." : "";
     count.textContent = total
-      ? `${shown.length} of ${total}${searching ? ` matching “${options.query.trim()}”` : ""} · ${order}.${sortNote}`
+      ? `Showing ${shown.length} of ${total}${searching ? ` matching “${options.query.trim()}”` : ""}, ${order}.${sortNote}`
       : searching && eligible.length ? `No sections match “${options.query.trim()}”.` : "";
   }
 
   const empty = $("areas-empty");
   if (empty) {
     empty.hidden = eligible.length > 0;
-    const visitor = String(permit?.permit_code || "").toUpperCase() === "V";
-    // Honest about gaps: BYU visitor lots (2V, 26V) are not in the verified data yet.
     empty.textContent = selection.permitId == null
-      ? "No lots are open to everyone at this time. Choose your permit."
-      : visitor ? "Visitor lots aren't in this app yet. Check BYU's parking map."
-      : "No verified lots match this permit at this time. Try another time or check BYU's parking map.";
+      ? "No verified lots are confirmed open to everyone at this time. Choose your permit to see more options."
+      : "No verified parking areas match your permit at this time. Check your permit or choose another arrival time.";
   }
   const emptyMore = $("areas-empty-more");
   if (emptyMore) emptyMore.hidden = eligible.length > 0;

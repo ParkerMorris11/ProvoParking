@@ -92,7 +92,7 @@ function initPlainLanguage({ choosePermit }) {
       if (parsed.destination_id) state.find.customDestination = null;
       syncTimeControls();
       renderPermitInfo();
-      const lead = fallback ? "AI busy, read by the backup reader." : "Read by Gemini.";
+      const lead = fallback ? "The AI is busy, so I read this myself." : "Read by the AI (Gemini).";
       const next = afterFill({ permit: els.permit.value, destination: els.destination.value, ...result });
       if (next.autoSearch) {
         // Permit and building are both known: show the matching lots right away. The button stays for edits.
@@ -203,7 +203,7 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     state.find.day = Number($("arrive-day").value);
     state.find.time = $("arrive-time").value || nowHHMM();
     const selection = parkingSelection(state.find);
-    setStatus(`Showing lots for ${selection.live ? "right now" : `${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)}`}.`);
+    setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
     $("nl-status").textContent = "";
     document.dispatchEvent(new CustomEvent("parking:show-results"));
     go("#areas");

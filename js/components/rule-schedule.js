@@ -28,13 +28,12 @@ export function ruleScheduleHtml(rules, day, permits) {
     <div class="day-strip" aria-hidden="true">${hourBlocks(segments).map(block => `<span class="hour-block" style="background:linear-gradient(to right,${block.map(part => `var(--schedule-${part.kind}) ${part.start / 60 * 100}% ${part.end / 60 * 100}%`).join(",")})"></span>`).join("")}</div>
     <ul class="schedule-legend" aria-label="Schedule legend"><li class="legend-open">No permit restriction listed</li><li class="legend-permit">Permit required</li><li class="legend-closed">No parking</li><li class="legend-unknown">Not verified</li></ul>
     <div class="day-scale" aria-hidden="true"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span></div>
-    <details class="day-periods-more"><summary>Hour by hour</summary>
-    <p class="schedule-boundary-note">Each period ends when the next begins. Provo time.</p>
+    <p class="schedule-boundary-note">Each period ends when the next begins. All times are Provo time.</p>
     <ol class="day-periods">${segments.map(s => {
       const summary = scheduleSummary(s, permits);
       return `<li class="day-period schedule-${s.kind}">
         <p class="day-period-time">${scheduleTime(s.start)} <span aria-hidden="true">–</span><span class="sr-text">to</span> ${scheduleTime(s.end)}${s.end === 1440 ? '<span class="sr-text">, next day</span>' : ""}</p>
         <div class="day-period-description"><span class="period-icon" aria-hidden="true">${summary.icon}</span><div><p class="day-period-title">${summary.title}</p><p class="day-period-note">${escapeHtml(summary.detail)}</p></div></div>
       </li>`;
-    }).join("")}</ol></details>`;
+    }).join("")}</ol>`;
 }

@@ -393,19 +393,6 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .map-search-result--nl strong { color: var(--brand-ink, inherit); }
 @media (max-width: 600px) { .map-search-chip { min-height: 44px; } }
 
-/* ---- Minimal pass (Nov 2026): one search box per screen, results first, hints only when they say something ---- */
-/* Find has its own AI trip box, so the sheet's search bar steps aside there (the account button stays). */
-.home-sheet[data-route="find"] .map-search, .home-sheet[data-route="find"] .map-search-status, .home-sheet[data-route="find"] .map-search-results { display: none; }
-.home-sheet[data-route="find"] .sheet-search-row { justify-content: flex-end; }
-/* After a search the ranked list comes first: no Browse shortcuts or Nearby block above it. */
-.home-sheet[data-results] #app-nav, .home-sheet[data-results] .nearby-panel { display: none; }
-/* The Browse heading names the shortcuts for screen readers only. */
-.fs-shell #nav-heading { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-/* The route bar's close button already goes back; the text link is for the plain layout. */
-.fs-shell #view-area .back { display: none; }
-/* Every card said "Availability unknown"; the fine print says it once. Real estimates still show. */
-.fs-shell .card .avail:not(.ok):not(.low) { display: none; }
-
 /* One focus ring on the search bar: the pill (:focus-within, above) shows focus; the text box inside it
    draws nothing of its own. The generic .fs-shell input:focus-visible ring used to add a second, inner one. */
 .fs-shell .map-search input:focus, .fs-shell .map-search input:focus-visible { outline: none; border: 0; border-radius: 0; box-shadow: none; -webkit-appearance: none; appearance: none; }

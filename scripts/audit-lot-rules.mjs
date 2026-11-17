@@ -19,7 +19,7 @@ try {
     const errors=[];
     page.on("pageerror",err=>errors.push(err.message));
     await page.goto(base+"?theme="+theme);
-    await page.getByRole("heading",{name:"24-hour rules"}).waitFor();
+    await page.getByRole("heading",{name:"24-hour parking rules"}).waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Overflow at ${width}px ${theme}`);
     assert.equal(await page.locator(".day-period").count(),5);
     const originalStatus=await page.locator(".elig").innerText();
@@ -28,7 +28,7 @@ try {
     assert.equal(await page.locator(".elig").innerText(),originalStatus);
     assert.equal(await page.locator("#rules-day").evaluate(el=>el===document.activeElement),true);
     await page.getByLabel("Day",{exact:true}).selectOption("1");
-    await page.getByText("Sources and fine print",{exact:true}).click();
+    await page.getByText("Sources and verification",{exact:true}).click();
     assert.equal(await page.locator(".detail-source-disclosure").first().evaluate(el=>el.open),true);
     await page.getByLabel("Day",{exact:true}).selectOption("6");
     assert.equal(await page.locator(".detail-source-disclosure").first().evaluate(el=>el.open),true);

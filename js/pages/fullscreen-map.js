@@ -22,9 +22,6 @@ const DESKTOP = "(min-width: 601px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
 let view, sheet, handle, head, body, chip, suggestions, routeBar, ready = false, applyPermit = () => false;
-// True while the Areas screen shows the results of a search (Find, AI fill, building pick): the sheet then
-// leads with the ranked list instead of the home Suggestions / Browse / Nearby blocks.
-let resultsMode = false, lastRoute = null;
 
 const isDesktop = () => Boolean(window.matchMedia?.(DESKTOP).matches);
 
@@ -44,7 +41,7 @@ function buildAccountMenu(button) {
     '<p class="map-settings-who" id="map-settings-who"></p>' +
     '<button type="button" class="map-settings-item" id="map-settings-account"></button>' +
     '<button type="button" class="map-settings-item" data-help-open data-help-return="map-account" aria-haspopup="dialog">Quick guide</button>' +
-    '<a class="map-settings-item" href="#help">Help &amp; account</a>' +
+    '<a class="map-settings-item" href="#help">Help &amp; account page</a>' +
     '<a class="map-settings-item" href="admin.html">Admin dashboard <span class="map-settings-note">team only</span></a>');
   menu.hidden = true;
   button.setAttribute("aria-expanded", "false");
@@ -153,7 +150,7 @@ function updateChrome() {
     const hasPermit = Boolean(state.find.permitId);
     chip.querySelector(".chip-sub").textContent = matchText(count, hasPermit, selection);
     chip.querySelector(".chip-hint").textContent = `. ${info.label.slice(`${info.code} ${info.text}. `.length)}`;
-    const home = state.currentView === "areas" && !resultsMode;
+    const home = state.currentView === "areas";
     routeBar.hidden = home;
     suggestions.hidden = !home;
     if (home) renderSuggestions(selection, sheetTitle(count, hasPermit, selection));
@@ -180,22 +177,10 @@ function timeLeft(session) {
   return `${h ? `${h} hr ` : ""}${m} min left`;
 }
 
-// "now" when parking right now; otherwise the planned day and time, e.g. "Tue 3:00 PM".
-export function whenText(selection = {}) {
-  if (selection.live || !Number.isInteger(selection.day) || !selection.time) return "now";
-  return `${DAY_NAMES[selection.day].slice(0, 3)} ${fmtTime(selection.time)}`;
-}
-export function kindText(kind, selection = {}) {
-  const when = whenText(selection);
-  const at = when === "now" ? "now" : `at ${when}`;
-  if (kind === "ok") return `Allowed ${at}`;
-  if (kind === "limit") return `Allowed ${at}, with limits`;
-  if (kind === "blocked" || kind === "no") return `Not allowed ${at}`;
-  return "Check the rules";
-}
+const KIND_TEXT = { ok: "Allowed now", limit: "Allowed, with limits", blocked: "Not allowed now", no: "Not allowed now" };
 function ruleText(areaId, selection) {
   const kind = evaluate(rulesFor(areaId), selection.permitId, selection.day, selection.time).kind;
-  return kindText(kind, selection);
+  return KIND_TEXT[kind] || "Check the rules";
 }
 
 export function suggestionRows({ session, favorites, nearby, areaById, describe }) {
@@ -764,18 +749,11 @@ function build() {
   routeBar = el("div", { class: "route-bar", hidden: "" });
   const close = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
   routeBar.append(close);
-  close.addEventListener("click", (e) => {
-    if (state.currentView !== "areas" || !resultsMode) return;
-    e.preventDefault();
-    resultsMode = false;
-    syncFullscreenRoute("areas");
-  });
 
   const accountBar = document.querySelector(".account-bar");
   const accountSection = el("section", { class: "drawer-account", "aria-label": "Your account" });
   accountSection.append(accountBar);
-  // Help leads with the topics; the account and permit settings follow them.
-  document.getElementById("view-help").append(accountSection);
+  document.getElementById("view-help").prepend(accountSection);
   body.append(routeBar, suggestions, nav, document.getElementById("status"));
   for (const name of ["find", "areas", "lots", "area", "favorites", "help"]) body.append(document.getElementById(`view-${name}`));
   sheet.append(handle, head, body);
@@ -838,16 +816,8 @@ function build() {
 export function syncFullscreenRoute(name, { showResults = false } = {}) {
   if (!sheet) return false;
   // Phones open on the map with the sheet lowered; laptops keep the sidebar open.
-  // Back from a lot's page returns to the same results; the close button on the results goes home.
-  if (name === "areas") resultsMode = showResults || (resultsMode && lastRoute === "area");
-  else if (name !== "area") resultsMode = false;
-  lastRoute = name;
-  sheet.dataset.route = name;
-  sheet.toggleAttribute("data-results", name === "areas" && resultsMode);
-  // Phones: the map home opens lowered; Find opens tall so "Show parking areas" is on screen; results and
-  // other pages open halfway.
-  setSheet(name === "areas" && !isDesktop() && !showResults ? "peek" : name === "find" && !isDesktop() ? "full" : "half");
-  if ((name === "area" || resultsMode) && body) body.scrollTop = 0;
+  setSheet(name === "areas" && !isDesktop() && !showResults ? "peek" : "half");
+  if (name === "area" && body) body.scrollTop = 0;
   updateChrome();
   refreshMap();
   return true;

@@ -74,9 +74,9 @@ test('Areas renders only eligible cards and gives useful empty states without de
   assert.equal(fields['areas-empty'].hidden,true);assert.match(fields['areas-summary'].textContent,/Planned arrival/);
   state.find={...selection,time:'19:00'};renderAreas();assert.match(fields['area-list'].innerHTML,/14A/);
   state.find={...selection,time:'03:00'};renderAreas();assert.equal(fields['area-list'].innerHTML,'');assert.equal(fields['areas-empty'].hidden,false);
-  assert.match(fields['areas-empty'].textContent,/No verified lots match/);
+  assert.match(fields['areas-empty'].textContent,/No verified parking areas match/);
   state.find={...selection,permitId:null};renderAreas();assert.match(fields['areas-empty'].textContent,/Choose your permit/);
-  state.permits=[{permit_id:2,permit_name:'G permit'},{permit_id:9,permit_code:'V',permit_name:'Visitor'}];state.find={...selection,permitId:9};renderAreas();assert.match(fields['areas-empty'].textContent,/Visitor lots aren't in this app yet/);
+  state.permits=[{permit_id:2,permit_name:'G permit'},{permit_id:9,permit_code:'V',permit_name:'Visitor'}];state.find={...selection,permitId:9};renderAreas();assert.match(fields['areas-empty'].textContent,/No verified parking areas match/);
   assert.equal(state.favoriteIds.has(3),true);assert.equal(state.areas.length,lots.length);
  }finally{Object.assign(state,oldState);if(oldDocument===undefined)delete globalThis.document;else globalThis.document=oldDocument;}
 });
