@@ -392,3 +392,4 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .map-search-chip { min-height: 32px; padding: 0 12px; border: 1px solid var(--border, #dbe2eb); border-radius: 999px; background: var(--search-fill, var(--surface-2, #eaf2fb)); color: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
 .map-search-chip:hover, .map-search-chip:focus-visible { background: var(--brand-tint, var(--surface-2, #eaf2fb)); border-color: var(--brand-fill, var(--border, #dbe2eb)); }
 .map-search-result--nl strong { color: var(--brand-ink, inherit); }
+@media (max-width: 600px) { .map-search-chip { min-height: 44px; } }

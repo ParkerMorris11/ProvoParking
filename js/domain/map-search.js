@@ -68,7 +68,7 @@ export function searchMapCatalog(query, { areas = [], destinations = [], facilit
 export const QUICK_FILTERS = [
   { id: 'near-me', label: 'Near me', hint: 'Sort lots closest to your GPS location' },
   { id: 'visitor', label: 'Visitor', hint: 'Show BYU visitor parking options' },
-  { id: 'free-now', label: 'Free now', hint: 'Open-to-all & Provo city parking' },
+  { id: 'free-now', label: 'City lots', hint: 'Show unverified Provo city lots on the map' },
 ];
 
 const NL_TIME_PATTERN = /\b(\d{1,2}(:\d{2})?\s*(am|pm)|tomorrow|tonight|today|this\s+(morning|afternoon|evening)|monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\b/i;
