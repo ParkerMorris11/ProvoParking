@@ -16,10 +16,11 @@ function circleRing(point, radius, steps = 48) {
     return { lat: point.lat + dLat * Math.sin(angle), lng: point.lng + dLng * Math.cos(angle), altitude: 1 };
   });
 }
+const LONG_PRESS_MS = 500, LONG_PRESS_CLICK_MS = 600, MOVE_PX = 12;
 const rangeForZoom = level => Math.min(4000, Math.max(300, 850 * 2 ** (17 - level)));
 
 /** `lib` is the result of google.maps.importLibrary("maps3d"). */
-export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = false, onSelect, onError = () => {} }) {
+export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = false, onSelect, onDropPin, onError = () => {} }) {
   let darkOn = dark, mapStyle = "hybrid";
   const scheme = () => lib.ColorScheme?.[darkOn ? "DARK" : "LIGHT"] ?? (darkOn ? "DARK" : "LIGHT");
   const map = new lib.Map3DElement({
@@ -97,7 +98,43 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     const height = selected ? 30 : shape.source.type === "city" ? 20 : 10;
     if (el.__height !== height) { el.__height = height; el.outerCoordinates = shape.rings[0].map(p => ({ ...p, altitude: height })); }
   }
-  map.addEventListener("gmp-rangechange", () => drawUser());
+  // ---- Long press drops a pin --------------------------------------------------------------------
+  // Press and hold ~0.5 s without moving. The map reports where a click landed (event.position), so a
+  // press that was held and not dragged is treated as a pin drop instead of a tap on a lot.
+  const now = () => globalThis.performance?.now?.() ?? Date.now();
+  let down = null, press = null, lastDrop = -Infinity, pinPoint = null, pinEl = null;
+  container.addEventListener?.("pointerdown", e => { down = { t: now(), x: e.clientX, y: e.clientY, moved: false }; press = null; }, true);
+  container.addEventListener?.("pointermove", e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > MOVE_PX) down.moved = true; }, true);
+  container.addEventListener?.("pointercancel", () => { down = null; press = null; }, true);
+  container.addEventListener?.("pointerup", () => {
+    press = down && !down.moved && now() - down.t >= LONG_PRESS_MS ? { at: now() } : null; down = null;
+  }, true);
+  const drawPin = () => {
+    if (!pinPoint) { pinEl?.remove(); pinEl = null; return; }
+    const radius = Math.max(4, (map.range ?? DEFAULT_CAMERA.range) / 120);
+    const options = { outerCoordinates: circleRing(pinPoint, radius, 24), fillColor: "#e11d48", strokeColor: "#ffffff", strokeWidth: 4 };
+    if (pinEl) Object.assign(pinEl, options);
+    else {
+      pinEl = new lib.Polygon3DElement({ altitudeMode: "CLAMP_TO_GROUND", extruded: false, drawsOccludedSegments: true, zIndex: 1100, ...options });
+      pinEl.style && (pinEl.style.pointerEvents = "none");
+      map.append(pinEl);
+    }
+  };
+  // True when this click ended a long press; it then drops the pin at the pressed spot.
+  const longPressDrop = event => {
+    const held = press && now() - press.at < LONG_PRESS_CLICK_MS;
+    press = null;
+    if (!held) return false;
+    const lat = event?.position?.lat, lng = event?.position?.lng;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+    pinPoint = { lat, lng }; drawPin(); lastDrop = now();
+    try { win?.navigator?.vibrate?.(15); } catch { /* not supported */ }
+    onDropPin?.({ latitude: lat, longitude: lng });
+    return true;
+  };
+  const justDropped = () => now() - lastDrop < 700;
+  map.addEventListener("gmp-click", longPressDrop);
+  map.addEventListener("gmp-rangechange", () => { drawUser(); drawPin(); });
   applyStyle();
 
   const clear = () => { for (const { el } of drawn) el.remove(); drawn = []; };
@@ -119,7 +156,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
             fillColor: withAlpha(shape.color, night() ? 0.66 : 0.45), strokeColor: shape.color, strokeWidth: night() ? 3 : 2,
           })
           : new Marker({ position: shape.center, altitudeMode: "CLAMP_TO_GROUND", label: "P", title: "Provo parking" });
-        el.addEventListener("gmp-click", () => onSelect(shape));
+        el.addEventListener("gmp-click", event => { if (!longPressDrop(event) && !justDropped()) onSelect(shape); });
         map.append(el);
         el.__height = shape.source.type === "city" ? 20 : 10; // matches the altitude above
         drawn.push({ el, shape });
@@ -134,6 +171,7 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       userHeading = Number.isFinite(heading) && !(Number.isFinite(speed) && speed < 0.3) ? heading : null;
       drawUser(); startPulse();
     },
+    clearPin() { pinPoint = null; drawPin(); },
     resetCamera() {
       map.stopCameraAnimation?.();
       Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });
@@ -150,6 +188,6 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     resize() {},
     show() { container.hidden = false; visible = true; startPulse(); },
     hide() { container.hidden = true; visible = false; if (pulseFrame !== null) win?.cancelAnimationFrame(pulseFrame); pulseFrame = null; },
-    destroy() { clear(); clearUser(); container.classList?.toggle("map-layer-3d--night", false); map.remove(); },
+    destroy() { clear(); clearUser(); pinPoint = null; drawPin(); container.classList?.toggle("map-layer-3d--night", false); map.remove(); },
   };
 }

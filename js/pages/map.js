@@ -148,6 +148,8 @@ export function hideCard() {
   if (card && !card.hidden) { card.hidden = true; card.innerHTML = ""; }
 }
 
+const clearPins = () => { views["2d"]?.clearPin?.(); views["3d"]?.clearPin?.(); };
+
 function showDroppedPin(point) {
   const directions = deviceDirections(point, "driving");
   if (!directions) return;
@@ -268,7 +270,7 @@ async function ensureView(next, center, version) {
     views[next] = createMap2D({ maps, lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onDropPin: showDroppedPin });
   } else {
     const lib = await maps.importLibrary("maps3d");
-    views[next] = createMap3D({ lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
+    views[next] = createMap3D({ lib, container, center: version === state.authVersion ? center : CAMPUS_CENTER, dark: isDark(), onSelect: selectShape, onDropPin: showDroppedPin, onError: () => void setMode("2d", "3D view unavailable on this device. Showing the 2D map.") });
   }
   views[next].setStyle(mapStyle);
   return views[next];
@@ -367,8 +369,8 @@ export async function initMap() {
     el.textContent = "";
     syncToggle();
     new MutationObserver(() => { for (const view of Object.values(views)) view.setDark(isDark()); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme-active"] });
-    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); views["2d"]?.clearPin(); markSelected(null); el.focus({ preventScroll: true }); } });
-    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); views["2d"]?.clearPin(); markSelected(null); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("click", (event) => { if (event.target.closest(".map-card-close")) { hideCard(); clearPins(); markSelected(null); el.focus({ preventScroll: true }); } });
+    byId("map-card")?.addEventListener("keydown", (event) => { if (event.key === "Escape") { hideCard(); clearPins(); markSelected(null); el.focus({ preventScroll: true }); } });
     for (const m of ["2d", "3d"]) {
       const button = byId(`map-mode-${m}`);
       if (button) { button.disabled = false; button.addEventListener("click", () => void setMode(m)); }
