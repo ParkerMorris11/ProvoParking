@@ -6,6 +6,10 @@ IS 401-001, Fall 2026, Team 007: Parker Morris, Liam Tanaka, Spencer Warren, Jam
 
 **Live app:** https://provo-parking.vercel.app/ (also on GitHub Pages: https://parkermorris11.github.io/ProvoParking/)
 
+Scan to open the live app on your phone ([PNG](assets/provo-parking-qr.png) for slides or printing, [SVG](assets/provo-parking-qr.svg) for any size, [card with the address printed below](assets/provo-parking-qr-card.png) for phones):
+
+<img src="assets/provo-parking-qr.png" alt="QR code linking to https://provo-parking.vercel.app/" width="180">
+
 ## Contents
 
 - [What the app does](#what-the-app-does)
