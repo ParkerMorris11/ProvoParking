@@ -3,11 +3,11 @@ import { parkingNow } from "../lib/server-clock.js";
 import { stayWarnings, warningText } from "../domain/stay-warnings.js";
 import { state, rulesFor } from "../state.js";
 import { $, setStatus } from "../lib/dom.js";
-import { escapeHtml, fmtClock, fmtDuration, directionsUrl, appleDirectionsUrl } from "../lib/format.js";
+import { escapeHtml, fmtClock, fmtDuration, deviceDirections } from "../lib/format.js";
 import { evaluate } from "../domain/eligibility.js";
 import * as sessions from "../data/sessions.js";
-import { parkingSelection } from "../domain/parking-results.js";
-import { renderDestinationOptions } from "./find.js";
+import { lotSuggestions, totalMinutes, fitReminder, HOUR_OPTIONS, MINUTE_OPTIONS, DEFAULT_DURATION } from "../domain/timer-picker.js";
+import { createTimeWheel } from "../components/time-wheel.js";
 import { renderCarFab } from "../components/car-fab.js";
 
 let timerHandle = null;
@@ -86,28 +86,32 @@ export function renderCar(selectedAreaId = "") {
     form.hidden = true;
     active.hidden = false;
     const area = state.areas.find((a) => a.area_id === session.area_id);
+    const directions = area ? deviceDirections(area, "walking") : null;
+    const note = session.car_note || "";
     active.innerHTML = `
-      <div class="panel session">
-        <p class="meta">You parked at</p>
+      <div class="panel session timer-running">
+        <p class="meta">Parked at</p>
         <h3>${escapeHtml(area ? area.area_name : "Unknown area")}</h3>
-        <p class="meta">Destination: ${escapeHtml(state.destinations.find(d => d.destination_id === session.destination_id)?.name || "Not recorded (older session)")}</p>
         <p class="countdown" id="countdown" aria-hidden="true"></p>
         <p id="countdown-text" class="sr-text"></p>
+        <p class="car-leave-by">Leave by <strong>${fmtClock(new Date(session.leave_by))}</strong></p>
         <p id="reminder" class="reminder" hidden></p>
         <p id="car-active-rule-warning" class="reminder" role="status" hidden></p>
-        <p class="hint">Saved to your account. You can close this popup, change pages, or reopen the app; the timer keeps its original end time.</p>
-        <p class="meta">Started ${fmtClock(new Date(session.started_at))} · leave by <strong>${fmtClock(new Date(session.leave_by))}</strong> · reminder ${session.reminder_minutes_before} min before</p>
 
-        <form id="note-form">
-          <label for="note-edit">Where is your car?</label>
-          <input type="text" id="note-edit" maxlength="200" value="${escapeHtml(session.car_note || "")}" placeholder="e.g. Row C near the stairs">
-          <button type="submit" class="secondary">Save note</button>
-        </form>
-
-        <div class="actions">
-          ${area && directionsUrl(area) ? `<a class="secondary" href="${escapeHtml(directionsUrl(area, "walking"))}" target="_blank" rel="noopener">${area.is_sample_data ? "Walking directions (sample location)" : "Walking directions to approximate section"}</a><a class="secondary directions-apple" href="${escapeHtml(appleDirectionsUrl(area, "walking"))}" target="_blank" rel="noopener">Apple Maps</a>` : ""}
-          <button type="button" class="primary" id="end-session">I left — end timer</button>
+        <div class="actions timer-actions">
+          ${directions ? `<a class="secondary" href="${escapeHtml(directions.url)}" target="_blank" rel="noopener" aria-label="Find my car: walking directions in ${directions.app}">Find my car</a>` : ""}
+          <button type="button" class="primary" id="end-session">End timer</button>
         </div>
+
+        <details class="car-note">
+          <summary>${note ? `Note: ${escapeHtml(note)}` : "Add a note about where you parked"}</summary>
+          <form id="note-form">
+            <label for="note-edit" class="sr-text">Where is your car?</label>
+            <input type="text" id="note-edit" maxlength="200" value="${escapeHtml(note)}" placeholder="Row C near the stairs">
+            <button type="submit" class="secondary">Save note</button>
+          </form>
+        </details>
+        <p class="hint">Saved to your account, so the timer keeps going if you close the app.</p>
       </div>`;
     tick();
     timerHandle = setInterval(tick, 1000);
@@ -115,29 +119,134 @@ export function renderCar(selectedAreaId = "") {
     active.hidden = true;
     active.innerHTML = "";
     form.hidden = false;
-    const sel = $("car-area");
-    const choices = state.areas.filter((a) => !a.is_sample_data);
-    sel.innerHTML = '<option value="">Choose a parking lot…</option>' +
-      choices.map((a) => `<option value="${a.area_id}">${escapeHtml(a.area_name)}</option>`).join("");
-    const selected = String(selectedAreaId);
-    sel.value = choices.some((area) => String(area.area_id) === selected) ? selected : "";
-    renderDestinationOptions("car-destination", state.find.destinationId);
-    updateCarTripSummary();
-    if (form.dataset) form.toggleAttribute("data-edit-trip", !form.hasAttribute("data-has-trip"));
-    updateCarWarning();
+    // "Park here" passes the lot; otherwise start with suggestions. Unknown or sample lots are never preselected.
+    const selected = state.areas.find((a) => !a.is_sample_data && String(a.area_id) === String(selectedAreaId));
+    if (selected) pickLot(selected.area_id, { focus: false });
+    else clearLot({ focus: false });
+    hideFormError();
+    wheels?.hours.refresh();
+    wheels?.minutes.refresh();
+    syncDuration();
   }
 }
 
-function updateCarTripSummary() {
-  const summary = $("car-trip-summary"), form = $("car-form");
-  if (!summary?.dataset || !form.dataset) return;
-  const area = state.areas.find(a => a.area_id === Number($("car-area").value));
-  const destination = state.destinations.find(d => d.destination_id === Number($("car-destination").value));
-  form.toggleAttribute("data-has-trip", Boolean(area && destination));
-  if (area && destination) {
-    $("car-trip-lot").textContent = area.area_name;
-    $("car-trip-destination").textContent = destination.name;
-  }
+// ---------- start form: lot search, duration wheels, reminder ----------
+const LAST_AREA_KEY = "provoParking.timer.lastArea";
+let wheels = null;
+let activeOption = -1;
+
+function lastAreaId() {
+  try { return localStorage.getItem(LAST_AREA_KEY); } catch { return null; }
+}
+function rememberArea(areaId) {
+  try { localStorage.setItem(LAST_AREA_KEY, String(areaId)); } catch { /* best effort */ }
+}
+
+function renderSuggestions() {
+  const list = $("car-suggestions"), input = $("car-search"), empty = $("car-search-empty");
+  if (!list || !input) return;
+  const query = input.value;
+  const rows = lotSuggestions({
+    query, areas: state.areas || [], favoriteIds: state.favoriteIds || new Set(), favoriteNames: state.favoriteNames || new Map(),
+    position: state.lastPosition, lastAreaId: lastAreaId(),
+  });
+  activeOption = -1;
+  input.removeAttribute("aria-activedescendant");
+  const icon = { last: "↺", favorite: "♥", near: "➤", match: "P" };
+  list.innerHTML = rows.map((row, i) => `
+    <li role="option" id="car-opt-${i}" data-area="${row.id}" aria-selected="false" class="car-option car-option-${row.kind}">
+      <span class="car-option-icon" aria-hidden="true">${icon[row.kind]}</span>
+      <span><span class="car-option-title">${escapeHtml(row.title)}</span><span class="car-option-sub">${escapeHtml(row.sub)}</span></span>
+    </li>`).join("");
+  input.setAttribute("aria-expanded", rows.length ? "true" : "false");
+  empty.hidden = rows.length > 0;
+  empty.textContent = query.trim()
+    ? "No lots match that. Try the lot number, like “20” or “2V”."
+    : "Type the lot name or number you parked in.";
+}
+
+function moveOption(step) {
+  const options = [...$("car-suggestions").querySelectorAll("[role=option]")];
+  if (!options.length) return;
+  activeOption = (activeOption + step + options.length) % options.length;
+  options.forEach((o, i) => o.setAttribute("aria-selected", String(i === activeOption)));
+  $("car-search").setAttribute("aria-activedescendant", options[activeOption].id);
+  options[activeOption].scrollIntoView({ block: "nearest" });
+}
+
+function pickLot(areaId, { focus = true } = {}) {
+  const area = state.areas.find((a) => String(a.area_id) === String(areaId));
+  if (!area) return;
+  $("car-area").value = String(area.area_id);
+  $("car-picked-name").textContent = area.area_name;
+  const nickname = state.favoriteNames?.get?.(area.area_id) ?? state.favoriteNames?.get?.(String(area.area_id));
+  $("car-picked-sub").textContent = nickname ? `Saved as “${nickname}”` : "";
+  $("car-picked").hidden = false;
+  $("car-search-wrap").hidden = true;
+  hideFormError();
+  updateCarWarning();
+  if (focus) $("car-change").focus();
+}
+
+function clearLot({ focus = true } = {}) {
+  $("car-area").value = "";
+  $("car-picked").hidden = true;
+  $("car-search-wrap").hidden = false;
+  $("car-search").value = "";
+  renderSuggestions();
+  updateCarWarning();
+  if (focus) $("car-search").focus();
+}
+
+function syncDuration() {
+  if (!wheels) return;
+  const minutes = totalMinutes(wheels.hours.value, wheels.minutes.value);
+  $("car-minutes").value = String(minutes);
+  const reminder = $("car-reminder");
+  for (const option of reminder.options) option.disabled = Number(option.value) > 0 && Number(option.value) >= minutes;
+  reminder.value = String(fitReminder(reminder.value, minutes));
+  $("car-leave-by").innerHTML = minutes
+    ? `Leave by <strong>${fmtClock(new Date(parkingNow() + minutes * 60000))}</strong>`
+    : "Choose at least 5 minutes.";
+  updateCarWarning();
+}
+
+function showFormError(message, focusEl) {
+  const err = $("car-form-error");
+  err.textContent = message;
+  err.hidden = false;
+  focusEl?.focus();
+}
+function hideFormError() {
+  const err = $("car-form-error");
+  if (err) { err.hidden = true; err.textContent = ""; }
+}
+
+function setupForm() {
+  const hours = $("car-hours"), mins = $("car-mins");
+  if (!hours || !mins || wheels) return;
+  wheels = {
+    hours: createTimeWheel(hours, { values: HOUR_OPTIONS, value: DEFAULT_DURATION.hours, label: "Hours", unit: "hr", onChange: syncDuration }),
+    minutes: createTimeWheel(mins, { values: MINUTE_OPTIONS, value: DEFAULT_DURATION.minutes, label: "Minutes", unit: "min", onChange: syncDuration }),
+  };
+  const input = $("car-search");
+  input.addEventListener("input", renderSuggestions);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); moveOption(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveOption(-1); }
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      const options = $("car-suggestions").querySelectorAll("[role=option]");
+      const choice = options[activeOption >= 0 ? activeOption : 0];
+      if (choice) pickLot(choice.dataset.area);
+    }
+  });
+  $("car-suggestions").addEventListener("click", (e) => {
+    const option = e.target.closest("[role=option]");
+    if (option) pickLot(option.dataset.area);
+  });
+  $("car-change").addEventListener("click", () => clearLot());
+  $("car-reminder").addEventListener("change", hideFormError);
 }
 
 // The countdown is always derived from the saved leave_by, so a refresh keeps it correct.
@@ -180,8 +289,9 @@ function tick() {
 
 export function updateCarWarning() {
   const warn=$("car-warning");
+  if(!warn)return;
   const area=state.areas.find(a=>a.area_id===Number($("car-area").value));
-  if(!area){warn.hidden=true;return;}
+  if(!area||!Number($("car-minutes").value)){warn.hidden=true;return;}
   const start=parkingNow(),end=start+Number($("car-minutes").value)*60000;
   const notices=stayWarnings(rulesFor(area.area_id),state.find.permitId,start,end);
   warn.textContent=notices.map(warningText).join(" ");
@@ -209,22 +319,25 @@ async function onStart(e) {
   e.preventDefault();
   if (!requireAccount("Create a free account to start a parking timer and save where you parked.")) return;
   if (mutation) return;
+  const areaId = Number($("car-area").value), minutes = Number($("car-minutes").value);
+  if (!areaId) return showFormError("Choose the lot you parked in.", $("car-search"));
+  if (!minutes) return showFormError("Choose how long you'll park (at least 5 minutes).", $("car-hours"));
   mutation=true; refreshSequence++;
   const version = state.authVersion;
-  const btn = e.submitter;
+  const btn = e.submitter || $("car-form").querySelector("button[type=submit]");
   btn.disabled = true;
   try {
     const created = await sessions.startSession({
-      areaId: Number($("car-area").value),
-      minutes: Number($("car-minutes").value),
-      reminderMinutes: Number($("car-reminder").value),
-      carNote: $("car-note").value.trim(),
-      destinationId: Number($("car-destination").value),
+      areaId,
+      minutes,
+      reminderMinutes: fitReminder($("car-reminder").value, minutes),
+      carNote: "",
+      destinationId: state.find.destinationId ?? null, // kept only if the driver already picked a building in Find
       permitId: state.find.permitId,
     });
     if (version !== state.authVersion) return;
     sessions.acceptTimerSnapshot(created);
-    $("car-note").value = "";
+    rememberArea(areaId);
     timerStatus("Parking timer started.");
     renderCar();
     renderCarFab();
@@ -282,6 +395,11 @@ async function onSaveNote(e) {
     const saved = await sessions.saveCarNote(state.activeSession, $("note-edit").value.trim() || null);
     if (version !== state.authVersion) return;
     if(state.activeSession?.session_id === saved.session_id) state.activeSession = saved;
+    const details = document.querySelector?.(".car-note");
+    if (details) {
+      details.querySelector("summary").textContent = saved.car_note ? `Note: ${saved.car_note}` : "Add a note about where you parked";
+      details.open = false;
+    }
     timerStatus("Saved your car note.");
   } catch (err) {
     if (version !== state.authVersion) return;
@@ -320,19 +438,8 @@ export function initCar(options = {}) {
     if (!/^#car(\/|$)/.test(location.hash)) returnHash = location.hash || "#areas";
   });
   returnHash = /^#car(\/|$)/.test(location.hash) ? "#areas" : (location.hash || "#areas");
-  $("car-area").addEventListener("change", () => { updateCarTripSummary(); updateCarWarning(); });
-  $("car-destination").addEventListener("change", updateCarTripSummary);
   $("car-guest-back")?.addEventListener("click", requestClose);
-  $("car-trip-edit")?.addEventListener("click", () => {
-    $("car-form").dataset.editTrip = "";
-    $("car-area").focus();
-  });
-  $("car-trip-done")?.addEventListener("click", () => {
-    if (!$("car-area").reportValidity() || !$("car-destination").reportValidity()) return;
-    delete $("car-form").dataset.editTrip;
-    $("car-trip-edit").focus();
-  });
-  $("car-minutes").addEventListener("change", updateCarWarning);
+  setupForm();
   document.addEventListener("submit", (e) => {
     if (e.target.id === "car-form") onStart(e);
     if (e.target.id === "note-form") onSaveNote(e);

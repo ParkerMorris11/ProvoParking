@@ -485,44 +485,42 @@
           <button type="button" class="link-button" id="car-guest-back">Back to map</button>
         </div>
         <div id="car-active" hidden></div>
-        <form id="car-form" class="panel" hidden>
-          <div id="car-trip-summary" class="car-trip-summary">
-            <div><strong id="car-trip-lot"></strong><span id="car-trip-destination"></span></div>
-            <button type="button" class="secondary" id="car-trip-edit" aria-controls="car-trip-fields">Edit</button>
+        <form id="car-form" class="panel car-form" hidden novalidate>
+          <input type="hidden" id="car-area" value="">
+          <input type="hidden" id="car-minutes" value="120">
+          <label for="car-search" id="car-search-label">Where did you park?</label>
+          <div class="car-picked" id="car-picked" hidden>
+            <div><strong id="car-picked-name"></strong><span class="hint" id="car-picked-sub"></span></div>
+            <button type="button" class="link-button" id="car-change">Change</button>
           </div>
-          <div id="car-trip-fields">
-            <label for="car-area">Where are you parking?</label>
-            <select id="car-area" required></select>
-            <label for="car-destination">Destination building</label>
-            <select id="car-destination" required></select>
-            <button type="button" class="secondary" id="car-trip-done">Done</button>
+          <div class="car-search" id="car-search-wrap">
+            <input type="search" id="car-search" autocomplete="off" enterkeyhint="search" placeholder="Lot name or number" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="car-suggestions">
+            <ul id="car-suggestions" class="car-suggestions" role="listbox" aria-labelledby="car-search-label"></ul>
+            <p class="hint" id="car-search-empty" hidden></p>
           </div>
-          <div class="car-duration">
-              <label for="car-minutes">Duration</label>
-              <select id="car-minutes">
-                <option value="30">30 minutes</option>
-                <option value="60" selected>1 hour</option>
-                <option value="120">2 hours</option>
-                <option value="180">3 hours</option>
-                <option value="240">4 hours</option>
-                <option value="480">8 hours</option>
-              </select>
-          </div>
-          <details id="car-options" class="car-options">
-              <summary>Timer options</summary>
-              <label for="car-reminder">Remind me</label>
-              <select id="car-reminder">
-                <option value="5">5 min before</option>
-                <option value="10" selected>10 min before</option>
-                <option value="15">15 min before</option>
-                <option value="30">30 min before</option>
-              </select>
-              <label for="car-note">Where is your car? (optional)</label>
-              <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
-          </details>
+
+          <fieldset class="car-duration">
+            <legend>How long?</legend>
+            <div class="time-wheels">
+              <div id="car-hours"></div><span class="time-wheel-unit" aria-hidden="true">hr</span>
+              <div id="car-mins"></div><span class="time-wheel-unit" aria-hidden="true">min</span>
+            </div>
+            <p class="car-leave-by" id="car-leave-by" aria-live="polite"></p>
+          </fieldset>
+
+          <label class="car-reminder-row" for="car-reminder">Remind me
+            <select id="car-reminder">
+              <option value="0">Off</option>
+              <option value="5">5 min before</option>
+              <option value="10" selected>10 min before</option>
+              <option value="15">15 min before</option>
+              <option value="30">30 min before</option>
+            </select>
+          </label>
           <p id="car-warning" class="hint warn" hidden></p>
-          <button type="submit" class="primary">Start timer</button>
-          <p class="hint">Reminders appear only while the app is open; no notifications are sent.</p>
+          <p id="car-form-error" class="setup-error" role="alert" hidden></p>
+          <button type="submit" class="primary car-start">Start timer</button>
+          <p class="hint">Reminders show while the app is open.</p>
         </form>
         <p class="summary car-local-links">One saved timer per account.</p>
       </section>
