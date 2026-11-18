@@ -9,7 +9,7 @@ import { createLocationTracker } from "../lib/location.js";
 import { state } from "../state.js";
 import { eligibleAreas, eligibleMapFeatures, parkingSelection } from "../domain/parking-results.js";
 import { areaPoint } from "../domain/area-list.js";
-import { CAMPUS_CENTER, byuShape, cityShape } from "../domain/map-geometry.js";
+import { CAMPUS_CENTER, byuShape, cityShape, permitCategory } from "../domain/map-geometry.js";
 import { getMapsApiKey, loadGoogleMaps, onMapsAuthFailure } from "../lib/google-maps.js";
 import { initCityLayer, cityPopupHtml, cityFacilitySummary } from "./city-layer.js";
 import { createMap2D } from "./map-2d.js";
@@ -28,7 +28,12 @@ const isDark = () => document.documentElement?.getAttribute("data-theme-active")
 const activeView = () => views[mode];
 // On the All Lots screen the map shows every lot: all BYU sections (not only permit matches) plus Provo city lots.
 const showingAllLots = () => state.currentView === "lots";
-let allLotsFitted = false, drewAllLots = false;
+let allLotsFitted = false, drewAllLots = false, drewColor = null, extraOpenLot = null;
+/** The legend color of the permit chosen on the chip, or null with no permit. */
+function chosenPermitColor() {
+  const permit = (state.permits || []).find((p) => p.permit_id === state.find.permitId);
+  return permit ? permitCategory(permit.permit_code).color : null;
+}
 let selectedKey = null; // the lot the user last tapped; drawn highlighted until they close its card
 // BYU sections that don't match the chosen permit and time: drawn faint so the matching ones stand out.
 let dimFeatures = [], lastFitKey = null, lastFitDest = null;
@@ -312,9 +317,16 @@ function setMapStatus(message, { routine = false } = {}) {
 
 // ---- Drawing -----------------------------------------------------------------------------------
 function drawShapes() {
+  const permitColor = showingAllLots() ? null : chosenPermitColor();
+  const openOutside = extraOpenLot;
   shapes = [
     ...dimFeatures.map((feature) => { const shape = byuShape(feature); return shape && { ...shape, dim: true }; }),
-    ...visibleFeatures.map(byuShape),
+    ...visibleFeatures.map((feature) => {
+      const shape = byuShape(feature);
+      // With a permit chosen, every lot it can use is drawn in that permit's legend color (G: blue, A: gold).
+      // The open lot keeps its own color when the permit doesn't cover it.
+      return shape && permitColor && feature !== openOutside ? { ...shape, color: permitColor } : shape;
+    }),
     ...(cityVisible || showingAllLots() ? cityFacilities.map((feature, index) => cityShape(feature, index)) : []),
   ].filter(Boolean);
   activeView()?.setShapes(shapes);
@@ -542,11 +554,14 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   // The lot whose details are open always stays lit, even when the chosen permit doesn't cover it
   // (opened from All Lots or search), so it doesn't fade out under the faint "not your permit" layer.
   const open = openLotFeature();
-  if (!all && open && !next.includes(open)) next.push(open);
-  // Redraw when the BYU set changes, or when the screen switches in/out of All Lots (city lots follow it).
-  if (all !== drewAllLots || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
+  extraOpenLot = !all && open && !next.includes(open) ? open : null;
+  if (extraOpenLot) next.push(extraOpenLot);
+  const color = all ? null : chosenPermitColor();
+  // Redraw when the BYU set changes, the permit color changes, or the screen switches in/out of All Lots.
+  if (all !== drewAllLots || color !== drewColor || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
     visibleFeatures = next;
     drewAllLots = all;
+    drewColor = color;
     // Every other BYU section stays on the map, faint, so changing permit visibly changes the highlight.
     const shown = new Set(next);
     dimFeatures = all ? [] : features.filter((feature) => !shown.has(feature));

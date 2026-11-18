@@ -4,6 +4,8 @@ import { CAMPUS_CENTER, withAlpha } from "../domain/map-geometry.js";
 import { paddedCamera } from "../domain/map-focus.js";
 
 const ALTITUDE = 1415;
+// Height above the ground the camera aims at when framing a lot (selected lots are drawn 30 m tall).
+const LOOK_AT_HEIGHT = 10;
 // North-up and a moderate tilt, so the middle of the screen is campus itself. The old 65° tilt facing
 // north-north-west put the horizon (north Provo / Orem) in view while campus hid under the drawer.
 const DEFAULT_CAMERA = { tilt: 45, heading: 0, range: 2400 };
@@ -152,20 +154,27 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
     const tilt = Number.isFinite(map.tilt) ? map.tilt : DEFAULT_CAMERA.tilt;
     return Math.min(55, Math.max(45, tilt));
   };
+  // The look-at point sits on the ground under the lot (a little up, mid-way up the raised lot), not at a
+  // fixed sea-level altitude: campus ground is 20-60 m above the old fixed value, so the camera used to
+  // aim under the ground and the lot landed above the middle of the visible map.
+  const groundMode = lib.AltitudeMode?.RELATIVE_TO_GROUND;
   const fly = (camera, durationMillis = 1000) => {
     const endCamera = {
       tilt: DEFAULT_CAMERA.tilt,
       heading: currentHeading(),
       ...camera,
-      center: { ...camera.center, altitude: ALTITUDE },
+      center: { ...camera.center, altitude: groundMode ? LOOK_AT_HEIGHT : ALTITUDE },
+      ...(groundMode ? { altitudeMode: groundMode } : {}),
     };
     lastTarget = endCamera;
     const reduced = win?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     const ms = reduced ? 0 : durationMillis;
-    if (ms > 0 && typeof map.flyCameraTo === "function") map.flyCameraTo({ endCamera, durationMillis: ms });
+    // flyCameraTo with 0 ms jumps straight there and still honours altitudeMode.
+    if (typeof map.flyCameraTo === "function") { if (ms === 0) map.stopCameraAnimation?.(); map.flyCameraTo({ endCamera, durationMillis: ms }); }
     else {
       map.stopCameraAnimation?.();
-      Object.assign(map, endCamera);
+      const { altitudeMode, ...plain } = endCamera;
+      Object.assign(map, { ...plain, center: { ...plain.center, altitude: ALTITUDE } });
     }
   };
 
