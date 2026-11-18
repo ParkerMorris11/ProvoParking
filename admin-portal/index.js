@@ -1,5 +1,5 @@
 // Provo Parking admin site (IS 403 group project, built on our IS 401 sprint project)
-// Team 7: Parker Morris, Spencer, Liam, James Richardson
+// Team 7: Parker Morris, Spencer Warren, Liam Tanaka, James Richardson
 //
 // What this file does:
 //   - Shows a public landing page with a login form.
