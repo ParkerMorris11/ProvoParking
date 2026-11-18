@@ -40,7 +40,9 @@ try{
   await other.getByRole("button",{name:"Start timer",exact:true}).waitFor();
   assert.ok((await other.locator("#car-action-status").innerText()).startsWith("Timer ended."));
   await page.evaluate(()=>window.dispatchEvent(new Event("focus")));
-  await page.locator("#car-fab:not(.running)").waitFor();
+  // With no timer the pill hides itself (the idle car button stays off the map).
+  await page.locator("#car-fab").waitFor({state:"hidden"});
+  assert.equal(await page.locator("#car-fab.running").count(),0);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   assert.deepEqual(errors,[]);
   await page.screenshot({path:`artifacts/account-timer/${width}-${theme}.png`,fullPage:true});
