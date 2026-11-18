@@ -147,11 +147,26 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
 
   const clear = () => { for (const { el } of drawn) el.remove(); drawn = []; };
   let lastTarget = null; // the camera last asked for (the live one is mid-flight for a second)
+  const currentHeading = () => (Number.isFinite(map.heading) ? map.heading : DEFAULT_CAMERA.heading);
+  const frameTilt = () => {
+    const tilt = Number.isFinite(map.tilt) ? map.tilt : DEFAULT_CAMERA.tilt;
+    return Math.min(55, Math.max(45, tilt));
+  };
   const fly = (camera, durationMillis = 1000) => {
-    const endCamera = { tilt: DEFAULT_CAMERA.tilt, heading: DEFAULT_CAMERA.heading, ...camera, center: { ...camera.center, altitude: ALTITUDE } };
+    const endCamera = {
+      tilt: DEFAULT_CAMERA.tilt,
+      heading: currentHeading(),
+      ...camera,
+      center: { ...camera.center, altitude: ALTITUDE },
+    };
     lastTarget = endCamera;
-    if (typeof map.flyCameraTo === "function") map.flyCameraTo({ endCamera, durationMillis });
-    else Object.assign(map, endCamera);
+    const reduced = win?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const ms = reduced ? 0 : durationMillis;
+    if (ms > 0 && typeof map.flyCameraTo === "function") map.flyCameraTo({ endCamera, durationMillis: ms });
+    else {
+      map.stopCameraAnimation?.();
+      Object.assign(map, endCamera);
+    }
   };
 
   return {
@@ -189,15 +204,21 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       map.stopCameraAnimation?.();
       Object.assign(map, { center: { ...CAMPUS_CENTER, altitude: ALTITUDE }, ...DEFAULT_CAMERA });
     },
-    focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level) }); },
+    focus(point, level = 17) { fly({ center: point, range: rangeForZoom(level), heading: currentHeading(), tilt: frameTilt() }); },
     fitBounds(bounds, padding) {
-      if (padding && typeof padding === "object") {
-        // Padding (sheet, chip, buttons): shift the camera so the lots sit in the uncovered part of the map.
-        fly(paddedCamera(bounds, padding, { width: container.clientWidth || 390, height: container.clientHeight || 844, maxRange: 6000 }));
-        return;
-      }
-      const span = Math.max(bounds.north - bounds.south, (bounds.east - bounds.west) * Math.cos(bounds.south * Math.PI / 180));
-      fly({ center: { lat: (bounds.south + bounds.north) / 2, lng: (bounds.west + bounds.east) / 2 }, range: Math.min(4000, Math.max(500, span * 111000 * 1.3)) });
+      const size = {
+        width: container.clientWidth || 390,
+        height: container.clientHeight || 844,
+        maxRange: 6000,
+        tilt: frameTilt(),
+        heading: currentHeading(),
+        fov: Number.isFinite(map.fov) ? map.fov : undefined,
+      };
+      // Padding (sheet, chip, buttons): aim so the lot sits in the uncovered part of the map.
+      const pad = padding && typeof padding === "object" ? padding
+        : typeof padding === "number" ? { top: padding, right: padding, bottom: padding, left: padding }
+        : {};
+      fly(paddedCamera(bounds, pad, size));
     },
     getView() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng }; },
     getCamera() { return { lat: map.center?.lat ?? center.lat, lng: map.center?.lng ?? center.lng, range: map.range, target: lastTarget && { lat: lastTarget.center.lat, lng: lastTarget.center.lng, range: lastTarget.range } }; },
