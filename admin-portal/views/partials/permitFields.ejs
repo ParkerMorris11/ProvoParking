@@ -1,0 +1,21 @@
+<%# The permit form inputs, shared by Add and Edit. "permit" is empty when adding. %>
+<div class="mb-3">
+  <label for="permit_code" class="form-label">Permit code</label>
+  <input type="text" maxlength="10" class="form-control" id="permit_code" name="permit_code" value="<%= permit.permit_code || '' %>" placeholder="e.g. Y" required>
+</div>
+<div class="mb-3">
+  <label for="permit_name" class="form-label">Permit name</label>
+  <input type="text" class="form-control" id="permit_name" name="permit_name" value="<%= permit.permit_name || '' %>" required>
+</div>
+<div class="mb-3">
+  <label for="issuer" class="form-label">Issuer</label>
+  <select class="form-select" id="issuer" name="issuer" required>
+    <% ["BYU", "City of Provo"].forEach((who) => { %>
+      <option value="<%= who %>" <%= permit.issuer === who ? "selected" : "" %>><%= who %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="mb-3">
+  <label for="description" class="form-label">Description</label>
+  <textarea class="form-control" id="description" name="description" rows="3"><%= permit.description || '' %></textarea>
+</div>
