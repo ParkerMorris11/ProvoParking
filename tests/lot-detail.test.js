@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { backTarget, nextOrigin, lotFacts, parseSection } from "../js/domain/lot-facts.js";
+import { backTarget, nextOrigin, lotFacts, parseSection, requiredPermit } from "../js/domain/lot-facts.js";
 import { permitOptions } from "../js/pages/fullscreen-map.js";
 import { permitCategory } from "../js/domain/map-geometry.js";
 import { state } from "../js/state.js";
@@ -37,12 +37,24 @@ test("key facts come from the lot's rules", () => {
   const f = lotFacts({ area, rules, permits, day: 2, destination: { point: { latitude: 40.2525, longitude: -111.65 }, name: "JKB" } });
   assert.deepEqual(f.permits.map(p => p.code), ["A", "Y"]);
   assert.equal(f.permits[1].color, permitCategory("Y").color);
+  assert.equal(f.permit.code, "Y", "no lot letter: the lowest accepted permit is the one you need");
   assert.equal(f.permitHours, "7 AM–4 PM");
   assert.equal(f.closedHours, "1 AM–5 AM");
   assert.match(f.distance.text, /mi|ft/);
   assert.equal(f.distance.from, "from JKB");
   assert.deepEqual(f.section, { index: 3, total: 4, near: "Indoor Practice Facility" });
   assert.equal(parseSection(null), null);
+});
+
+test("lot page names the one permit the lot is for", () => {
+  const permits = ["A", "G", "Y", "YM", "YV", "U"].map((code, i) => ({ permit_id: i + 1, permit_code: code, permit_name: `${code} name` }));
+  const accepted = (codes) => codes.map(code => ({ code, name: `${code} name`, color: permitCategory(code).color }));
+  assert.equal(requiredPermit({ lot_code: "59Y" }, accepted(["A", "G", "Y", "YM", "YV"]), permits).code, "Y");
+  assert.equal(requiredPermit({ lot_code: "30G" }, accepted(["A", "G"]), permits).code, "G");
+  assert.equal(requiredPermit({ lot_code: "12A" }, accepted(["A"]), permits).code, "A");
+  assert.equal(requiredPermit({ lot_code: "7U" }, accepted(["A", "G", "U", "Y", "YM", "YV"]), permits).code, "U");
+  assert.equal(requiredPermit({ lot_code: null }, accepted(["A", "G"]), permits).code, "G");
+  assert.equal(requiredPermit({ lot_code: "2V" }, [], permits), null);
 });
 
 test("lot page has one directions control (next to the heart) and the facts grid", () => {
@@ -64,6 +76,8 @@ test("lot page has one directions control (next to the heart) and the facts grid
   assert.match(html, /class="elig status-pill ok"/);
   assert.match(html, /<dl class="lot-facts">/);
   assert.match(html, /Permit hours<\/dt><dd>7 AM–4 PM/);
+  assert.match(html, /<dt>Permit<\/dt><dd><span class="fact-permit"[^>]*>.*<strong>Y<\/strong> <span class="fact-sub">Undergraduate<\/span>/);
+  assert.doesNotMatch(html, /fact-permits/);
   assert.match(html, /Section<\/dt><dd>3 of 4/);
 });
 
