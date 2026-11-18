@@ -109,3 +109,15 @@
 #area-detail .detail-primary-actions :is(.primary, .secondary) { min-height: 48px; margin: 0; padding-inline: 8px; gap: 6px; width: 100%; box-sizing: border-box; }
 .lot-rules { margin-top: 10px; border-top: 1px solid var(--border); }
 .lot-rules > summary { padding: 12px 0; color: var(--text); font-weight: 650; cursor: pointer; }
+
+/* Laptops: one 24-hour view instead of two. The hour strip, its legend and its scale are dropped, and each
+   period in the list carries its own color bar (green open, blue permit, pink no parking, grey not verified). */
+@media (min-width: 601px) {
+  .detail-schedule :is(.day-strip, .schedule-legend, .day-scale) { display: none; }
+  .detail-schedule .schedule-boundary-note { margin-top: 8px; }
+  .detail-schedule .day-period { position: relative; padding-left: 14px; }
+  .detail-schedule .day-period::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 4px; border-radius: 2px; background: var(--schedule-unknown); }
+  .detail-schedule .day-period.schedule-open::before { background: var(--schedule-open); }
+  .detail-schedule .day-period.schedule-permit::before { background: var(--schedule-permit); }
+  .detail-schedule .day-period.schedule-closed::before { background: var(--schedule-closed); }
+}
