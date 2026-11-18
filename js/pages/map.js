@@ -235,6 +235,14 @@ export function openLot(areaId) {
   if (location.hash === hash) focusAreaOnMap(areaId); else location.hash = hash;
 }
 
+/** The map boundary of the lot whose details page is open (#area/<id>), or null. */
+function openLotFeature() {
+  if (state.currentView !== "area") return null;
+  const id = Number(/^#area\/(\d+)/.exec(globalThis.location?.hash || "")?.[1]);
+  const area = id && state.areas.find((a) => a.area_id === id);
+  return (area && features.find((f) => f.properties?.OBJECTID === area.source_feature_id)) || null;
+}
+
 function shapeForArea(area) {
   const feature = area && features.find((f) => f.properties?.OBJECTID === area.source_feature_id);
   return feature ? shapes.find((s) => s.source.feature === feature) || null : null;
@@ -357,8 +365,9 @@ function syncAllLots() {
   const on = showingAllLots();
   refreshMapEligibility();
   if (!on) {
-    // Leaving All Lots: go back to the normal campus camera (3D tilt and heading included).
-    if (allLotsFitted) { for (const view of Object.values(views)) view.resetCamera(); }
+    // Leaving All Lots: go back to the normal campus camera (3D tilt and heading included),
+    // unless a lot was opened from the list: the router is flying to that lot instead.
+    if (allLotsFitted && state.currentView !== "area") { for (const view of Object.values(views)) view.resetCamera(); }
     allLotsFitted = false;
     return;
   }
@@ -530,6 +539,10 @@ export function refreshMapEligibility(selection = parkingSelection(state.find), 
   if (!maps || !features.length && !visibleFeatures.length) return;
   const all = showingAllLots();
   const next = all ? features : eligibleMapFeatures(features, areas);
+  // The lot whose details are open always stays lit, even when the chosen permit doesn't cover it
+  // (opened from All Lots or search), so it doesn't fade out under the faint "not your permit" layer.
+  const open = openLotFeature();
+  if (!all && open && !next.includes(open)) next.push(open);
   // Redraw when the BYU set changes, or when the screen switches in/out of All Lots (city lots follow it).
   if (all !== drewAllLots || next.length !== visibleFeatures.length || next.some((feature, index) => feature !== visibleFeatures[index])) {
     visibleFeatures = next;

@@ -722,16 +722,20 @@ function buildPermitPopover() {
   // A radio list (not a native <select>) so each permit can show its map color: this list is the map's
   // one permit-color legend. Map colors that no permit covers are listed underneath.
   const pop = el("div", { class: "permit-pop", id: "permit-pop", role: "dialog", "aria-label": "Choose your permit", hidden: "" },
-    `<fieldset class="permit-options"><legend>Your permit</legend><div id="chip-permit" class="permit-option-list"></div></fieldset>` +
+    `<fieldset class="permit-options"><legend>Your permit <span class="permit-count-head"></span></legend><div id="chip-permit" class="permit-option-list"></div></fieldset>` +
     `<p class="permit-pop-other"></p>` +
     `<a class="permit-pop-more" href="#find">Change time or building</a>`);
   const list = pop.querySelector("#chip-permit");
   const fill = () => {
     pop.querySelector(".permit-pop-other").innerHTML = `<span class="visually-hidden">Other map colors: </span>${otherColorsHtml()}`;
+    const when = chipText(state.find, state.permits || []).text.split(" · ").pop();
+    pop.querySelector(".permit-count-head").textContent = `· sections open ${when === "Now" ? "now" : when}`;
+    const counts = permitCounts(state.permits || [], state.areas || [], state.rulesByArea || new Map(), parkingSelection(state.find));
     list.innerHTML = permitOptions(state.permits || []).map(o =>
       `<label class="permit-option" data-permit-code="${escapeHtml(o.code)}"><input type="radio" name="chip-permit" value="${o.value}"${String(state.find.permitId ?? "") === o.value ? " checked" : ""}>` +
       `<span class="permit-swatch${o.value ? "" : " none"}" style="${o.color ? `background:${o.color}` : ""}" aria-hidden="true"></span>` +
-      `<span class="permit-option-text">${o.code ? `<span class="permit-option-code">${escapeHtml(o.code)}</span> ` : ""}${escapeHtml(o.name)}<span class="permit-option-cat">${escapeHtml(o.category)}</span></span></label>`).join("");
+      `<span class="permit-option-text">${o.code ? `<span class="permit-option-code">${escapeHtml(o.code)}</span> ` : ""}${escapeHtml(o.name)}<span class="permit-option-cat">${escapeHtml(o.category)}</span></span>` +
+      `<span class="permit-option-count">${countLabel(counts.get(o.value))}</span></label>`).join("");
   };
   const checked = () => list.querySelector("input:checked") || list.querySelector("input");
   const setOpen = (open) => {
@@ -756,6 +760,20 @@ function buildPermitPopover() {
   pop.querySelector(".permit-pop-more").addEventListener("click", () => setOpen(false));
   return pop;
 }
+
+/**
+ * How many sections each permit row would match at the chosen day and time, keyed by the row's
+ * value ("" = no permit). Same count as the chip's "N matching sections" once that permit is chosen.
+ */
+export function permitCounts(permits, areas, rulesByArea, selection) {
+  const counts = new Map();
+  for (const o of permitOptions(permits)) {
+    counts.set(o.value, eligibleAreas(areas, rulesByArea, { ...selection, permitId: o.value ? Number(o.value) : null }).length);
+  }
+  return counts;
+}
+
+const countLabel = (n) => Number.isInteger(n) ? `${n}<span class="visually-hidden"> ${n === 1 ? "section" : "sections"} now</span>` : "";
 
 /** Rows for the permit list: "no permit" first, then every permit with its map color and category. */
 export function permitOptions(permits) {

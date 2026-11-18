@@ -91,7 +91,8 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
   // A selected lot gets a white outline, a near-solid fill and stands taller than the others.
   function paint({ el, shape }) {
     if (shape.kind !== "polygon") return;
-    if (shape.dim) {
+    const selected = selectedKey != null && shape.key === selectedKey;
+    if (shape.dim && !selected) {
       // BYU sections your permit can't use right now: faint and flat, so the matching ones stand out.
       el.fillColor = withAlpha("#94a3b8", night() ? 0.12 : 0.1);
       el.strokeColor = withAlpha("#94a3b8", 0.5);
@@ -99,7 +100,6 @@ export function createMap3D({ lib, container, center = CAMPUS_CENTER, dark = fal
       if (el.__height !== 1) { el.__height = 1; el.outerCoordinates = shape.rings[0].map(p => ({ ...p, altitude: 1 })); }
       return;
     }
-    const selected = selectedKey != null && shape.key === selectedKey;
     el.fillColor = withAlpha(shape.color, selected ? 0.9 : night() ? 0.66 : 0.45);
     el.strokeColor = selected ? "#ffffff" : shape.color;
     el.strokeWidth = selected ? 6 : night() ? 3 : 2;

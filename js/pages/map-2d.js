@@ -36,11 +36,12 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
   const applyStyle = () => map.setOptions({ mapTypeId: mapStyle, styles: mapStyle === "roadmap" && darkOn ? DARK_STYLE : null });
   let drawn = [], drawnShapes = [], accuracyRing = null, userCursor = null;
   // Selected lot: thick white outline and a stronger fill so it stands out from its neighbours.
-  const paint = (item, shape, selected) => item.setOptions?.(shape.dim
+  // A selected lot is drawn highlighted even when it's a faint "not your permit" section.
+  const paint = (item, shape, selected) => item.setOptions?.(selected
+    ? { strokeColor: "#ffffff", strokeOpacity: 1, strokeWeight: 5, fillColor: shape.color, fillOpacity: shape.kind === "polygon" ? 0.6 : 0.75, zIndex: 900 }
+    : shape.dim
     ? { strokeColor: "#94a3b8", strokeOpacity: 0.5, strokeWeight: 1, fillColor: "#94a3b8", fillOpacity: 0.08, zIndex: -1 }
-    : selected
-    ? { strokeColor: "#ffffff", strokeWeight: 5, fillOpacity: shape.kind === "polygon" ? 0.6 : 0.75, zIndex: 900 }
-    : { strokeColor: shape.color, strokeWeight: 2.4, fillOpacity: shape.kind === "polygon" ? 0.24 : 0.35, zIndex: 0 });
+    : { strokeColor: shape.color, strokeOpacity: 1, strokeWeight: 2.4, fillColor: shape.color, fillOpacity: shape.kind === "polygon" ? 0.24 : 0.35, zIndex: 0 });
 
   class LocationCursor extends maps.OverlayView {
     constructor(point, heading) {
