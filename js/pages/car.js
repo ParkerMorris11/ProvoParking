@@ -420,7 +420,9 @@ export function initCar(options = {}) {
   });
   document.addEventListener("keydown",event=>{
     if(event.key!=="Tab"||$("car-sheet").hidden)return;
-    const nodes=[...$("car-sheet").querySelectorAll('a[href],button,input,select,textarea,[tabindex="0"]')].filter(el=>!el.disabled&&el.getClientRects().length);
+    // Skip controls folded inside a closed <details> (only its summary can take focus).
+    const folded=el=>{const d=el.closest("details:not([open])");return Boolean(d)&&!(el.matches("summary")&&el.parentElement===d);};
+    const nodes=[...$("car-sheet").querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex="0"]')].filter(el=>!el.disabled&&el.getClientRects().length&&!folded(el));
     const first=nodes[0],last=nodes.at(-1);
     if(!first){event.preventDefault();$("h-car").focus();return;}
     if(event.shiftKey&&(document.activeElement===first||!nodes.includes(document.activeElement))){event.preventDefault();last.focus();}
