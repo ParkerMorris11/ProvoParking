@@ -330,7 +330,10 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
      otherwise the end of a long screen (Find's arrival time and "Show parking areas") can't be scrolled into view. */
   .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46vh + 28px); padding-bottom: calc(46dvh + 28px); }
   .fs-shell.sidebar-open .map-rail, .fs-shell.sidebar-open .map-tile { opacity: 0; pointer-events: none; transition: opacity .2s; }
-  .has-fs-home:has(.sidebar-open) .car-fab { visibility: hidden; }
+  /* Sheet raised: the timer pill moves up under the status tile so the countdown stays in view. */
+  .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; top: calc(88px + env(safe-area-inset-top, 0px)); bottom: auto; left: 16px; right: auto; height: 44px; padding: 0 16px; }
+  .has-fs-home:has(.sidebar-open) .car-fab-time { font-size: 1.05rem; }
+  .has-fs-home:has(.home-sheet[data-state="full"]) .car-fab { visibility: hidden; }
   .fs-shell.sidebar-open .map-status { display: none; }
 }
 /* At half height on phones the map stays useful: keep the controls when there is room above the sheet. */
