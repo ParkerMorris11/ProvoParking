@@ -168,3 +168,11 @@ test('map CSS no longer jumps the timer to the top-left when the sheet opens', a
   assert.doesNotMatch(css, /home-sheet\[data-state="full"\]\) \.car-fab \{ visibility: hidden/);
   assert.match(css, /home-sheet\.dragging\) \.car-fab \{ transition: none/);
 });
+
+test('timer pill hides while a menu, popover, or dialog is open', async () => {
+  const css = await readFile(new URL('../css/styles.css', import.meta.url), 'utf8');
+  assert.match(css, /body:has\(#map-settings-menu:not\(\[hidden\]\)\) \.car-fab/);
+  assert.match(css, /body:has\(#permit-pop:not\(\[hidden\]\)\) \.car-fab/);
+  assert.match(css, /body:has\(dialog\[open\]\) \.car-fab/);
+  assert.match(css, /body\.car-sheet-open \.car-fab \{ display: none/);
+});

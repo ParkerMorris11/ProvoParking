@@ -548,6 +548,11 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .car-fab.over, .car-fab.over:hover { background: #b3122b; } /* fixed red: white text keeps 4.5:1 in dark mode too */
 .car-fab.over .car-fab-time { font-size: 1rem; letter-spacing: 0; }
 body.car-sheet-open { overflow: hidden; }
+/* Hide the timer pill while a menu, popover, or dialog is open so it cannot cover them.
+   Closing the menu removes the :has() match and the pill comes back on its own. */
+body:has(#map-settings-menu:not([hidden])) .car-fab,
+body:has(#permit-pop:not([hidden])) .car-fab,
+body:has(dialog[open]) .car-fab,
 body.car-sheet-open .car-fab { display: none; }
 .car-sheet { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
 .car-sheet[hidden] { display: none; }
