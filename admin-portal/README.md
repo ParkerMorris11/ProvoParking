@@ -35,15 +35,18 @@ tables (including passwords) are only reachable from this server.
 
 Open Supabase > SQL Editor, paste `db/setup.sql`, and run it.
 
-## Deploy on Render
+## Deploy on Vercel
 
-1. render.com > New > Web Service > connect the `ProvoParking` GitHub repo.
-2. **Root Directory:** `admin-portal`. **Build command:** `npm install`. **Start command:** `node index.js`.
-3. Add environment variables from `.env.example`, using the values from
-   Supabase > Connect > **Session pooler** (host, port, user, password), plus `DB_SSL=true` and a long random `SESSION_SECRET`.
-4. Deploy, then log in at the Render URL with the grader login below, in a private window.
+Vercel runs `index.js` as an Express function (see `vercel.json`) and serves `public/` as static files.
+Sessions are saved in the `portal.session` table, because Vercel doesn't keep memory between requests.
 
-The free Render plan sleeps when nobody uses it, so the first visit can take about a minute to load.
+1. vercel.com > Add New > Project > import the `ProvoParking` GitHub repo.
+2. **Root Directory:** `admin-portal`. Framework Preset: **Express** (picked up from `vercel.json`).
+3. Environment variables, from Supabase > Connect > **Transaction pooler**:
+   `DB_HOST`, `DB_PORT` (`6543`), `DB_NAME` (`postgres`), `DB_USER` (`postgres.rikekjksneoymybnehpo`),
+   `DB_PASSWORD`, `DB_SSL` (`true`), and a long random `SESSION_SECRET`.
+4. Deploy, then log in at the production URL with the grader login below, in a private window.
+   Preview (branch) URLs may ask for a Vercel login; give graders the production URL.
 
 ## Login for graders
 

@@ -17,9 +17,23 @@ require("dotenv").config();
 // Libraries we installed with npm install
 const express = require("express");
 const session = require("express-session");
+// Saves sessions in our Postgres database instead of server memory.
+// Vercel runs the site as short-lived functions, so memory would forget who is logged in.
+const PgSession = require("connect-pg-simple")(session);
 const path = require("path");
 
 const app = express();
+
+// Database connection settings, read from environment variables (.env locally, Vercel settings online).
+const dbSettings = {
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "postgres",
+  password: process.env.DB_PASSWORD || "admin",
+  database: process.env.DB_NAME || "postgres",
+  port: process.env.DB_PORT || 5432,
+  // Supabase requires an encrypted (SSL) connection; a local Postgres usually doesn't.
+  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+};
 const port = process.env.PORT || 3000;
 
 // Use EJS for our pages, and look for them in the "views" folder.
@@ -33,8 +47,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 
 // Sessions: the server remembers who is logged in; the browser only keeps a random id cookie.
+// The session data is stored in the portal.session table (created automatically the first time).
 app.use(
   session({
+    store: new PgSession({
+      conObject: dbSettings,
+      schemaName: "portal",
+      tableName: "session",
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET || "change-this-secret",
     resave: false, // only save the session when something changes
     saveUninitialized: false, // don't create a cookie until someone logs in
@@ -45,16 +66,9 @@ app.use(
 // searchPath "portal" means knex("users") reads portal.users, so the live app's tables are never touched.
 const knex = require("knex")({
   client: "pg",
-  connection: {
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "admin",
-    database: process.env.DB_NAME || "postgres",
-    port: process.env.DB_PORT || 5432,
-    // Supabase requires an encrypted (SSL) connection; a local Postgres usually doesn't.
-    ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
-  },
+  connection: dbSettings,
   searchPath: ["portal"],
+  pool: { min: 0, max: 3 }, // keep few connections open; Vercel may run several copies of the site
 });
 
 // Make "loggedIn" available to every EJS page so the header can show or hide the buttons.
@@ -322,4 +336,9 @@ function showError(res, err) {
 }
 
 // Start the server last, after all the routes are set up.
-app.listen(port, () => console.log(`Admin site running on http://localhost:${port}`));
+// On Vercel, Vercel starts the app itself using the export below, so we only call listen when run with "node index.js".
+if (require.main === module) {
+  app.listen(port, () => console.log(`Admin site running on http://localhost:${port}`));
+}
+
+module.exports = app;
