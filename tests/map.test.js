@@ -613,3 +613,21 @@ test('2D draws non-matching BYU sections faint, and selecting a lot keeps them f
   assert.equal(polys[0].options.strokeColor, '#94a3b8');
   assert.equal(polys[1].options.strokeColor, '#ffffff', 'the selected match is outlined white');
 });
+
+test('3D view highlights a selected lot even when it is a faint "not your permit" section', () => {
+  const children = [];
+  class El {
+    constructor(options) { Object.assign(this, options); this.options = options; this.listeners = {}; }
+    addEventListener(name, fn) { this.listeners[name] = fn; }
+    append(c) { children.push(c); } remove() {}
+    setAttribute() {}
+  }
+  const lib = { Map3DElement: El, Polygon3DElement: El, Marker3DElement: El, MapMode: { HYBRID: 'HYBRID' } };
+  const view = createMap3D({ lib, container: { append() {} }, onSelect() {} });
+  const shape = { ...byuShape({ properties: { OBJECTID: 7, permit_typ: 'A' }, geometry: { type: 'Polygon', coordinates: [square] } }), dim: true };
+  view.setShapes([shape]);
+  assert.equal(children[0].strokeWidth, 1, 'faint when not selected');
+  view.setSelected(shape.key);
+  assert.equal(children[0].strokeWidth, 6);
+  assert.equal(children[0].strokeColor, '#ffffff');
+});

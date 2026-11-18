@@ -93,3 +93,15 @@ test("only one permit color legend: the separate map legend and help copy are go
   const schedule = readFileSync(new URL("../js/components/rule-schedule.js", import.meta.url), "utf8");
   assert.match(schedule, /schedule-legend/); // the times legend stays
 });
+
+test("permit list counts the sections each permit matches at the chosen time", async () => {
+  const { permitCounts } = await import("../js/pages/fullscreen-map.js");
+  const permits = [{ permit_id: 1, permit_code: "Y", permit_name: "Y Undergraduate" }, { permit_id: 2, permit_code: "A", permit_name: "A Employee" }];
+  const weekday = (id) => ({ permit_id: id, days_of_week: "Mon-Fri", start_time: "07:00", end_time: "15:59" });
+  const areas = [1, 2, 3].map(area_id => ({ area_id, area_name: `Lot ${area_id}`, is_sample_data: false }));
+  const rules = new Map([[1, [weekday(1), weekday(2)]], [2, [weekday(2)]], [3, [weekday(2)]]]);
+  const counts = permitCounts(permits, areas, rules, { day: 3, time: "10:00", live: false });
+  assert.equal(counts.get("1"), 1);
+  assert.equal(counts.get("2"), 3);
+  assert.equal(counts.get(""), 0);
+});
