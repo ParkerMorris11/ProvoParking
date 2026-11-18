@@ -651,3 +651,18 @@ test('3D framing aims at the ground under the lot, not a fixed sea-level height'
   assert.equal(flown.endCamera.altitudeMode, undefined);
   assert.equal(flown.endCamera.center.altitude, 1415);
 });
+
+test('2D lot framing caps the zoom before fitting, so it never zooms in and then pops back out', () => {
+  const { made, lib, maps } = fakeMaps2D();
+  const log = [];
+  let idle = null;
+  maps.event.addListenerOnce = (m, name, fn) => { if (name === 'idle') idle = fn; };
+  const view = createMap2D({ maps, lib, container: {} });
+  const map = made.maps[0];
+  map.fitBounds = () => log.push(['fit', map.options.maxZoom]);
+  map.setZoom = (z) => log.push(['setZoom', z]);
+  view.fitBounds({ south: 40.25, west: -111.65, north: 40.2501, east: -111.6499 }, 24);
+  assert.deepEqual(log, [['fit', 18]], 'maxZoom is 18 while fitting, and no corrective setZoom');
+  idle();
+  assert.equal(map.options.maxZoom, null, 'people can still zoom in further afterwards');
+});

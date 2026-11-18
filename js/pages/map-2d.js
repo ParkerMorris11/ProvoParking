@@ -3,6 +3,8 @@
 //   setDark(on), show(), hide(). Shapes come from domain/map-geometry.js.
 import { CAMPUS_CENTER } from "../domain/map-geometry.js";
 
+const FIT_MAX_ZOOM = 18;
+
 // Dark road map, ported from ProvoParking3D's Map2DView.
 export const DARK_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#111827" }] },
@@ -129,9 +131,12 @@ export function createMap2D({ maps, lib, container, center = CAMPUS_CENTER, zoom
     resetCamera() { map.setCenter(CAMPUS_CENTER); map.setZoom(15); },
     focus(point, level = 17) { map.panTo(point); map.setZoom(level); },
     fitBounds(bounds, padding = 24) {
+      // A single small lot should not zoom in past street level. Capping maxZoom before fitting (instead of
+      // zooming back out once the map settles) stops the "zoom in, then pop out" jump. The cap is lifted
+      // afterwards so people can still pinch in closer themselves.
+      map.setOptions({ maxZoom: FIT_MAX_ZOOM });
       map.fitBounds(bounds, padding);
-      // A single small lot should not zoom in past street level.
-      maps.event.addListenerOnce(map, "idle", () => { if (map.getZoom() > 18) map.setZoom(18); });
+      maps.event.addListenerOnce(map, "idle", () => map.setOptions({ maxZoom: null }));
     },
     getView() { const c = map.getCenter(); return { lat: c.lat(), lng: c.lng() }; },
     getCamera() { const c = map.getCenter(); return { lat: c.lat(), lng: c.lng(), zoom: map.getZoom(), bounds: map.getBounds()?.toJSON?.() }; },
