@@ -1,11 +1,26 @@
-<%# Form to edit one permit, filled in with its current info. %>
+<%# Form to edit one permit, filled in with its current values. %>
 <%- include("partials/header") %>
+
 <h1 class="h3 mb-3">Edit permit</h1>
 <form action="/portal/editPermit/<%= permit.permit_id %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
-  <%- include("partials/permitFields", { permit: permit }) %>
-  <div class="d-flex gap-2">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a class="btn btn-outline-secondary" href="/portal/permits">Cancel</a>
+  <div class="mb-3">
+    <label for="permit_code" class="form-label">Permit code (example: Y)</label>
+    <input type="text" maxlength="10" class="form-control" id="permit_code" name="permit_code" value="<%= permit.permit_code %>" required>
   </div>
+  <div class="mb-3">
+    <label for="permit_name" class="form-label">Permit name</label>
+    <input type="text" class="form-control" id="permit_name" name="permit_name" value="<%= permit.permit_name %>" required>
+  </div>
+  <div class="mb-3">
+    <label for="issuer" class="form-label">Issuer (BYU or City of Provo)</label>
+    <input type="text" class="form-control" id="issuer" name="issuer" value="<%= permit.issuer %>" required>
+  </div>
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" id="description" name="description" rows="3"><%= permit.description %></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a class="btn btn-link" href="/portal/permits">Cancel</a>
 </form>
+
 <%- include("partials/footer") %>
