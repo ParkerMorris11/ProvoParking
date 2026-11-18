@@ -1,5 +1,9 @@
 <%# Simple error page so a database problem doesn't crash the site. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
+<%# message comes from the showError() helper in index.js. %>
 <div class="alert alert-danger"><%= message %></div>
+<%# A way back so the user is never stuck. %>
 <a class="btn btn-secondary" href="/portal">Back to home</a>
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

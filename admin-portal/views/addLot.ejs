@@ -1,7 +1,9 @@
 <%# Form to add a new parking lot. Input names match the lots table columns. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
 <h1 class="h3 mb-3">Add lot</h1>
+<%# method="POST" sends the inputs to router.post("/addLot") in index.js, which reads them with req.body. %>
 <form action="/portal/addLot" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <div class="mb-3">
     <label for="lot_name" class="form-label">Lot name</label>
@@ -18,16 +20,20 @@
   <div class="mb-3">
     <label for="total_spaces" class="form-label">Total spaces (leave blank if unknown)</label>
     <input type="number" min="0" class="form-control" id="total_spaces" name="total_spaces" >
+    <%# A blank box is saved as NULL (unknown) by index.js. %>
   </div>
   <div class="mb-3">
     <label for="is_free" class="form-label">Free to park?</label>
+    <%# A Yes/No dropdown sends "true" or "false", which Postgres saves as a boolean. %>
     <select class="form-select" id="is_free" name="is_free">
       <option value="false">No</option>
       <option value="true">Yes</option>
     </select>
   </div>
+  <%# Save submits the form; Cancel just goes back to the list without saving. %>
   <button type="submit" class="btn btn-primary">Save</button>
   <a class="btn btn-link" href="/portal/lots">Cancel</a>
 </form>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

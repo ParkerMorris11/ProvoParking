@@ -3,14 +3,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- viewport makes the site fit phone screens -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Provo Parking Admin</title>
   <link rel="icon" href="/portal/images/logo.png">
   <!-- Bootstrap gives us a clean, responsive look without writing much CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- Our own small stylesheet (public/styles.css) adds BYU colors -->
   <link rel="stylesheet" href="/portal/styles.css">
 </head>
 <body>
+  <!-- Navbar on every page; the logo links back to the home page -->
   <nav class="navbar navbar-expand navbar-dark brand-bg">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="/portal">
@@ -20,9 +23,11 @@
       <% if (loggedIn) { %>
         <div class="d-flex gap-2 align-items-center">
           <span class="text-white d-none d-md-inline">Hi, <%= userName %></span>
+          <%# Log out goes to router.get("/logout"), which destroys the session and clears the cookie. %>
           <a class="btn btn-outline-light btn-sm" href="/portal/logout">Log out</a>
         </div>
       <% } %>
     </div>
   </nav>
+  <!-- Each page's own content goes inside <main>; footer.ejs closes it -->
   <main class="container py-4">

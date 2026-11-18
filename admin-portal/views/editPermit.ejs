@@ -1,7 +1,10 @@
 <%# Form to edit one permit, filled in with its current values. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
 <h1 class="h3 mb-3">Edit permit</h1>
+<%# The record's id goes in the URL so router.post("/editPermit/:id") knows which row to update (req.params.id). %>
+<%# Each input prints the current value into value="..." so the form starts filled in. %>
 <form action="/portal/editPermit/<%= permit.permit_id %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <div class="mb-3">
     <label for="permit_code" class="form-label">Permit code (example: Y)</label>
@@ -17,10 +20,13 @@
   </div>
   <div class="mb-3">
     <label for="description" class="form-label">Description</label>
+    <%# A textarea has no value attribute, so the current text goes between its tags. %>
     <textarea class="form-control" id="description" name="description" rows="3"><%= permit.description %></textarea>
   </div>
+  <%# Save submits the changes; Cancel goes back to the list without saving. %>
   <button type="submit" class="btn btn-primary">Save</button>
   <a class="btn btn-link" href="/portal/permits">Cancel</a>
 </form>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

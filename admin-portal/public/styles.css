@@ -1,6 +1,18 @@
-/* A few brand touches on top of Bootstrap. */
-.brand-bg { background-color: #002e5d; } /* BYU navy, same as the parking app */
+/* Provo Parking admin site styles.
+   Bootstrap (loaded in views/partials/header.ejs) does most of the layout.
+   This file only adds our brand colors and a few small fixes. */
+
+/* Navbar background: BYU navy, same as the parking app */
+.brand-bg { background-color: #002e5d; }
+
+/* Make Bootstrap's blue "primary" buttons BYU navy instead */
 .btn-primary { background-color: #002e5d; border-color: #002e5d; }
+
+/* A lighter blue when the mouse is over a button or it has keyboard focus */
 .btn-primary:hover, .btn-primary:focus { background-color: #0047ba; border-color: #0047ba; }
+
+/* Keep the landing page image from getting too tall on big screens */
 .hero-img { max-height: 520px; }
-.brand-logo { background: #fff; border-radius: 50%; padding: 2px; } /* keeps the navy logo visible on the navy bar */
+
+/* White circle behind the logo so the navy logo shows up on the navy navbar */
+.brand-logo { background: #fff; border-radius: 50%; padding: 2px; }

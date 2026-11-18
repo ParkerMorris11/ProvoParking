@@ -1,7 +1,10 @@
 <%# Form to edit one user, filled in with their current info. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
 <h1 class="h3 mb-3">Edit user</h1>
+<%# The email goes in the URL so router.post("/editUser/:email") knows which user to update. %>
+<%# encodeURIComponent makes the @ sign safe in a URL. %>
 <form action="/portal/editUser/<%= encodeURIComponent(user.user_email) %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <div class="mb-3">
     <label for="user_email" class="form-label">Email</label>
@@ -10,6 +13,7 @@
   </div>
   <div class="mb-3">
     <label for="user_password" class="form-label">New password</label>
+    <%# Left empty on purpose: we never send the old password back to the browser. %>
     <input type="password" class="form-control" id="user_password" name="user_password" aria-describedby="pw-help">
     <div id="pw-help" class="form-text">Leave blank to keep the current password.</div>
   </div>
@@ -21,10 +25,12 @@
     <label for="last_name" class="form-label">Last name</label>
     <input type="text" class="form-control" id="last_name" name="last_name" value="<%= user.last_name %>" required>
   </div>
+  <%# Save submits the changes; Cancel goes back to the list without saving. %>
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary">Save changes</button>
     <a class="btn btn-outline-secondary" href="/portal/users">Cancel</a>
   </div>
 </form>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>
