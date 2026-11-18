@@ -823,7 +823,8 @@ function build() {
   // Other screens get a bar with a round close button that returns to the map home.
   // (Each screen's own h2 is its title, so the bar only holds the button.)
   routeBar = el("div", { class: "route-bar", hidden: "" });
-  routeClose = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
+  // Phones show a round X; laptops show a "← Back to map" text link instead (same link, CSS picks the look).
+  routeClose = el("a", { href: "#areas", class: "route-close", "aria-label": "Back to map" }, `<span class="route-close-x">${CLOSE_ICON}</span><span class="route-back-text" aria-hidden="true">← Back to map</span>`);
   routeBar.append(routeClose);
   routeClose.addEventListener("click", (e) => {
     if (state.currentView !== "areas" || !resultsMode) return;
