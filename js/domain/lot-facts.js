@@ -29,6 +29,27 @@ export function nextOrigin(previous, { from, to, results = false }) {
   return { view: from, results: from === "areas" && Boolean(results) };
 }
 
+// When a lot's code has no letter (sample or city areas), the lowest permit that works here is the one you need.
+const LEAST_PRIVILEGED = ["U", "V", "Y", "G", "A"];
+
+/**
+ * The one permit a lot is designated for. BYU lot codes end in it ("59Y" -> Y, "30G" -> G);
+ * otherwise the lowest permit the rules accept. Higher permits (an A in a Y lot) still work but aren't listed.
+ */
+export function requiredPermit(area, accepted, permits = []) {
+  const letter = /^\d*([A-Z]+)$/.exec(String(area?.lot_code || "").toUpperCase())?.[1];
+  if (letter) {
+    const match = accepted.find(p => p.code === letter) || toFact(permits.find(p => p.permit_code === letter));
+    if (match) return match;
+  }
+  const rank = (code) => { const i = LEAST_PRIVILEGED.indexOf(code); return i < 0 ? LEAST_PRIVILEGED.length : i; };
+  return [...accepted].sort((a, b) => rank(a.code) - rank(b.code) || a.code.localeCompare(b.code))[0] || null;
+}
+
+function toFact(p) {
+  return p ? { code: p.permit_code, name: p.permit_name, color: permitCategory(p.permit_code).color } : null;
+}
+
 const join = (ranges) => ranges.map(s => `${scheduleTime(s.start)}–${scheduleTime(s.end)}`).join(", ");
 
 /** "Part 3 of 4 · near Indoor Practice Facility" -> { index: 3, total: 4, near: "Indoor Practice Facility" }. */
@@ -39,15 +60,15 @@ export function parseSection(note) {
 
 /**
  * Key facts for the top of a lot page, read from the same rules as the 24-hour schedule:
- * which permits the rules accept, permit hours and no-parking hours for the chosen day, the distance
+ * which permits the rules accept (and the one the lot is designated for), permit hours and no-parking hours for the chosen day, the distance
  * from the chosen building (or the person's location), and which section of the lot this is.
  */
 export function lotFacts({ area, rules = [], permits = [], day, position = null, destination = null }) {
   const ids = [...new Set(rules.filter(r => r.permit_id != null).map(r => r.permit_id))];
   const accepted = ids
     .map(id => permits.find(p => p.permit_id === id))
+    .map(toFact)
     .filter(Boolean)
-    .map(p => ({ code: p.permit_code, name: p.permit_name, color: permitCategory(p.permit_code).color }))
     .sort((a, b) => a.code.localeCompare(b.code));
   const segments = dailyRuleSchedule(rules, day);
   const permitHours = segments.filter(s => s.kind === "permit");
@@ -58,6 +79,7 @@ export function lotFacts({ area, rules = [], permits = [], day, position = null,
   else if (point && validLocation(position)) distance = { text: formatDistance(metersBetween(position, point)), from: "from you" };
   return {
     permits: accepted,
+    permit: requiredPermit(area, accepted, permits),
     permitHours: permitHours.length ? join(permitHours) : null,
     closedHours: closedHours.length ? join(closedHours) : null,
     distance,

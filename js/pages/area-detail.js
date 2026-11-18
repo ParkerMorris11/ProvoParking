@@ -30,9 +30,10 @@ const PILL_ICON = { ok: "✓", limit: "!", "no-permit": "✕", blocked: "✕", p
 
 function factsHtml(facts, area) {
   const rows = [];
-  if (facts.permits.length) {
-    rows.push(["Permits", `<ul class="fact-permits" aria-label="Permits accepted here">${facts.permits.map(p =>
-      `<li title="${escapeHtml(p.name)}"><span class="permit-swatch" style="background:${p.color}" aria-hidden="true"></span>${escapeHtml(p.code)}</li>`).join("")}</ul>`]);
+  // Just the one permit this lot is for (e.g. Y in a Y lot); higher permits that also work are not listed.
+  if (facts.permit) {
+    const p = facts.permit, name = String(p.name || "").replace(new RegExp(`^${p.code}\\s+`), "");
+    rows.push(["Permit", `<span class="fact-permit" title="${escapeHtml(p.name || p.code)}"><span class="permit-swatch" style="background:${p.color}" aria-hidden="true"></span><strong>${escapeHtml(p.code)}</strong>${name && name !== p.code ? ` <span class="fact-sub">${escapeHtml(name)}</span>` : ""}</span>`]);
   }
   rows.push(["Permit hours", facts.permitHours ? escapeHtml(facts.permitHours) : "None listed this day"]);
   if (facts.closedHours) rows.push(["No parking", escapeHtml(facts.closedHours)]);
