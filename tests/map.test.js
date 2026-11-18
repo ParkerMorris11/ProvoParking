@@ -631,3 +631,23 @@ test('3D view highlights a selected lot even when it is a faint "not your permit
   assert.equal(children[0].strokeWidth, 6);
   assert.equal(children[0].strokeColor, '#ffffff');
 });
+
+test('3D framing aims at the ground under the lot, not a fixed sea-level height', () => {
+  class El {
+    constructor(options) { Object.assign(this, options); this.listeners = {}; }
+    addEventListener(name, fn) { this.listeners[name] = fn; }
+    append() {} remove() {} setAttribute() {}
+  }
+  let flown = null;
+  El.prototype.flyCameraTo = function (opts) { flown = opts; };
+  const lib = { Map3DElement: El, Polygon3DElement: El, Marker3DElement: El, MapMode: { HYBRID: 'HYBRID' }, AltitudeMode: { RELATIVE_TO_GROUND: 'RELATIVE_TO_GROUND' } };
+  const view = createMap3D({ lib, container: { append() {} }, onSelect() {} });
+  view.fitBounds({ south: 40.2500, west: -111.6500, north: 40.2510, east: -111.6488 }, { top: 84, right: 72, bottom: 32, left: 24 });
+  assert.equal(flown.endCamera.altitudeMode, 'RELATIVE_TO_GROUND');
+  assert.ok(flown.endCamera.center.altitude < 50, 'aims near the ground');
+  // Without the ground mode (older API), it keeps the absolute campus altitude.
+  const old = { ...lib }; delete old.AltitudeMode;
+  createMap3D({ lib: old, container: { append() {} }, onSelect() {} }).fitBounds({ south: 40.25, west: -111.65, north: 40.251, east: -111.649 });
+  assert.equal(flown.endCamera.altitudeMode, undefined);
+  assert.equal(flown.endCamera.center.altitude, 1415);
+});
