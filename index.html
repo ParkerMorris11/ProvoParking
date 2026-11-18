@@ -32,37 +32,39 @@
 <body>
   <!-- Loading screens: #loading shows while the app starts; #auth-loading while an account signs in.
        Both share the .splash look (css/styles.css). #auth-loading also keeps the sign-in form inert. -->
-  <section id="loading" class="splash" aria-label="Provo Parking is loading">
+  <section id="loading" class="splash" aria-label="Provo Parking is loading" aria-busy="true">
     <div class="splash-content">
       <div class="splash-mark" aria-hidden="true">
-        <span class="splash-ripple"></span>
-        <span class="splash-ripple"></span>
+        <span class="splash-pulse"></span>
         <span class="splash-tile">
           <img class="splash-pin" src="css/images/y-parking-logo.png" width="224" height="301" alt="" decoding="async">
-          <span class="splash-shadow"></span>
         </span>
       </div>
       <p class="splash-brand" aria-hidden="true">Provo Parking</p>
-      <p class="splash-title" role="status">Getting the lots ready…</p>
+      <p class="splash-title" role="status" aria-live="polite" aria-atomic="true">Getting lots ready</p>
       <div class="splash-bar" aria-hidden="true"><span></span></div>
-      <p class="splash-caption">Finding where your permit lets you park.</p>
+    </div>
+    <div class="splash-sheet" aria-hidden="true">
+      <span class="splash-handle"></span>
+      <span class="splash-skel splash-skel-wide"></span>
+      <span class="splash-skel-row">
+        <span class="splash-skel"></span>
+        <span class="splash-skel"></span>
+      </span>
     </div>
   </section>
 
-  <section id="auth-loading" class="splash" aria-labelledby="auth-loading-message" tabindex="-1" hidden>
+  <section id="auth-loading" class="splash" aria-labelledby="auth-loading-message" aria-busy="true" tabindex="-1" hidden>
     <div class="splash-content">
       <div class="splash-mark" aria-hidden="true">
-        <span class="splash-ripple"></span>
-        <span class="splash-ripple"></span>
+        <span class="splash-pulse"></span>
         <span class="splash-tile">
           <img class="splash-pin" src="css/images/y-parking-logo.png" width="224" height="301" alt="" decoding="async">
-          <span class="splash-shadow"></span>
         </span>
       </div>
       <p class="splash-brand" aria-hidden="true">Provo Parking</p>
-      <p id="auth-loading-message" class="splash-title" role="status" aria-live="polite" aria-atomic="true">Signing you in…</p>
+      <p id="auth-loading-message" class="splash-title" role="status" aria-live="polite" aria-atomic="true">Signing you in</p>
       <div class="splash-bar" aria-hidden="true"><span></span></div>
-      <p class="splash-caption">Your next spot is just ahead.</p>
     </div>
   </section>
 
