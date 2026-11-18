@@ -4,6 +4,7 @@ import { searchMapCatalog, QUICK_FILTERS, isNaturalLanguageTripQuery } from "../
 import { cityFacilityNames } from "./city-layer.js";
 import { loadRecents, rememberRecent } from "../lib/recent-searches.js";
 import { findExactLot } from "../domain/lot-search.js";
+import { formatResultsTitle } from "../domain/mobile-sheet.js";
 // The map stays mounted while existing screens move through one floating drawer.
 // Layout follows the familiar phone-maps pattern: a frosted bottom sheet whose top row is the search bar
 // and account button, a Suggestions card (parked car, favorites, nearby legal lots), a row of round
@@ -23,10 +24,11 @@ const STATES = ["peek", "half", "full"];
 const DESKTOP = "(min-width: 601px)";
 const STYLESHEET = "css/fullscreen-map.css";
 
-let view, sheet, handle, head, body, chip, suggestions, routeBar, ready = false, applyPermit = () => false;
+let view, sheet, handle, head, body, chip, suggestions, routeBar, routeClose, ready = false, applyPermit = () => false;
+let resultsTitle, resultsTrip, resultsCredit, filterButton, filters, areaList;
 // True while the Areas screen shows the results of a search (Find, AI fill, a building): the sheet then leads with
 // the ranked list (Best pick first). Suggestions and Browse come back when you close the results.
-let resultsMode = false, lastRoute = null;
+let resultsMode = false, lastRoute = null, tripSource;
 
 const isDesktop = () => Boolean(window.matchMedia?.(DESKTOP).matches);
 
@@ -89,7 +91,8 @@ function buildAccountMenu(button) {
 }
 
 // ---- Sheet position -------------------------------------------------------------------------
-const HANDLE_LABELS = { peek: "Show suggestions", half: "Expand the parking sheet", full: "Lower the parking sheet" };
+const HANDLE_LABELS = { peek: "Expand parking menu", half: "Expand the parking sheet", full: "Lower the parking sheet" };
+const ROUTE_LABELS = { find: "Find parking", areas: "Areas", lots: "All lots", area: "Lot details", favorites: "Favorites", help: "Help" };
 export function setSheet(next) {
   if (!sheet || !STATES.includes(next)) return;
   sheet.dataset.state = next;
@@ -98,7 +101,10 @@ export function setSheet(next) {
   document.querySelector(".fs-shell")?.classList.toggle("sidebar-open", open);
   document.querySelectorAll("[data-sidebar-toggle]").forEach(button => button.setAttribute("aria-expanded", String(open)));
   handle.setAttribute("aria-expanded", String(open));
-  handle.setAttribute("aria-label", HANDLE_LABELS[next]);
+  const home = sheet.dataset.route === "areas" && !resultsMode;
+  const label = !home && next === "peek" ? ROUTE_LABELS[sheet.dataset.route] : "";
+  handle.setAttribute("aria-label", label ? `Show ${label}` : HANDLE_LABELS[next]);
+  handle.querySelector(".sheet-peek-label").textContent = label || "";
   // Collapsed content stays out of the keyboard focus order on every screen size.
   body.toggleAttribute("inert", !open);
 }
@@ -162,6 +168,15 @@ function updateChrome() {
     routeBar.hidden = home;
     suggestions.hidden = !home;
     if (home) renderSuggestions(selection, sheetTitle(count, hasPermit, selection));
+    if (resultsMode && state.currentView === "areas") {
+      const destination = (state.destinations || []).find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
+      const title = formatResultsTitle(Number(areaList.dataset.matchCount ?? count), destination?.name);
+      if (resultsTitle.textContent !== title) resultsTitle.textContent = title;
+      const summary = `${permitCode ? `${permitCode} permit` : "No permit selected"} · ${selection.live ? "Now" : `${DAY_NAMES[selection.day].slice(0, 3)} ${fmtTime(selection.time)}`}`;
+      if (resultsTrip.textContent !== summary) resultsTrip.textContent = summary;
+      const credit = tripSource === "gemini" ? "Read by Gemini" : tripSource === "local" ? "Read without AI" : "";
+      if (resultsCredit.textContent !== credit) resultsCredit.textContent = credit;
+    }
   } catch (err) {
     console.error("[fullscreen-map] could not update the map chrome", err);
   }
@@ -235,18 +250,29 @@ function renderSuggestions(selection, emptyText) {
 function observeRenders() {
   const watch = ["areas-summary", "areas-count", "area-list"].map(id => document.getElementById(id)).filter(Boolean);
   const observer = new MutationObserver(updateChrome);
-  for (const node of watch) observer.observe(node, { childList: true, characterData: true, subtree: true });
+  for (const node of watch) observer.observe(node, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["data-match-count"] });
+}
+
+function positionRouteClose(name) {
+  let host = routeBar;
+  if (!isDesktop()) {
+    if (name === "areas" && resultsMode) host = resultsTitle.closest(".results-heading");
+    if (name === "favorites") host = document.querySelector(".favorites-heading");
+    if (name === "find") host = document.querySelector(".find-heading");
+  }
+  host.append(routeClose);
+  routeBar.toggleAttribute("data-inline-close", host !== routeBar);
 }
 
 // ---- Dragging --------------------------------------------------------------------------------
 function initDrag() {
   let startY = null, startOffset = 0, moved = false, height = 0;
   const offsetFor = (s) => {
-    const peek = head.offsetTop + head.offsetHeight;
-    return s === "full" ? 0 : s === "half" ? height * 0.45 : height - peek;
+    const peek = Number.parseFloat(getComputedStyle(sheet).getPropertyValue("--peek"));
+    return s === "full" ? 0 : s === "half" ? height * 0.46 : height - peek;
   };
   const grab = (e) => {
-    if (isDesktop() || e.button > 0 || (e.currentTarget === head && e.target.closest("input, button, a"))) return;
+    if (isDesktop() || sheet.dataset.route === "favorites" || e.button > 0 || (e.currentTarget === head && e.target.closest("input, button, a"))) return;
     height = sheet.offsetHeight;
     startY = e.clientY;
     startOffset = offsetFor(sheet.dataset.state);
@@ -741,10 +767,11 @@ function build() {
   const search = buildSearch();
   sheet = el("div", { class: "home-sheet", id: "home-sheet", "data-state": "peek" });
   handle = el("button", { type: "button", class: "sheet-handle", id: "sheet-handle", "aria-expanded": "false", "aria-controls": "sheet-body", "aria-label": HANDLE_LABELS.peek },
-    `<span class="sheet-grip" aria-hidden="true"></span>`);
+    `<span class="sheet-grip" aria-hidden="true"></span><span class="sheet-peek-label" aria-hidden="true"></span>`);
   head = el("div", { class: "sheet-head" });
   const searchRow = el("div", { class: "sheet-search-row" });
-  if (search) { searchRow.append(search.bar, search.account); head.append(searchRow, search.status, search.results); }
+  const shortcuts = el("nav", { class: "mobile-shortcuts", "aria-label": "Parking shortcuts" });
+  if (search) { searchRow.append(search.bar, search.account); head.append(searchRow, shortcuts, search.status, search.results); }
   body = el("div", { class: "sheet-body", id: "sheet-body", role: "region", "aria-label": "Parking list" });
 
   // Fine print: the long notes fold into one line with an (i) button. Same text, same ids.
@@ -787,18 +814,54 @@ function build() {
   const navTitle = el("h2", { class: "sheet-section-title", id: "nav-heading" }, "Browse");
   nav.setAttribute("aria-labelledby", "nav-heading");
   nav.prepend(navTitle);
+  for (const [original, label] of [[document.getElementById("tab-find"), "Find"], [document.getElementById("tab-areas"), "Browse lots"], [document.getElementById("tab-favorites"), "Favorites"], [carTab, "My Car"]]) {
+    const button = el("button", { type: "button", class: "tab mobile-shortcut", "data-view": original.dataset.view });
+    button.append(original.querySelector("svg").cloneNode(true), document.createTextNode(label));
+    if (original.dataset.view === "areas") button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      document.dispatchEvent(new CustomEvent("parking:show-results"));
+      if (location.hash === "#areas") window.dispatchEvent(new HashChangeEvent("hashchange")); else location.hash = "#areas";
+    });
+    shortcuts.append(button);
+  }
 
   // Other screens get a bar with a round close button that returns to the map home.
   // (Each screen's own h2 is its title, so the bar only holds the button.)
   routeBar = el("div", { class: "route-bar", hidden: "" });
-  const close = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
-  routeBar.append(close);
-  close.addEventListener("click", (e) => {
+  routeClose = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
+  routeBar.append(routeClose);
+  routeClose.addEventListener("click", (e) => {
     if (state.currentView !== "areas" || !resultsMode) return;
     e.preventDefault();
     resultsMode = false;
     syncFullscreenRoute("areas");
+    const browse = shortcuts.querySelector('[data-view="areas"]');
+    (isDesktop() ? document.getElementById("map-search-text") : browse)?.focus({ preventScroll: true });
   });
+
+  // Reuse the actual sort and search controls; the compact header only changes their presentation.
+  const headingText = heading.querySelector("#results-heading");
+  headingText.firstChild.replaceWith(el("span", { class: "result-title-wide" }, headingText.textContent));
+  resultsTitle = el("span", { class: "result-title-mobile" });
+  headingText.append(resultsTitle);
+  heading.prepend(el("span", { class: "mobile-areas-label" }, "Areas"));
+  areaList = document.getElementById("area-list");
+  const tripRow = el("div", { class: "mobile-results-trip" });
+  resultsTrip = el("span");
+  resultsCredit = el("span", { class: "mobile-results-credit", role: "status" });
+  filterButton = el("button", { type: "button", class: "mobile-filter-toggle", "aria-expanded": "false", "aria-controls": "area-filters" }, "Filters");
+  tripRow.append(resultsTrip, filterButton, resultsCredit);
+  heading.after(tripRow);
+  const listTools = results.querySelector(".list-tools");
+  filters = el("div", { class: "area-filters", id: "area-filters" });
+  listTools.before(filters);
+  filters.append(listTools, el("p", { class: "mobile-filter-links" },
+    '<a href="#find">Edit trip</a><a href="#lots">All lots</a><button type="button" class="link-button" data-near-me>Near me</button>'));
+  filterButton.addEventListener("click", () => {
+    const open = filters.toggleAttribute("data-open");
+    filterButton.setAttribute("aria-expanded", String(open));
+  });
+  window.matchMedia?.(DESKTOP).addEventListener?.("change", () => positionRouteClose(lastRoute));
 
   const accountBar = document.querySelector(".account-bar");
   const accountSection = el("section", { class: "drawer-account", "aria-label": "Your account" });
@@ -842,7 +905,7 @@ function build() {
   });
   // The map must redraw whenever the map's box changes size (rotation, phone ↔ laptop, sheet).
   if (typeof ResizeObserver === "function") new ResizeObserver(() => refreshMap()).observe(mapEl);
-  window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet(isDesktop() ? "half" : "peek"));
+  window.matchMedia?.(DESKTOP).addEventListener?.("change", () => setSheet(!isDesktop() && lastRoute === "areas" && !resultsMode ? "peek" : "half"));
 
   // Errors are written inside the sheet. On phones with the sheet lowered nobody would see them, so a
   // load failure or a location error raises the sheet and scrolls the message into view.
@@ -872,14 +935,21 @@ export function nextResultsMode({ name, showResults = false, current = false, la
 }
 
 // Called after the router selects a screen. The canvas is a sibling of the drawer, never a route.
-export function syncFullscreenRoute(name, { showResults = false } = {}) {
+export function syncFullscreenRoute(name, { showResults = false, source, keepPosition = false } = {}) {
   if (!sheet) return false;
   // Phones open on the map with the sheet lowered; laptops keep the sidebar open.
   // Back from a lot's page returns to the same results; the close button on the results goes home.
+  if (keepPosition && name === lastRoute) return true;
   resultsMode = nextResultsMode({ name, showResults, current: resultsMode, lastRoute });
+  if (!resultsMode || showResults) tripSource = showResults ? source : undefined;
   lastRoute = name;
   sheet.dataset.route = name;
   sheet.toggleAttribute("data-results", name === "areas" && resultsMode);
+  positionRouteClose(name);
+  if (showResults || !resultsMode) {
+    filters.removeAttribute("data-open");
+    filterButton.setAttribute("aria-expanded", "false");
+  }
   setSheet(name === "areas" && !isDesktop() && !resultsMode ? "peek" : "half");
   if ((name === "area" || resultsMode) && body) body.scrollTop = 0;
   updateChrome();

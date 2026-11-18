@@ -97,7 +97,9 @@ function initPlainLanguage({ choosePermit }) {
       if (next.autoSearch) {
         // Permit and building are both known: show the matching lots right away. The button stays for edits.
         const findForm = $("find-form");
+        findForm.dataset.searchSource = fallback ? "local" : "gemini";
         if (findForm.requestSubmit) findForm.requestSubmit(); else findForm.dispatchEvent(new Event("submit", { cancelable: true }));
+        delete findForm.dataset.searchSource;
         say(`${lead} ${result.summary}`);
       } else {
         const need = next.missing.length ? `Add your ${next.missing.join(" and ")}, then Show parking areas.` : "Check the fields, then Show parking areas.";
@@ -191,6 +193,8 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
   $("find-destination")?.addEventListener("change", () => { state.find.customDestination = null; });
   $("find-form").addEventListener("submit", (e) => {
     e.preventDefault();
+    const source = e.currentTarget.dataset.searchSource;
+    delete e.currentTarget.dataset.searchSource;
     const id = Number($("permit-select").value);
     if (!id) { setStatus("Choose your permit first so we can check which areas you can use.", true); $("permit-select").focus(); return; }
     // The building is optional here; the timer form still requires it before a timer can start.
@@ -205,7 +209,7 @@ export function initFind({ go, choosePermit = () => {}, refresh = () => {} }) {
     const selection = parkingSelection(state.find);
     setStatus(`Showing eligible areas ${selection.live ? "right now" : "for your planned arrival"}: ${DAY_NAMES[selection.day]} at ${fmtTime(selection.time)} (Provo time).`);
     $("nl-status").textContent = "";
-    document.dispatchEvent(new CustomEvent("parking:show-results"));
+    document.dispatchEvent(new CustomEvent("parking:show-results", { detail: { source } }));
     go("#areas");
   });
 }

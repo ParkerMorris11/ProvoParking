@@ -102,3 +102,10 @@
 #area-detail .detail-primary-actions { margin: 16px 0 6px; }
 #area-detail .detail-primary-actions .primary { width: 100%; }
 .detail-avail { margin: 0 0 18px; color: var(--muted); font-size: .76rem; line-height: 1.45; font-weight: 500; }
+
+.mobile-detail-label { display: none; }
+.detail-distance { margin: 5px 0 0; color: var(--muted); font-size: .85rem; }
+#area-detail .detail-primary-actions { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+#area-detail .detail-primary-actions :is(.primary, .secondary) { min-height: 48px; padding-inline: 8px; gap: 6px; width: 100%; }
+.lot-rules { margin-top: 10px; border-top: 1px solid var(--border); }
+.lot-rules > summary { padding: 12px 0; color: var(--text); font-weight: 650; cursor: pointer; }

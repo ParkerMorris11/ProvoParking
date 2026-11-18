@@ -23,6 +23,7 @@ function timerStatus(message,isError=false) {
 // ---------- the sheet itself ----------
 let returnHash = "#areas"; // where Close takes the user back to
 let returnFocus = null;
+export function rememberCarPage(hash) { returnHash = hash || "#areas"; }
 
 export function openCarSheet() {
   const sheet = $("car-sheet");
@@ -48,7 +49,8 @@ export function closeCarSheet() {
   stopTimer();
   const target = returnFocus;
   returnFocus = null;
-  if (target && target.isConnected) target.focus({ preventScroll: true });
+  if (target?.isConnected) target.focus({ preventScroll: true });
+  else document.querySelector?.(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
   return true;
 }
 
@@ -68,10 +70,16 @@ export function renderCar(selectedAreaId = "") {
   warningKey = "";
   // Guests see why they need an account before filling the form, not after pressing Start.
   if (guest) guest.hidden = Boolean(session || state.user);
+  const title = $("h-car");
+  if (title) title.textContent = !session && !state.user ? "Sign in to start a timer" : "My Car";
   if (!session && !state.user && guest) {
     form.hidden = true;
     active.hidden = true;
     active.innerHTML = "";
+    const selectedLot = state.areas.some(area => String(area.area_id) === String(selectedAreaId) && !area.is_sample_data);
+    const copy = $("car-guest-copy"), back = $("car-guest-back");
+    if (copy) copy.textContent = selectedLot ? "Your lot will be here when you return." : "Sign in to save where you park and set a timer.";
+    if (back) back.textContent = selectedLot && /^#area\//.test(returnHash) ? "Back to lot" : "Keep browsing";
     return;
   }
   if (session) {
@@ -114,7 +122,21 @@ export function renderCar(selectedAreaId = "") {
     const selected = String(selectedAreaId);
     sel.value = choices.some((area) => String(area.area_id) === selected) ? selected : "";
     renderDestinationOptions("car-destination", state.find.destinationId);
+    updateCarTripSummary();
+    if (form.dataset) form.toggleAttribute("data-edit-trip", !form.hasAttribute("data-has-trip"));
     updateCarWarning();
+  }
+}
+
+function updateCarTripSummary() {
+  const summary = $("car-trip-summary"), form = $("car-form");
+  if (!summary?.dataset || !form.dataset) return;
+  const area = state.areas.find(a => a.area_id === Number($("car-area").value));
+  const destination = state.destinations.find(d => d.destination_id === Number($("car-destination").value));
+  form.toggleAttribute("data-has-trip", Boolean(area && destination));
+  if (area && destination) {
+    $("car-trip-lot").textContent = area.area_name;
+    $("car-trip-destination").textContent = destination.name;
   }
 }
 
@@ -298,7 +320,18 @@ export function initCar(options = {}) {
     if (!/^#car(\/|$)/.test(location.hash)) returnHash = location.hash || "#areas";
   });
   returnHash = /^#car(\/|$)/.test(location.hash) ? "#areas" : (location.hash || "#areas");
-  $("car-area").addEventListener("change", updateCarWarning);
+  $("car-area").addEventListener("change", () => { updateCarTripSummary(); updateCarWarning(); });
+  $("car-destination").addEventListener("change", updateCarTripSummary);
+  $("car-guest-back")?.addEventListener("click", requestClose);
+  $("car-trip-edit")?.addEventListener("click", () => {
+    $("car-form").dataset.editTrip = "";
+    $("car-area").focus();
+  });
+  $("car-trip-done")?.addEventListener("click", () => {
+    if (!$("car-area").reportValidity() || !$("car-destination").reportValidity()) return;
+    delete $("car-form").dataset.editTrip;
+    $("car-trip-edit").focus();
+  });
   $("car-minutes").addEventListener("change", updateCarWarning);
   document.addEventListener("submit", (e) => {
     if (e.target.id === "car-form") onStart(e);
@@ -308,6 +341,5 @@ export function initCar(options = {}) {
     const end = e.target.closest("#end-session");
     if (end) onEnd(end);
     if (e.target.closest("#car-fab")) returnFocus = $("car-fab");
-    if (e.target.closest("#car-signup")) requireAccount("Create a free account to start a parking timer and save where you parked.");
   });
 }

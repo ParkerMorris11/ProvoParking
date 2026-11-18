@@ -17,7 +17,8 @@ import { renderFind, initFind, applyPermitChoice, resetFindSearch } from "./page
 import { toggleFavorite, initFavorites, resetFavoriteEditor } from "./pages/favorites.js";
 import { initCar, stopTimer, closeCarSheet } from "./pages/car.js";
 import { initCarFab, renderCarFab } from "./components/car-fab.js";
-import { initAuth, showAuth, hideAuth, requireAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
+import { initAuth, showAuth, hideAuth, requireAccount, requireFavoriteAccount, clearPasswords, askForPermits, setSignInOptions } from "./pages/auth.js";
+import { takeParkingReturn } from "./lib/parking-return.js";
 import { describeAuthError } from "./domain/account.js";
 import { createParkingClock } from "./lib/parking-clock.js";
 import { initFullscreenMap, resetMapSearch } from "./pages/fullscreen-map.js";
@@ -75,11 +76,19 @@ async function enterApp(note, version = state.authVersion) {
   try {
     if (!await loadData() || version !== state.authVersion) return;
     choosePermit();
+    const parkingReturn = state.user ? takeParkingReturn() : null;
+    const returnLot = parkingReturn?.hash.split("/")[1];
+    if (parkingReturn) {
+      if (state.destinations.some(d => d.destination_id === parkingReturn.destinationId)) state.find.destinationId = parkingReturn.destinationId;
+      // Restore the underlying lot first so closing My Car still takes the driver back there.
+      history.replaceState(null, "", returnLot ? `#area/${returnLot}` : "#areas");
+    }
     renderFind();
     const who = state.user ? `Signed in as ${state.user.displayName}.` : "Browsing as a guest. Create an account to save favorites and start a parking timer.";
     setStatus(`${note ? `${note} ` : ""}${state.areas.filter((area) => !area.is_sample_data).length} verified parking areas loaded. ${who}`);
     hideAuth();
     showView();
+    if (parkingReturn?.hash.startsWith("#car")) go(parkingReturn.hash);
     parkingClock.update();
   } catch (err) {
     if (version !== state.authVersion) return;
@@ -125,6 +134,11 @@ async function onSignedIn(session, note = "", { isNew = false } = {}) {
 }
 
 async function onGuest() {
+  const parkingReturn = takeParkingReturn();
+  if (parkingReturn?.hash.startsWith("#car")) {
+    const returnLot = parkingReturn.hash.split("/")[1];
+    history.replaceState(null, "", returnLot ? `#area/${returnLot}` : "#areas");
+  }
   clearPersonalData();
   state.user = null;
   state.guest = true;
@@ -190,7 +204,7 @@ async function signOut() {
 document.addEventListener("click", (e) => {
   const heart = e.target.closest(".heart");
   if (heart) {
-    if (!requireAccount("Create a free account to save favorite parking areas.")) return;
+    if (!requireFavoriteAccount(Number(heart.dataset.areaId))) return;
     return toggleFavorite(Number(heart.dataset.areaId), heart, { renderViews });
   }
   if (e.target.closest(".home-link")) { e.preventDefault(); return go("#areas"); } // title → Areas

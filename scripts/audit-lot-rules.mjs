@@ -19,6 +19,8 @@ try {
     const errors=[];
     page.on("pageerror",err=>errors.push(err.message));
     await page.goto(base+"?theme="+theme);
+    // Phones start with the lot's "Parking rules" section collapsed; open it like a person would.
+    if(!(await page.locator("details.lot-rules").evaluate(el=>el.open))) await page.getByText("Parking rules",{exact:true}).click();
     await page.getByRole("heading",{name:"24-hour parking rules"}).waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Overflow at ${width}px ${theme}`);
     assert.equal(await page.locator(".day-period").count(),5);

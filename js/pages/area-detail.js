@@ -63,22 +63,23 @@ export function renderAreaDetail(areaId) {
   const selection = parkingSelection(state.find);
   const tow = state.towById.get(area.tow_company_id);
   const rules = rulesFor(area.area_id);
-  if (dayChoice.areaId !== areaId) dayChoice = { areaId, day: null };
+  const sameLot = dayChoice.areaId === areaId;
+  if (!sameLot) dayChoice = { areaId, day: null };
   const day = dayChoice.day ?? selection.day;
   const controls = [...(box.querySelectorAll?.("a,button,select,summary") || [])];
   const focusIndex = controls.indexOf(document.activeElement);
-  const disclosures = [...(box.querySelectorAll?.("details") || [])].map((el) => el.open);
+  const disclosures = sameLot ? [...(box.querySelectorAll?.("details") || [])].map((el) => el.open) : [];
   const byu = area.operator === "BYU" && !area.is_sample_data;
   const building = (state.destinations || []).find(d => d.destination_id === state.find.destinationId) || state.find.customDestination;
   const facts = lotFacts({ area, rules, permits: state.permits || [], day: selection.day, position: state.lastPosition, destination: building ? { point: areaPoint(building), name: building.name } : null });
   box.innerHTML = `
     <div class="detail-head">
       <div class="detail-title">
+        <p class="mobile-detail-label">Lot details</p>
         <h2 id="h-area" tabindex="-1">${escapeHtml(area.area_name)}</h2>
         <p class="meta">${escapeHtml(area.operator)}${area.lot_code ? ` · Lot ${escapeHtml(area.lot_code)}` : ""}</p>
       </div>
       <div class="detail-head-actions">
-        ${quickDirections ? `<a class="icon-btn directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)" title="Directions in ${quickDirections.app}">${DIRECTIONS_ICON}</a>` : ""}
         ${heartHtml(area)}
       </div>
     </div>
@@ -86,8 +87,15 @@ export function renderAreaDetail(areaId) {
       <p class="elig status-pill ${ev.kind}"><span class="pill-icon" aria-hidden="true">${PILL_ICON[ev.kind] || ev.icon}</span><span>${escapeHtml(ev.text)}</span></p>
       <p class="when">${DAY_NAMES[selection.day]} ${fmtTime(selection.time)} · Provo time</p>
     </div>
+    ${facts.distance ? `<p class="detail-distance">${escapeHtml(facts.distance.text)} ${escapeHtml(facts.distance.from)}</p>` : ""}
+    ${!area.is_sample_data ? `<div class="actions detail-primary-actions">
+      ${quickDirections ? `<a class="primary directions-btn" href="${escapeHtml(quickDirections.url)}" target="_blank" rel="noopener" aria-label="Directions to ${escapeHtml(area.area_name)} in ${quickDirections.app} (opens in a new tab)">${DIRECTIONS_ICON} Directions</a>` : ""}
+      <a class="secondary" href="#car/${area.area_id}">Park here</a>
+    </div>` : ""}
+
+    <details class="lot-rules">
+    <summary>Parking rules</summary>
     ${factsHtml(facts, area)}
-    ${!area.is_sample_data ? `<div class="actions detail-primary-actions"><a class="primary" href="#car/${area.area_id}">Park here · set timer</a></div>` : ""}
     <p class="avail detail-avail ${avail.cls}">${avail.text}.${area.availability_updated_at ? ` Updated ${timeAgo(area.availability_updated_at)}.` : ""} A valid permit does not guarantee an open space.</p>
 
     <section class="detail-schedule" aria-labelledby="detail-schedule-title">
@@ -105,12 +113,14 @@ export function renderAreaDetail(areaId) {
     </details>
 
     <details class="detail-source-disclosure"><summary>Towing information</summary>
-    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p></details>`;
+    <p>${tow ? `${escapeHtml(tow.company_name)}: <a href="tel:${escapeHtml(tow.phone.replace(/[^\d+]/g, ""))}">${escapeHtml(tow.phone)}</a>${tow.is_sample_data ? " (sample number, not real)" : ""}` : "No tow company on file."}</p></details>
+    </details>`;
   $("rules-day").addEventListener("change", (event) => {
     dayChoice.day = Number(event.target.value);
     renderAreaDetail(areaId);
     $("rules-day").focus({ preventScroll: true });
   });
-  [...(box.querySelectorAll?.("details") || [])].forEach((el, index) => { el.open = disclosures[index] ?? false; });
+  const desktop = globalThis.window?.matchMedia?.("(min-width: 601px)").matches;
+  [...(box.querySelectorAll?.("details") || [])].forEach((el, index) => { el.open = disclosures[index] ?? Boolean(desktop && index === 0); });
   if (focusIndex >= 0) box.querySelectorAll("a,button,select,summary")[focusIndex]?.focus({ preventScroll: true });
 }

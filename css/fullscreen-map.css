@@ -429,3 +429,155 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .home-sheet[data-route="area"] .route-bar { height: 0; padding: 0; background: none; box-shadow: none; pointer-events: none; }
 .home-sheet[data-route="area"] .route-close { pointer-events: auto; margin-top: 8px; box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
 .home-sheet[data-route="area"] #area-back { margin-top: 8px; margin-right: 56px; }
+
+/* On phones, each sheet has one job: shortcuts on the map, rows on Areas, actions on Lot Details. */
+:where(.mobile-shortcuts, .result-title-mobile, .mobile-areas-label, .mobile-results-trip, .mobile-filter-links) { display: none; }
+@media (max-width: 600px) {
+  .fs-shell { --peek: 130px; }
+  .fs-shell .home-sheet {
+    --glass-strong: var(--parking-sheet-surface);
+    --glass-filter: blur(20px) saturate(1.1);
+    --search-fill: var(--parking-sheet-control);
+    border-color: var(--parking-sheet-line);
+    box-shadow: 0 -4px 24px rgb(0 0 0 / .16);
+  }
+  .fs-shell .sheet-head { padding: 0 14px 6px; }
+  .fs-shell .sheet-grip { width: 34px; margin-left: -17px; }
+  .fs-shell .map-search { padding-left: 12px; }
+  .fs-shell .map-search-go { background: transparent; color: var(--brand-ink); box-shadow: none; }
+  .fs-shell .map-account.has-initials { background: var(--search-fill); color: var(--text); }
+  .fs-shell #app-nav { display: none; }
+  .home-sheet[data-route="areas"]:not([data-results]) .mobile-shortcuts {
+    display: grid;
+    grid-template-columns: .82fr 1.15fr 1.04fr .9fr;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .fs-shell .mobile-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 3px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: clamp(.72rem, 3.2vw, .86rem);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .fs-shell .mobile-shortcut[data-view="areas"] { color: var(--brand-ink); }
+  .fs-shell .mobile-shortcut:where(:hover, :focus-visible) { background: var(--search-fill); }
+  .fs-shell .mobile-shortcut svg { width: 17px; height: 17px; flex: none; }
+  .fs-shell .home-sheet[data-route="areas"]:not([data-results]) #view-areas > :not(.areas-heading) { display: none; }
+  .fs-shell .home-sheet[data-route="areas"]:not([data-results]) .areas-heading .permit-link { display: none; }
+  .fs-shell .sg-list li:nth-child(n+2) { display: none; }
+  .has-fs-home .car-fab { bottom: calc(164px + env(safe-area-inset-bottom, 0px)); }
+
+  /* One close control in the destination's actual heading, not a blank strip above it. */
+  .fs-shell .route-bar[data-inline-close], .fs-shell .home-sheet[data-route="area"] .route-bar { display: none; }
+  .fs-shell .home-sheet[data-route="area"] #area-back { display: inline-flex; align-items: center; min-height: 44px; margin: 0; }
+  .fs-shell .home-sheet[data-results] .sheet-head,
+  .fs-shell .home-sheet[data-route="find"] .sheet-head,
+  .fs-shell .home-sheet[data-route="area"] .sheet-head,
+  .fs-shell .home-sheet[data-route="favorites"] .sheet-head { display: none; }
+  .fs-shell :is(.find-heading, .favorites-heading) {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin: 0 0 6px;
+  }
+  .fs-shell :is(.find-heading, .favorites-heading) h2 { margin: 0; }
+  .fs-shell .route-close { flex: none; background: transparent; }
+  .fs-shell .sheet-body > :is(#view-find, #view-area, #view-areas, #view-favorites) { margin-top: 0; }
+
+  .home-sheet[data-results] #view-areas .areas-heading { margin: 0; }
+  .home-sheet[data-results] #view-areas .areas-heading .permit-link { display: none; }
+  .home-sheet[data-results] .results-heading {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 6px; margin: 0; padding-bottom: 6px;
+  }
+  .home-sheet[data-results] .mobile-areas-label {
+    display: block; grid-column: 1; color: var(--muted); font-size: .75rem; font-weight: 650;
+  }
+  .home-sheet[data-results] .results-heading > div { min-width: 0; grid-column: 1; }
+  .home-sheet[data-results] .results-heading .route-close { grid-column: 2; grid-row: 1 / span 2; }
+  .home-sheet[data-results] .results-heading h3 { margin: 0; font-size: 1.2rem; letter-spacing: -.025em; overflow-wrap: anywhere; }
+  .home-sheet[data-results] .result-title-mobile { display: inline; }
+  .home-sheet[data-results] .result-title-wide { display: none; }
+  .home-sheet[data-results] .mobile-results-trip {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 6px;
+    border-top: 1px solid var(--parking-sheet-line); color: var(--ink-2); font-size: .86rem;
+  }
+  .mobile-results-credit { grid-column: 1 / -1; font-size: .75rem; color: var(--muted); padding-bottom: 8px; }
+  .mobile-results-credit:empty { display: none; }
+  .mobile-filter-toggle {
+    min-height: 44px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent;
+    color: var(--brand-ink); font: inherit; font-weight: 650; cursor: pointer;
+  }
+  .mobile-filter-toggle[aria-expanded="true"] { background: var(--search-fill); }
+  .home-sheet[data-results] .area-filters:not([data-open]) { display: none; }
+  .home-sheet[data-results] .area-filters { padding-bottom: 8px; }
+  .home-sheet[data-results] .mobile-filter-links { display: flex; gap: 12px; flex-wrap: wrap; margin: 0; }
+  .mobile-filter-links :is(a, button) { display: inline-flex; align-items: center; min-height: 44px; margin: 0; color: var(--brand-ink); font-size: .85rem; }
+  .home-sheet[data-results] #areas-count:not(:empty) { margin: 0 0 10px; font-size: .8rem; }
+  .home-sheet[data-results] .area-filters:not([data-open]) ~ #areas-count:not(:empty):has(+ .cards:not(:empty)) {
+    position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap;
+  }
+  .home-sheet[data-results] #area-list { gap: 0; margin: 0; }
+  .fs-shell .home-sheet[data-results] #area-list .card {
+    position: relative; padding: 10px 34px 10px 4px; min-height: 68px; border-radius: 0;
+    border: 0; border-top: 1px solid var(--parking-sheet-line); background: transparent; box-shadow: none;
+  }
+  .home-sheet[data-results] #area-list .card :is(.heart, .best-reason, .avail, .card-links > :not([href^="#area/"])) { display: none; }
+  .home-sheet[data-results] #area-list .card .best-pick { margin: 0; padding: 0; background: transparent; color: var(--brand-ink); font-size: .73rem; }
+  .home-sheet[data-results] #area-list .card h3 { font-size: 1rem; margin-bottom: 2px; }
+  .home-sheet[data-results] #area-list .card :is(.meta, .elig, .lot-subtitle) { margin: 0; padding: 0; font-size: .78rem; background: transparent; border: 0; }
+  .home-sheet[data-results] #area-list .card-links > a {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 12px; font-size: 0; text-decoration: none;
+  }
+  .home-sheet[data-results] #area-list .card-links > a::after {
+    content: ""; width: 7px; height: 7px; transform: rotate(-45deg);
+    border: solid var(--muted); border-width: 0 1.5px 1.5px 0;
+  }
+
+  .fs-shell .home-sheet[data-route="favorites"] {
+    top: auto; max-height: 58vh; max-height: 58dvh; --sheet-y: 0px; transform: none; clip-path: none;
+  }
+  .fs-shell .home-sheet[data-route="favorites"] .sheet-handle { display: none; }
+  .fs-shell .home-sheet[data-route="favorites"] .sheet-body { padding: 10px 14px 14px; }
+  .fs-shell .home-sheet[data-route="favorites"]:has(.fav-more[open]) { min-height: min(235px, 57dvh); }
+  .fs-shell #view-favorites .fav-list { background: transparent; border: 0; }
+  .fs-shell #view-favorites .fav-row { border-top: 1px solid var(--parking-sheet-line); }
+  .fs-shell #view-favorites .fav-pin { background: transparent; border: 0; width: 26px; }
+
+  .fs-shell .home-sheet[data-route="area"] .detail-title .meta { display: none; }
+  .fs-shell .home-sheet[data-route="area"] .mobile-detail-label { display: block; margin: 0 0 2px; color: var(--muted); font-size: .75rem; font-weight: 650; }
+  .fs-shell .home-sheet[data-route="area"] .detail-status-row { margin: 8px 0 0; }
+  .fs-shell .home-sheet[data-route="area"] .status-pill { padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .fs-shell .home-sheet[data-route="area"] .detail-primary-actions { margin: 12px 0 4px; }
+  .fs-shell .home-sheet[data-route="area"] .detail-primary-actions :is(a, svg) { flex: none; }
+  .fs-shell .home-sheet[data-route="area"] .lot-rules > summary { min-height: 44px; padding: 10px 0; }
+  body:has(#parking-account-prompt[open]) .fs-shell .home-sheet,
+  body.car-sheet-open .fs-shell .home-sheet { visibility: hidden; }
+}
+
+.sheet-peek-label:empty { display: none; }
+@media (max-width: 600px) {
+  /* Keep a real scroll viewport at the half snap; the clipped-off lower half isn't interactive. */
+  .fs-shell .home-sheet[data-state="half"]:is([data-results], [data-route="area"], [data-route="find"]) .sheet-body {
+    max-height: calc(54% - 24px);
+    padding-bottom: 14px;
+  }
+  .fs-shell .home-sheet[data-state="half"]:is([data-route="help"], [data-route="lots"]) .sheet-body {
+    max-height: calc(54% - 84px);
+    padding-bottom: 14px;
+  }
+  .fs-shell .home-sheet:is([data-results], :not([data-route="areas"])) { --peek: 64px; }
+  .fs-shell .home-sheet[data-state="peek"]:is([data-results], :not([data-route="areas"])) .sheet-handle {
+    height: 64px; padding: 15px 14px 0; text-align: center; font-weight: 650;
+  }
+  .fs-shell .home-sheet[data-state="peek"]:is([data-results], :not([data-route="areas"])) .sheet-head { display: none; }
+  .fs-shell .home-sheet[data-results] #area-list .card.is-best { outline: none; }
+}

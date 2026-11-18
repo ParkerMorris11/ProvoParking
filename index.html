@@ -221,7 +221,7 @@
 
     <!-- Screen 1: Find — pick permit + arrival time -->
     <section id="view-find" aria-labelledby="h-find" hidden>
-      <h2 id="h-find" tabindex="-1">Find parking</h2>
+      <div class="find-heading"><h2 id="h-find" tabindex="-1">Find parking</h2></div>
       <!-- Plain-language / voice search: fills the form below for review. It never submits for you. -->
       <form id="nl-form" class="panel nl-find" aria-labelledby="nl-label">
         <label id="nl-label" for="nl-text">Tell us about your trip</label>
@@ -362,7 +362,7 @@
 
     <!-- Screen 4: Favorites -->
     <section id="view-favorites" aria-labelledby="h-favorites" hidden>
-      <h2 id="h-favorites" tabindex="-1">Favorites</h2>
+      <div class="favorites-heading"><h2 id="h-favorites" tabindex="-1">Favorites</h2></div>
       <ul id="fav-list" class="fav-list"></ul>
       <div id="fav-empty" class="empty empty-state" hidden>
         <svg class="empty-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="24" cy="24" r="23" fill="currentColor" opacity=".12"/><path d="M24 35s-10-6.2-10-13.3A5.7 5.7 0 0 1 24 18a5.7 5.7 0 0 1 10 3.7C34 28.8 24 35 24 35Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>
@@ -462,6 +462,14 @@
       </div>
     </dialog>
 
+    <dialog id="parking-account-prompt" class="parking-account-prompt" aria-labelledby="parking-account-title">
+      <h2 id="parking-account-title">Sign in to save this lot</h2>
+      <p>Keep your favorite lots in one place.</p>
+      <button type="button" class="primary" data-parking-google hidden>Continue with Google</button>
+      <button type="button" class="secondary" data-parking-email>Continue with email</button>
+      <p data-parking-auth-error role="alert" hidden></p>
+      <form method="dialog"><button class="link-button" data-parking-back autofocus>Back to lot</button></form>
+    </dialog>
     <div id="car-sheet" class="car-sheet" hidden>
       <div class="car-sheet-backdrop" id="car-backdrop"></div>
       <!-- Parking timer sheet: opened from the My Car tab or Park here (#car) -->
@@ -469,31 +477,39 @@
         <button type="button" class="car-sheet-close" id="car-close" aria-label="Close parking timer"><span aria-hidden="true">×</span></button>
         <h2 id="h-car" tabindex="-1">Parking timer</h2>
         <p id="car-action-status" class="hint" role="status" hidden></p>
-        <div id="car-guest" class="panel car-guest" hidden>
-          <h3>Start a parking timer</h3>
-          <p class="hint">Sign in to save your parking location and start a timer.</p>
-          <button type="button" class="primary" id="car-signup">Create a free account</button>
+        <div id="car-guest" class="car-guest" hidden>
+          <p class="hint" id="car-guest-copy">Sign in to save where you park and set a timer.</p>
+          <button type="button" class="primary" data-parking-google hidden>Continue with Google</button>
+          <button type="button" class="secondary" id="car-signup" data-parking-email>Continue with email</button>
+          <p data-parking-auth-error role="alert" hidden></p>
+          <button type="button" class="link-button" id="car-guest-back">Back to map</button>
         </div>
         <div id="car-active" hidden></div>
         <form id="car-form" class="panel" hidden>
-          <label for="car-area">Where are you parking?</label>
-          <select id="car-area" required></select>
-          <label for="car-destination">Destination building</label>
-          <select id="car-destination" required></select>
-
-          <div class="row">
-            <div>
-              <label for="car-minutes">How long?</label>
+          <div id="car-trip-summary" class="car-trip-summary">
+            <div><strong id="car-trip-lot"></strong><span id="car-trip-destination"></span></div>
+            <button type="button" class="secondary" id="car-trip-edit" aria-controls="car-trip-fields">Edit</button>
+          </div>
+          <div id="car-trip-fields">
+            <label for="car-area">Where are you parking?</label>
+            <select id="car-area" required></select>
+            <label for="car-destination">Destination building</label>
+            <select id="car-destination" required></select>
+            <button type="button" class="secondary" id="car-trip-done">Done</button>
+          </div>
+          <div class="car-duration">
+              <label for="car-minutes">Duration</label>
               <select id="car-minutes">
                 <option value="30">30 minutes</option>
-                <option value="60">1 hour</option>
+                <option value="60" selected>1 hour</option>
                 <option value="120">2 hours</option>
                 <option value="180">3 hours</option>
-                <option value="240" selected>4 hours</option>
+                <option value="240">4 hours</option>
                 <option value="480">8 hours</option>
               </select>
-            </div>
-            <div>
+          </div>
+          <details id="car-options" class="car-options">
+              <summary>Timer options</summary>
               <label for="car-reminder">Remind me</label>
               <select id="car-reminder">
                 <option value="5">5 min before</option>
@@ -501,13 +517,11 @@
                 <option value="15">15 min before</option>
                 <option value="30">30 min before</option>
               </select>
-            </div>
-          </div>
-
-          <label for="car-note">Where is your car? (optional)</label>
-          <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
+              <label for="car-note">Where is your car? (optional)</label>
+              <input type="text" id="car-note" maxlength="200" placeholder="e.g. Row C near the stairs">
+          </details>
           <p id="car-warning" class="hint warn" hidden></p>
-          <button type="submit" class="primary">Start parking timer</button>
+          <button type="submit" class="primary">Start timer</button>
           <p class="hint">Reminders appear only while the app is open; no notifications are sent.</p>
         </form>
         <p class="summary car-local-links">One saved timer per account.</p>
