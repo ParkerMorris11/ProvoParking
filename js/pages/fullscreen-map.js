@@ -814,14 +814,9 @@ function build() {
   const navTitle = el("h2", { class: "sheet-section-title", id: "nav-heading" }, "Browse");
   nav.setAttribute("aria-labelledby", "nav-heading");
   nav.prepend(navTitle);
-  for (const [original, label] of [[document.getElementById("tab-find"), "Find"], [document.getElementById("tab-areas"), "Browse lots"], [document.getElementById("tab-favorites"), "Favorites"], [carTab, "My Car"]]) {
+  for (const [original, label] of [[document.getElementById("tab-find"), "Find"], [document.getElementById("tab-lots"), "Browse lots"], [document.getElementById("tab-favorites"), "Favorites"], [carTab, "My Car"]]) {
     const button = el("button", { type: "button", class: "tab mobile-shortcut", "data-view": original.dataset.view });
     button.append(original.querySelector("svg").cloneNode(true), document.createTextNode(label));
-    if (original.dataset.view === "areas") button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      document.dispatchEvent(new CustomEvent("parking:show-results"));
-      if (location.hash === "#areas") window.dispatchEvent(new HashChangeEvent("hashchange")); else location.hash = "#areas";
-    });
     shortcuts.append(button);
   }
 
@@ -835,7 +830,7 @@ function build() {
     e.preventDefault();
     resultsMode = false;
     syncFullscreenRoute("areas");
-    const browse = shortcuts.querySelector('[data-view="areas"]');
+    const browse = shortcuts.querySelector('[data-view="lots"]');
     (isDesktop() ? document.getElementById("map-search-text") : browse)?.focus({ preventScroll: true });
   });
 
