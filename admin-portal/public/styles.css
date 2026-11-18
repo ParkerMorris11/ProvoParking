@@ -1,0 +1,6 @@
+/* A few brand touches on top of Bootstrap. */
+.brand-bg { background-color: #002e5d; } /* BYU navy, same as the parking app */
+.btn-primary { background-color: #002e5d; border-color: #002e5d; }
+.btn-primary:hover, .btn-primary:focus { background-color: #0047ba; border-color: #0047ba; }
+.hero-img { max-height: 520px; }
+.brand-logo { background: #fff; border-radius: 50%; padding: 2px; } /* keeps the navy logo visible on the navy bar */

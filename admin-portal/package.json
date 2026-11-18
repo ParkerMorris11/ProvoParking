@@ -1,0 +1,24 @@
+{
+  "name": "provo-parking-admin",
+  "version": "1.0.0",
+  "description": "Provo Parking admin site (IS 403): Node, Express, EJS, Knex, Postgres",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^18.0.10",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "knex": "^3.3.0",
+    "pg": "^8.23.1"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "private": true
+}

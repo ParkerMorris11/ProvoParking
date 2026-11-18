@@ -1,0 +1,38 @@
+<%# Maintain Users: list every user with Edit and Delete buttons, plus Add. %>
+<%- include("partials/header") %>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Users</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/portal">Home</a>
+    <a class="btn btn-primary" href="/portal/addUser">Add user</a>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr><th>Email</th><th>First name</th><th>Last name</th><th></th></tr>
+    </thead>
+    <tbody>
+      <% users.forEach((user) => { %>
+        <tr>
+          <td><%= user.user_email %></td>
+          <td><%= user.first_name %></td>
+          <td><%= user.last_name %></td>
+          <td class="text-end text-nowrap">
+            <%# encodeURIComponent makes the email safe to put in a URL (the @ sign). %>
+            <a class="btn btn-sm btn-outline-primary" href="/portal/editUser/<%= encodeURIComponent(user.user_email) %>">Edit</a>
+            <%# Delete is a POST form; confirm() lets the user cancel. %>
+            <form action="/portal/deleteUser/<%= encodeURIComponent(user.user_email) %>" method="POST" class="d-inline"
+                  onsubmit="return confirm('Delete this user?');">
+              <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("partials/footer") %>

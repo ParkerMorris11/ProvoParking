@@ -1,0 +1,52 @@
+<%# Landing page: what the app is, a picture of it, and the login form (or the maintain buttons). %>
+<%- include("partials/header") %>
+
+<div class="row align-items-center g-4">
+  <div class="col-lg-7">
+    <h1 class="display-5 fw-bold">Find BYU and Provo parking that fits your permit.</h1>
+    <p class="lead">
+      Provo Parking shows drivers which lots they can legally use right now, how long they can stay,
+      and how to get to the lot entrance. This admin site is where our team keeps the lot, permit,
+      and user records up to date.
+    </p>
+
+    <% if (loggedIn) { %>
+      <%# Logged in: show one maintain button per table. %>
+      <h2 class="h4 mt-4">What would you like to update?</h2>
+      <div class="d-grid gap-3 d-sm-flex mt-3">
+        <a class="btn btn-primary btn-lg" href="/portal/users">Maintain Users</a>
+        <a class="btn btn-primary btn-lg" href="/portal/lots">Maintain Lots</a>
+        <a class="btn btn-primary btn-lg" href="/portal/permits">Maintain Permits</a>
+      </div>
+    <% } else { %>
+      <%# Not logged in: show the login form. The input names match the users table columns. %>
+      <div class="card shadow-sm mt-4" style="max-width: 420px;">
+        <div class="card-body">
+          <h2 class="h5 card-title">Admin login</h2>
+          <% if (error) { %>
+            <div class="alert alert-danger py-2" role="alert"><%= error %></div>
+          <% } %>
+          <form action="/portal/login" method="POST">
+            <div class="mb-3">
+              <label for="user_email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="user_email" name="user_email" required>
+            </div>
+            <div class="mb-3">
+              <label for="user_password" class="form-label">Password</label>
+              <input type="password" class="form-control" id="user_password" name="user_password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Log in</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="col-lg-5 text-center">
+    <%# At least one image on the landing page: our Provo Parking banner. %>
+    <img src="/portal/images/provo-parking-banner.png" class="img-fluid rounded shadow hero-img"
+         alt="Provo Parking logo with the tagline: find BYU and Provo parking that fits your permit">
+  </div>
+</div>
+
+<%- include("partials/footer") %>

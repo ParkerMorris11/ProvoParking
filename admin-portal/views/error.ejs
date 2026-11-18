@@ -1,0 +1,5 @@
+<%# Simple error page so a database problem doesn't crash the site. %>
+<%- include("partials/header") %>
+<div class="alert alert-danger"><%= message %></div>
+<a class="btn btn-secondary" href="/portal">Back to home</a>
+<%- include("partials/footer") %>

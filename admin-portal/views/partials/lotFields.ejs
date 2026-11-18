@@ -1,0 +1,27 @@
+<%# The lot form inputs, shared by Add and Edit. "lot" is empty when adding. %>
+<div class="mb-3">
+  <label for="lot_name" class="form-label">Lot name</label>
+  <input type="text" class="form-control" id="lot_name" name="lot_name" value="<%= lot.lot_name || '' %>" required>
+</div>
+<div class="mb-3">
+  <label for="lot_code" class="form-label">Lot code</label>
+  <input type="text" class="form-control" id="lot_code" name="lot_code" value="<%= lot.lot_code || '' %>" placeholder="e.g. 59Y">
+</div>
+<div class="mb-3">
+  <label for="operator" class="form-label">Operator</label>
+  <select class="form-select" id="operator" name="operator" required>
+    <% ["BYU", "City of Provo", "Private"].forEach((op) => { %>
+      <option value="<%= op %>" <%= lot.operator === op ? "selected" : "" %>><%= op %></option>
+    <% }) %>
+  </select>
+</div>
+<div class="mb-3">
+  <label for="total_spaces" class="form-label">Total spaces</label>
+  <input type="number" min="0" class="form-control" id="total_spaces" name="total_spaces"
+         value="<%= lot.total_spaces ?? '' %>" aria-describedby="spaces-help">
+  <div id="spaces-help" class="form-text">Leave blank if unknown.</div>
+</div>
+<div class="form-check mb-3">
+  <input type="checkbox" class="form-check-input" id="is_free" name="is_free" <%= lot.is_free ? "checked" : "" %>>
+  <label for="is_free" class="form-check-label">Free to park</label>
+</div>

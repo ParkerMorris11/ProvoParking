@@ -1,0 +1,12 @@
+{
+  "installCommand": "npm install --prefix admin-portal",
+  "functions": {
+    "api/portal.js": {
+      "includeFiles": "admin-portal/{views,public}/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/portal", "destination": "/api/portal" },
+    { "source": "/portal/:path*", "destination": "/api/portal" }
+  ]
+}

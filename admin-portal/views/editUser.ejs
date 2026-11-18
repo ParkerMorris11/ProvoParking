@@ -1,0 +1,30 @@
+<%# Form to edit one user, filled in with their current info. %>
+<%- include("partials/header") %>
+
+<h1 class="h3 mb-3">Edit user</h1>
+<form action="/portal/editUser/<%= encodeURIComponent(user.user_email) %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
+  <div class="mb-3">
+    <label for="user_email" class="form-label">Email</label>
+    <%# The email is the primary key, so it is shown but can't be changed. %>
+    <input type="email" class="form-control" id="user_email" value="<%= user.user_email %>" disabled>
+  </div>
+  <div class="mb-3">
+    <label for="user_password" class="form-label">New password</label>
+    <input type="password" class="form-control" id="user_password" name="user_password" aria-describedby="pw-help">
+    <div id="pw-help" class="form-text">Leave blank to keep the current password.</div>
+  </div>
+  <div class="mb-3">
+    <label for="first_name" class="form-label">First name</label>
+    <input type="text" class="form-control" id="first_name" name="first_name" value="<%= user.first_name %>" required>
+  </div>
+  <div class="mb-3">
+    <label for="last_name" class="form-label">Last name</label>
+    <input type="text" class="form-control" id="last_name" name="last_name" value="<%= user.last_name %>" required>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a class="btn btn-outline-secondary" href="/portal/users">Cancel</a>
+  </div>
+</form>
+
+<%- include("partials/footer") %>
