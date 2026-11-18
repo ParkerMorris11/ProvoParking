@@ -12,6 +12,7 @@ import { checkEmail, checkPassword, describeAuthError } from "../domain/account.
 import { matchPermits } from "../domain/permit-search.js";
 import { loadPermitChoices } from "../data/load.js";
 import * as auth from "../data/auth.js";
+import { saveParkingReturn, takeParkingReturn } from "../lib/parking-return.js";
 
 const VIEWS = {
   signup:  { form: "signup-form",  eyebrow: "Find parking you're allowed to use", title: "Create your account" },
@@ -23,6 +24,7 @@ const VIEWS = {
 const APP_CHROME = ["app-header", "app-nav", "app-main", "app-footer"];
 
 let hooks = { onSignedIn: async () => {}, onGuest: async () => {}, authStorage: null };
+let favoriteReturnHash;
 
 // ---------- showing and hiding ----------
 export function showAuth(view, message = "", isError = false) {
@@ -68,12 +70,46 @@ export function requireAccount(message) {
   return false;
 }
 
+export function requireFavoriteAccount(areaId) {
+  if (state.user) return true;
+  const prompt = $("parking-account-prompt");
+  if (!prompt?.showModal || !window.matchMedia("(max-width: 600px)").matches) {
+    return requireAccount("Create a free account to save favorite parking areas.");
+  }
+  favoriteReturnHash = `#area/${areaId}`;
+  prompt.querySelector("[data-parking-back]").textContent = state.currentView === "area" ? "Back to lot" : "Keep browsing";
+  if (!prompt.open) prompt.showModal();
+  return false;
+}
+
 // Only offer "Continue with Google" when the Supabase project has Google turned on.
 export function setSignInOptions(settings) {
   const google = Boolean(settings?.google);
   for (const id of ["google-signup", "google-login"]) {
     $(id).hidden = !google;
     $(id).nextElementSibling.hidden = !google; // the "or" divider
+  }
+  document.querySelectorAll("[data-parking-google]").forEach(button => { button.hidden = !google; });
+}
+
+async function signInFromParking(button) {
+  const prompt = button.closest("#parking-account-prompt");
+  saveParkingReturn(prompt ? favoriteReturnHash : location.hash, state.find.destinationId);
+  if (button.hasAttribute("data-parking-email")) {
+    prompt?.close();
+    showAuth("signup", "Sign in or create an account to continue.");
+    return;
+  }
+  busy(button, true, "Opening Google…");
+  hooks.authStorage?.setRemember(true);
+  try {
+    await auth.signInWithGoogle();
+  } catch (error) {
+    takeParkingReturn();
+    busy(button, false);
+    const note = button.parentElement.querySelector("[data-parking-auth-error]");
+    if (note) { note.textContent = describeAuthError(error, { action: "login" }).message; note.hidden = false; }
+    button.focus();
   }
 }
 
@@ -401,6 +437,10 @@ export function initAuth({ onSignedIn, onGuest, authStorage }) {
   $("forgot-form").addEventListener("submit", onForgot);
   $("newpass-form").addEventListener("submit", onNewPassword);
 
+  $("app-main")?.addEventListener?.("click", (e) => {
+    const button = e.target.closest("[data-parking-google], [data-parking-email]");
+    if (button && !button.disabled) void signInFromParking(button);
+  });
   $("auth-screen").addEventListener("click", (e) => {
     const google = e.target.closest(".google-btn");
     if (google) return void onGoogle(google);

@@ -78,6 +78,7 @@ export function renderAreas() {
   // The top row of a distance-ranked list gets a "Best pick" reason. The list itself is already only eligible lots.
   const best = searching ? null : bestPickReason(shown[0], { sortedBy, permitCode: permit?.permit_code, place: building, kind: shown[0] ? evaluateArea(shown[0]).kind : "ok" });
   const list = $("area-list"), html = shown.map((area, i) => cardHtml(area, { showOnMap: true, best: i === 0 ? best : null })).join("");
+  if (list.dataset && list.dataset.matchCount !== String(total)) list.dataset.matchCount = total;
   // Keep pending heart requests and keyboard focus intact when only the clock changes.
   if (list !== renderedList || html !== renderedHtml) {
     list.innerHTML = html;

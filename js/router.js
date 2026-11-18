@@ -8,7 +8,7 @@ import { renderAreas } from "./pages/areas.js";
 import { renderAreaDetail } from "./pages/area-detail.js";
 import { renderAllLots } from "./pages/all-lots.js";
 import { renderFavorites } from "./pages/favorites.js";
-import { renderCar, stopTimer, openCarSheet, closeCarSheet } from "./pages/car.js";
+import { renderCar, stopTimer, openCarSheet, closeCarSheet, rememberCarPage } from "./pages/car.js";
 
 import { syncFullscreenRoute, isResultsMode } from "./pages/fullscreen-map.js";
 import { nextOrigin } from "./domain/lot-facts.js";
@@ -27,14 +27,19 @@ export function renderViews() {
 }
 
 let showRequestedResults = false;
-document.addEventListener("parking:show-results", () => { showRequestedResults = true; });
+let requestedSource;
+document.addEventListener("parking:show-results", (event) => {
+  showRequestedResults = true;
+  requestedSource = event.detail?.source;
+});
 
 export function showView() {
   if (!state.db || !state.areas.length && !state.permits.length) return; // data not loaded yet
-  const [name, routeId] = (location.hash.replace(/^#/, "") || (state.find.permitId ? "areas" : "find")).split("/");
+  const defaultView = state.find.permitId || window.matchMedia?.("(max-width: 600px)").matches ? "areas" : "find";
+  const [name, routeId] = (location.hash.replace(/^#/, "") || defaultView).split("/");
   const carSheet = name === "car";
   // The sheet opens over whatever page is already showing (or the default page on a direct link).
-  const viewName = carSheet ? (state.currentView || (state.find.permitId ? "areas" : "find")) : name;
+  const viewName = carSheet ? (state.currentView || defaultView) : name;
   const nextView = VIEWS.includes(viewName) ? viewName : "find";
   // Remember which screen a lot page was opened from, so its back link can return there.
   state.lotOrigin = nextOrigin(state.lotOrigin, { from: state.currentView, to: nextView, results: isResultsMode() });
@@ -44,9 +49,15 @@ export function showView() {
   document.querySelectorAll(".tab").forEach((t) => {
     if (t.dataset.view === tabFor) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
+  if (state.currentView === "areas" && showRequestedResults) $("area-search").value = "";
   renderViews();
-  const mapHome = syncFullscreenRoute(state.currentView, { showResults: state.currentView === "areas" && showRequestedResults });
+  const mapHome = syncFullscreenRoute(state.currentView, {
+    showResults: state.currentView === "areas" && showRequestedResults,
+    source: requestedSource,
+    keepPosition: carSheet || !$("car-sheet").hidden,
+  });
   showRequestedResults = false;
+  requestedSource = undefined;
   if (mapHome || state.currentView === "areas") void initMap(); else pauseMapLocation();
   // A lot's page: fly the map to that section and highlight it above the sheet (retried once while the map loads).
   if (state.currentView === "area" && mapHome && /^\d+$/.test(routeId || "")) {
@@ -59,9 +70,12 @@ export function showView() {
     openCarSheet();
     return;
   }
+  rememberCarPage(location.hash);
   stopTimer();
   if (closeCarSheet()) return; // just closed the timer sheet: stay on the page, focus goes back to the car button
-  document.querySelector(`#view-${state.currentView} h2[tabindex]`)?.focus({ preventScroll: true });
+  const heading = state.currentView === "areas" && isResultsMode()
+    ? $("results-heading") : document.querySelector(`#view-${state.currentView} h2[tabindex]`);
+  heading?.focus({ preventScroll: true });
   window.scrollTo(0, 0);
 }
 
