@@ -107,6 +107,74 @@ export function setSheet(next) {
   handle.querySelector(".sheet-peek-label").textContent = label || "";
   // Collapsed content stays out of the keyboard focus order on every screen size.
   body.toggleAttribute("inert", !open);
+  syncFabToSheet();
+}
+
+// The parking-timer pill stays in the bottom-right, just above the phone sheet, and
+// follows the sheet as it opens, closes, or is dragged. Laptops keep it at a fixed
+// bottom-right spot: the sheet is a left sidebar, so the pill does not need to move.
+export const FAB_SHEET_GAP = 12;
+
+/**
+ * CSS `bottom` in px for the timer pill on a phone map.
+ * The pill sits `gap` pixels above the sheet's visible top. `clampTop` is a ceiling
+ * (the bottom of the top-right map controls, plus a little room) so the pill never
+ * rises through those controls or into the very top of the screen.
+ */
+export function fabBottomPx({ viewH, sheetTop, fabH = 56, gap = FAB_SHEET_GAP, clampTop = 0 }) {
+  const desired = viewH - sheetTop + gap;
+  const maxBottom = viewH - clampTop - fabH;
+  return Math.max(gap, Math.min(desired, maxBottom));
+}
+
+function sheetTranslateY() {
+  const dragY = sheet.style.getPropertyValue("--drag-y").trim();
+  if (dragY) return Number.parseFloat(dragY) || 0;
+  const peek = Number.parseFloat(getComputedStyle(sheet).getPropertyValue("--peek"));
+  const height = sheet.offsetHeight;
+  const stateName = sheet.dataset.state;
+  return stateName === "full" ? 0 : stateName === "half" ? height * 0.46 : Number.isFinite(peek) ? height - peek : 0;
+}
+
+function sheetFrontTop() {
+  // Favorites (and any desktop-style sheet) drop the translate; measure the real box.
+  if (getComputedStyle(sheet).transform === "none") return sheet.getBoundingClientRect().top;
+  // Predict the resting top from the target state, not the mid-transition box, so the
+  // pill can ease with the sheet instead of jumping after the animation ends.
+  const parent = sheet.offsetParent;
+  const parentTop = parent ? parent.getBoundingClientRect().top : 0;
+  return parentTop + sheet.offsetTop + sheetTranslateY();
+}
+
+function fabClampTop() {
+  const rail = document.querySelector(".fs-shell .map-rail");
+  const chip = document.getElementById("permit-chip");
+  let top = 12;
+  if (rail) {
+    const box = rail.getBoundingClientRect();
+    if (box.height > 0) top = Math.max(top, box.bottom + 8);
+  }
+  if (chip) {
+    const box = chip.getBoundingClientRect();
+    // The chip lives in the top-left; only reserve space if it actually crosses the pill's column.
+    const fab = document.getElementById("car-fab");
+    const fabLeft = fab ? fab.getBoundingClientRect().left : (window.innerWidth - 140);
+    if (box.height > 0 && box.right > fabLeft - 8) top = Math.max(top, box.bottom + 8);
+  }
+  return top;
+}
+
+export function syncFabToSheet() {
+  if (!sheet || typeof document === "undefined" || !document.body) return;
+  if (!document.body.classList.contains("has-fs-home") || isDesktop()) {
+    document.body.style.removeProperty("--fab-bottom");
+    return;
+  }
+  const viewH = window.innerHeight;
+  const fab = document.getElementById("car-fab");
+  const fabH = Math.max(fab?.offsetHeight || 0, 44);
+  const bottom = fabBottomPx({ viewH, sheetTop: sheetFrontTop(), fabH, clampTop: fabClampTop() });
+  document.body.style.setProperty("--fab-bottom", `${Math.round(bottom)}px`);
 }
 
 // ---- Chip text and sheet title ---------------------------------------------------------------
@@ -284,6 +352,7 @@ function initDrag() {
     const y = Math.min(Math.max(startOffset + dy, 0), offsetFor("peek"));
     sheet.classList.add("dragging");
     sheet.style.setProperty("--drag-y", `${y}px`);
+    syncFabToSheet();
   };
   handle.addEventListener("pointermove", drag);
   head.addEventListener("pointermove", drag);
@@ -877,6 +946,7 @@ function build() {
   view.querySelector(".areas-heading")?.classList.add("fs-heading");
 
   initDrag();
+  initFabFollow();
 
   // Going to a lot on the map: lower the sheet so the map is visible.
   body.addEventListener("click", (e) => {
@@ -946,6 +1016,18 @@ export function syncFullscreenRoute(name, { showResults = false, source, keepPos
   updateChrome();
   refreshMap();
   return true;
+}
+
+function initFabFollow() {
+  const sync = () => syncFabToSheet();
+  window.addEventListener("resize", sync);
+  window.matchMedia?.(DESKTOP).addEventListener?.("change", sync);
+  if (typeof ResizeObserver === "function") {
+    new ResizeObserver(sync).observe(sheet);
+    const fab = document.getElementById("car-fab");
+    if (fab) new ResizeObserver(sync).observe(fab);
+  }
+  sync();
 }
 
 function loadStylesheet() {

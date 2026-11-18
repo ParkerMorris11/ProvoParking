@@ -297,8 +297,11 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 .fs-shell .drawer-account .account-permit { display: flex; flex-direction: column; gap: 4px; flex-basis: 100%; margin-top: 6px; font-size: .8rem; font-weight: 600; white-space: normal; }
 .fs-shell .drawer-account .account-permit select { font-size: 1rem; min-height: 44px; }
 .sidebar-toggle { display: none; }
-.has-fs-home .car-fab { right: 16px; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
-.has-fs-home:has(.sidebar-open) .car-fab { z-index: 0; }
+/* Timer pill: bottom-right, 12px above the live top of the phone sheet (--fab-bottom is
+   set in fullscreen-map.js). It eases with the sheet; dragging disables the ease. */
+.has-fs-home .car-fab { right: max(16px, env(safe-area-inset-right, 0px)); left: auto; top: auto; z-index: 40; bottom: var(--fab-bottom, calc(100px + env(safe-area-inset-bottom, 0px))); transition: background .15s, padding .2s, bottom .28s cubic-bezier(.2, .8, .2, 1); }
+.has-fs-home:has(.home-sheet.dragging) .car-fab { transition: none; }
+@media (prefers-reduced-motion: reduce) { .has-fs-home .car-fab { transition: none; } }
 .has-fs-home .car-sheet-panel { background: var(--glass-strong); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); border: 1px solid var(--glass-border); }
 
 /* Laptops: the sheet becomes a floating left sidebar; closed, only its search row shows. */
@@ -322,7 +325,6 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .permit-chip .chip-code { min-width: 46px; height: 46px; border-radius: 50%; font-size: 1.05rem; }
   .fs-shell .map-card, .fs-shell .map-status { top: 104px; left: calc(min(var(--panel), 100% - 120px) + 32px); max-width: min(340px, calc(100% - var(--panel) - 120px)); }
   .has-fs-home .car-fab { bottom: 24px; z-index: 40; }
-  .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; }
 }
 @media (max-width: 600px) {
   .fs-shell .home-sheet[data-state="full"] { --sheet-y: 0px; }
@@ -330,10 +332,6 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
      otherwise the end of a long screen (Find's arrival time and "Show parking areas") can't be scrolled into view. */
   .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46vh + 28px); padding-bottom: calc(46dvh + 28px); }
   .fs-shell.sidebar-open .map-rail, .fs-shell.sidebar-open .map-tile { opacity: 0; pointer-events: none; transition: opacity .2s; }
-  /* Sheet raised: the timer pill moves up under the status tile so the countdown stays in view. */
-  .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; top: calc(88px + env(safe-area-inset-top, 0px)); bottom: auto; left: 16px; right: auto; height: 44px; padding: 0 16px; }
-  .has-fs-home:has(.sidebar-open) .car-fab-time { font-size: 1.05rem; }
-  .has-fs-home:has(.home-sheet[data-state="full"]) .car-fab { visibility: hidden; }
   .fs-shell.sidebar-open .map-status { display: none; }
 }
 /* At half height on phones the map stays useful: keep the controls when there is room above the sheet. */
@@ -388,8 +386,8 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .map-search-go { border-radius: 50%; }
   .fs-shell .map-account { width: 48px; height: 48px; }
   .fs-shell .sheet-body { padding-left: 14px; padding-right: 14px; }
-  /* The car button clears the closed sheet (22px gap + 88px peek) by 12px. */
-  .has-fs-home .car-fab { bottom: calc(122px + env(safe-area-inset-bottom, 0px)); }
+  /* Fallback before JS measures the sheet: 22px inset + 88px peek + 12px gap. */
+  .has-fs-home .car-fab { bottom: var(--fab-bottom, calc(122px + env(safe-area-inset-bottom, 0px))); }
   /* Close button: a full 44px tap target in its own row above the screen. */
   .route-bar { margin: 0 -14px; padding: 6px 14px 2px; }
   .route-close { width: 44px; height: 44px; }
@@ -488,7 +486,8 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .home-sheet[data-route="areas"]:not([data-results]) #view-areas > :not(.areas-heading) { display: none; }
   .fs-shell .home-sheet[data-route="areas"]:not([data-results]) .areas-heading .permit-link { display: none; }
   .fs-shell .sg-list li:nth-child(n+2) { display: none; }
-  .has-fs-home .car-fab { bottom: calc(164px + env(safe-area-inset-bottom, 0px)); }
+  /* Fallback for the taller home peek (shortcuts under the search row): 22px + 130px + 12px. */
+  .has-fs-home .car-fab { bottom: var(--fab-bottom, calc(164px + env(safe-area-inset-bottom, 0px))); }
 
   /* One close control in the destination's actual heading, not a blank strip above it. */
   .fs-shell .route-bar[data-inline-close], .fs-shell .home-sheet[data-route="area"] .route-bar { display: none; }

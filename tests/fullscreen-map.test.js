@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { chipText, sheetTitle, suggestionRows, matchText, nextResultsMode } from '../js/pages/fullscreen-map.js';
+import { chipText, sheetTitle, suggestionRows, matchText, nextResultsMode, fabBottomPx, FAB_SHEET_GAP } from '../js/pages/fullscreen-map.js';
 
 const permits = [
   { permit_id: 1, permit_code: 'Y', permit_name: 'Y Undergraduate' },
@@ -140,4 +140,31 @@ test('glass stays on in Safari 17 and older (prefixed backdrop-filter), and Find
   assert.match(css, /\.fs-shell \.home-sheet \{[^}]*-webkit-backdrop-filter: blur\(/, 'the sheet has a literal prefixed blur');
   assert.match(css, /\.home-sheet\[data-route="find"\] :is\(\.sheet-search-row,/);
   assert.match(css, /\.home-sheet\[data-results\] :is\(#app-nav, \.nearby-panel\)/);
+});
+
+test('timer pill sits 12px above the sheet and stays on the bottom-right', () => {
+  assert.equal(FAB_SHEET_GAP, 12);
+  // Peek-like home bar: sheet top at 844-152, pill bottom = 152+12.
+  assert.equal(fabBottomPx({ viewH: 844, sheetTop: 692, fabH: 56 }), 164);
+  // Half-open lot detail (~45% sheet): pill stays just above the sheet, not at the top-left.
+  const half = fabBottomPx({ viewH: 844, sheetTop: 384, fabH: 56 });
+  assert.equal(half, 844 - 384 + 12);
+  assert.ok(half > 400, 'half-open pill stays in the lower half, above the sheet');
+});
+
+test('timer pill clamps below the top-right map controls instead of overlapping them', () => {
+  // Full sheet would put the pill at the top; clamp just under a 200px-tall map rail.
+  const clamped = fabBottomPx({ viewH: 844, sheetTop: 10, fabH: 56, clampTop: 208 });
+  assert.equal(clamped, 844 - 208 - 56);
+  assert.ok(clamped < 844 - 10 + 12, 'clamped lower than the unclamped full-sheet position');
+  // A very short remaining gap still keeps a minimum 12px bottom.
+  assert.equal(fabBottomPx({ viewH: 200, sheetTop: 10, fabH: 56, clampTop: 180 }), 12);
+});
+
+test('map CSS no longer jumps the timer to the top-left when the sheet opens', async () => {
+  const css = await readFile(new URL('../css/fullscreen-map.css', import.meta.url), 'utf8');
+  assert.match(css, /bottom: var\(--fab-bottom/);
+  assert.doesNotMatch(css, /\.car-fab[^}]*top: calc\(88px/);
+  assert.doesNotMatch(css, /home-sheet\[data-state="full"\]\) \.car-fab \{ visibility: hidden/);
+  assert.match(css, /home-sheet\.dragging\) \.car-fab \{ transition: none/);
 });
