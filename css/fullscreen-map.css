@@ -262,13 +262,20 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 /* Other screens: a round close button pinned at the top right of the sheet */
 /* Its own sticky row with the sheet's background, so it never sits on top of Help text, the guest card
    or a lot's schedule, at the top or while scrolling. */
-.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); box-shadow: 0 1px 0 var(--glass-border); }
+.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); }
 .route-bar[hidden] { display: none; }
 .fs-shell .route-bar:not([hidden]) ~ section:not([hidden]) { margin-top: 0; }
 .route-close { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--search-fill); color: var(--ink-2); }
 .route-close svg { width: 18px; height: 18px; }
-.route-close-x { display: contents; }
-.route-back-text { display: none; }
+/* Menu pages get a "← Back to map" link (like the lot page's back link) instead of a round X, on every width. */
+.fs-shell .route-bar { justify-content: flex-start; }
+.fs-shell .route-bar .route-close { display: inline-flex; align-items: center; width: auto; height: auto; min-height: 44px; border-radius: 0; background: none; box-shadow: none; color: var(--brand-ink); font-weight: 650; font-size: .9rem; text-decoration: none; }
+.fs-shell .route-bar .route-close:hover { text-decoration: underline; }
+.route-close-x { display: none; }
+.route-back-text { display: inline; }
+/* The lot page already has its own back link, so it needs no second control. */
+.fs-shell .home-sheet[data-route="area"] .route-close { display: none; }
+.fs-shell .home-sheet[data-route="area"] #area-back { margin-right: 0; }
 
 /* What used to be separate cards now reads as one list */
 .fs-shell .sheet-body .cards { grid-template-columns: minmax(0, 1fr); }
@@ -315,15 +322,6 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
   .fs-shell .permit-chip .chip-code { min-width: 46px; height: 46px; border-radius: 50%; font-size: 1.05rem; }
   .fs-shell .map-card, .fs-shell .map-status { top: 104px; left: calc(min(var(--panel), 100% - 120px) + 32px); max-width: min(340px, calc(100% - var(--panel) - 120px)); }
   .has-fs-home .car-fab { bottom: 24px; z-index: 40; }
-  /* Laptops: menu pages get a "← Back to map" link (like the lot page's back link) instead of a round X. */
-  .fs-shell .route-bar { justify-content: flex-start; }
-  .fs-shell .route-close { display: inline-flex; width: auto; height: auto; min-height: 44px; border-radius: 0; background: none; color: var(--brand-ink); font-weight: 650; font-size: .9rem; text-decoration: none; }
-  .fs-shell .route-close:hover { text-decoration: underline; }
-  .fs-shell .route-close-x { display: none; }
-  .fs-shell .route-back-text { display: inline; }
-  /* The lot page already has its own back link, so it needs no second control. */
-  .fs-shell .home-sheet[data-route="area"] .route-close { display: none; }
-  .fs-shell .home-sheet[data-route="area"] #area-back { margin-right: 0; }
   .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; }
 }
 @media (max-width: 600px) {
