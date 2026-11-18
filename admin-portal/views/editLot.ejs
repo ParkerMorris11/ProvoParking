@@ -1,11 +1,39 @@
-<%# Form to edit one parking lot, filled in with its current info. %>
+<%# Form to edit one parking lot, filled in with its current values. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
+
 <h1 class="h3 mb-3">Edit lot</h1>
+<%# The record's id goes in the URL so router.post("/editLot/:id") knows which row to update (req.params.id). %>
+<%# Each input prints the current value into value="..." so the form starts filled in. %>
 <form action="/portal/editLot/<%= lot.lot_id %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
-  <%- include("partials/lotFields", { lot: lot }) %>
-  <div class="d-flex gap-2">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a class="btn btn-outline-secondary" href="/portal/lots">Cancel</a>
+  <div class="mb-3">
+    <label for="lot_name" class="form-label">Lot name</label>
+    <input type="text" class="form-control" id="lot_name" name="lot_name" value="<%= lot.lot_name %>" required>
   </div>
+  <div class="mb-3">
+    <label for="lot_code" class="form-label">Lot code (example: 59Y)</label>
+    <input type="text" class="form-control" id="lot_code" name="lot_code" value="<%= lot.lot_code %>">
+  </div>
+  <div class="mb-3">
+    <label for="operator" class="form-label">Operator (BYU, City of Provo, or Private)</label>
+    <input type="text" class="form-control" id="operator" name="operator" value="<%= lot.operator %>" required>
+  </div>
+  <div class="mb-3">
+    <label for="total_spaces" class="form-label">Total spaces (leave blank if unknown)</label>
+    <input type="number" min="0" class="form-control" id="total_spaces" name="total_spaces" value="<%= lot.total_spaces %>">
+  </div>
+  <div class="mb-3">
+    <label for="is_free" class="form-label">Free to park?</label>
+    <select class="form-select" id="is_free" name="is_free">
+      <option value="false">No</option>
+      <%# "selected" picks Yes ahead of time when this lot is already free. %>
+      <option value="true" <%= lot.is_free ? "selected" : "" %>>Yes</option>
+    </select>
+  </div>
+  <%# Save submits the changes; Cancel goes back to the list without saving. %>
+  <button type="submit" class="btn btn-primary">Save</button>
+  <a class="btn btn-link" href="/portal/lots">Cancel</a>
 </form>
+
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

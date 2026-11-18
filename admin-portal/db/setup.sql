@@ -49,6 +49,16 @@ INSERT INTO portal.users (user_email, user_password, first_name, last_name)
 VALUES ('ta@provoparking.com', 'Parking403!', 'Teaching', 'Assistant')
 ON CONFLICT (user_email) DO NOTHING;
 
+-- Fake sample users (example.com addresses) so the Users page has records to show, edit, and delete.
+INSERT INTO portal.users (user_email, user_password, first_name, last_name)
+VALUES
+  ('jane.doe@example.com',     'Sample123!', 'Jane',  'Doe'),
+  ('john.smith@example.com',   'Sample123!', 'John',  'Smith'),
+  ('maria.garcia@example.com', 'Sample123!', 'Maria', 'Garcia'),
+  ('alex.chen@example.com',    'Sample123!', 'Alex',  'Chen'),
+  ('sam.taylor@example.com',   'Sample123!', 'Sam',   'Taylor')
+ON CONFLICT (user_email) DO NOTHING;
+
 -- Copy the real lots and permits from the live app, only if the copies are empty.
 INSERT INTO portal.lots (lot_name, lot_code, operator, total_spaces, is_free)
 SELECT area_name, lot_code, operator, total_spaces, is_free

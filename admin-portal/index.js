@@ -1,5 +1,5 @@
 // Provo Parking admin site (IS 403 group project, built on our IS 401 sprint project)
-// Team 7: Parker Morris, Spencer, Liam, James Richardson
+// Team 7: Parker Morris, Spencer Warren, Liam Tanaka, James Richardson
 //
 // What this file does:
 //   - Shows a public landing page with a login form.
@@ -221,7 +221,13 @@ router.get("/addLot", requireLogin, (req, res) => {
 // Save a new lot.
 router.post("/addLot", requireLogin, (req, res) => {
   knex("lots")
-    .insert(lotFromForm(req.body))
+    .insert({
+      lot_name: req.body.lot_name,
+      lot_code: req.body.lot_code,
+      operator: req.body.operator,
+      total_spaces: req.body.total_spaces || null, // blank box = unknown
+      is_free: req.body.is_free, // "true" or "false" from the Yes/No dropdown
+    })
     .then(() => res.redirect("/portal/lots"))
     .catch((err) => showError(res, err));
 });
@@ -239,7 +245,13 @@ router.get("/editLot/:id", requireLogin, (req, res) => {
 router.post("/editLot/:id", requireLogin, (req, res) => {
   knex("lots")
     .where("lot_id", req.params.id)
-    .update(lotFromForm(req.body))
+    .update({
+      lot_name: req.body.lot_name,
+      lot_code: req.body.lot_code,
+      operator: req.body.operator,
+      total_spaces: req.body.total_spaces || null,
+      is_free: req.body.is_free,
+    })
     .then(() => res.redirect("/portal/lots"))
     .catch((err) => showError(res, err));
 });
@@ -253,18 +265,6 @@ router.post("/deleteLot/:id", requireLogin, (req, res) => {
     .catch((err) => showError(res, err));
 });
 
-// Turn the lot form's inputs into a row for the lots table.
-function lotFromForm(body) {
-  return {
-    lot_name: body.lot_name,
-    lot_code: body.lot_code || null,
-    operator: body.operator,
-    // An empty box means "we don't know how many spaces".
-    total_spaces: body.total_spaces === "" ? null : parseInt(body.total_spaces),
-    // A checkbox only sends a value when it is checked.
-    is_free: body.is_free === "on",
-  };
-}
 
 // ---------------------------------------------------------------
 // Maintain Permits (portal.permits)

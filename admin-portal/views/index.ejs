@@ -1,6 +1,8 @@
 <%# Landing page: what the app is, a picture of it, and the login form (or the maintain buttons). %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
+<%# Bootstrap grid: text on the left, image on the right; they stack on a phone. %>
 <div class="row align-items-center g-4">
   <div class="col-lg-7">
     <h1 class="display-5 fw-bold">Find BYU and Provo parking that fits your permit.</h1>
@@ -10,6 +12,7 @@
       and user records up to date.
     </p>
 
+    <%# loggedIn comes from res.locals in index.js (true after a successful login). %>
     <% if (loggedIn) { %>
       <%# Logged in: show one maintain button per table. %>
       <h2 class="h4 mt-4">What would you like to update?</h2>
@@ -23,9 +26,11 @@
       <div class="card shadow-sm mt-4" style="max-width: 420px;">
         <div class="card-body">
           <h2 class="h5 card-title">Admin login</h2>
+          <%# error is set by router.post("/login") when the email and password don't match. %>
           <% if (error) { %>
             <div class="alert alert-danger py-2" role="alert"><%= error %></div>
           <% } %>
+          <%# Sends user_email and user_password to router.post("/login") in index.js. %>
           <form action="/portal/login" method="POST">
             <div class="mb-3">
               <label for="user_email" class="form-label">Email</label>
@@ -49,4 +54,5 @@
   </div>
 </div>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

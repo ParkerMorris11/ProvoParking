@@ -1,7 +1,9 @@
 <%# Form to add a new user. Input names match the users table columns. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
 <h1 class="h3 mb-3">Add user</h1>
+<%# method="POST" sends the inputs to router.post("/addUser") in index.js, which reads them with req.body. %>
 <form action="/portal/addUser" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <div class="mb-3">
     <label for="user_email" class="form-label">Email</label>
@@ -19,10 +21,12 @@
     <label for="last_name" class="form-label">Last name</label>
     <input type="text" class="form-control" id="last_name" name="last_name" required>
   </div>
+  <%# Save submits the form; Cancel just goes back to the list without saving. %>
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary">Save</button>
     <a class="btn btn-outline-secondary" href="/portal/users">Cancel</a>
   </div>
 </form>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>

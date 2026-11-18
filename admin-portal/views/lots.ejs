@@ -1,6 +1,8 @@
 <%# Maintain Lots: list every parking lot with Edit and Delete buttons, plus Add. %>
+<%# include() pastes in the shared header (navbar, Bootstrap) so we don't repeat it on every page. %>
 <%- include("partials/header") %>
 
+<%# Page title on the left; Home and Add buttons on the right. %>
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Parking lots</h1>
   <div class="d-flex gap-2">
@@ -9,12 +11,15 @@
   </div>
 </div>
 
+<%# table-responsive lets the table scroll sideways on a phone instead of breaking the page. %>
 <div class="table-responsive">
   <table class="table table-striped align-middle">
     <thead>
       <tr><th>Name</th><th>Code</th><th>Operator</th><th>Spaces</th><th>Free?</th><th></th></tr>
     </thead>
     <tbody>
+      <%# lots comes from res.render("lots", { lots: ... }) in index.js. forEach makes one table row per record. %>
+      <%# The equals-sign tag prints a value safely (it escapes HTML); the plain tag runs JavaScript without printing. %>
       <% lots.forEach((lot) => { %>
         <tr>
           <td><%= lot.lot_name %></td>
@@ -22,8 +27,10 @@
           <td><%= lot.operator %></td>
           <%# Show "Unknown" when we don't have a verified space count. %>
           <td><%= lot.total_spaces === null ? "Unknown" : lot.total_spaces %></td>
+          <%# Turn the true/false value into Yes/No for people. %>
           <td><%= lot.is_free ? "Yes" : "No" %></td>
           <td class="text-end text-nowrap">
+            <%# Edit opens the edit form for this row. Delete is a POST form (not a link), and confirm() lets the user cancel. %>
             <a class="btn btn-sm btn-outline-primary" href="/portal/editLot/<%= lot.lot_id %>">Edit</a>
             <form action="/portal/deleteLot/<%= lot.lot_id %>" method="POST" class="d-inline"
                   onsubmit="return confirm('Delete this lot?');">
@@ -36,4 +43,5 @@
   </table>
 </div>
 
+<%# Shared footer closes the page. %>
 <%- include("partials/footer") %>
