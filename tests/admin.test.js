@@ -33,8 +33,10 @@ test('a timer sends only preferences to the account RPC and links only confirmed
   assert.equal(calls[0].args.p_destination_id,2);
   assert.equal('started_at' in calls[0].args || 'leave_by' in calls[0].args || 'user_id' in calls[0].args,false);
   assert.deepEqual(linked,[{session_id:44}]);
-  await assert.rejects(startSession({areaId:5,minutes:120,reminderMinutes:10,destinationId:null}),/Choose a destination/);
-  assert.equal(calls.length,1);
+  // The destination building is optional now: a timer without one sends null.
+  await startSession({areaId:5,minutes:120,reminderMinutes:10,destinationId:null});
+  assert.equal(calls.length,2);
+  assert.equal(calls[1].args.p_destination_id,null);
  }finally{Object.assign(state,saved);}
 });
 

@@ -24,13 +24,14 @@ export function acceptTimerSnapshot(snapshot) {
 export async function getTimerSnapshot() { currentUserId(); return request("parking_timer_snapshot"); }
 export async function startSession({areaId,minutes,reminderMinutes,carNote,destinationId,permitId}) {
   const userId=currentUserId();
-  if(!Number.isSafeInteger(destinationId)||destinationId<=0) throw new Error("Choose a destination building before starting your timer.");
+  // The destination building is optional: sent only when the driver already picked one in Find.
+  if(destinationId!=null&&(!Number.isSafeInteger(destinationId)||destinationId<=0)) destinationId=null;
   if(!Number.isSafeInteger(areaId)||areaId<=0||!Number.isSafeInteger(minutes)||minutes<1||minutes>1440||
      !Number.isSafeInteger(reminderMinutes)||reminderMinutes<0||reminderMinutes>minutes||
      (carNote||"").length>200) throw new Error("Check your parking lot, duration, reminder and note.");
   const visitOwner=state.authId;
   const visit=state.visitTracker?.captureAccount?.(visitOwner);
-  const snapshot=await request("parking_timer_start",{p_area_id:areaId,p_minutes:minutes,p_reminder:reminderMinutes,p_note:carNote||null,p_destination_id:destinationId,p_permit_id:permitId??null});
+  const snapshot=await request("parking_timer_start",{p_area_id:areaId,p_minutes:minutes,p_reminder:reminderMinutes,p_note:carNote||null,p_destination_id:destinationId??null,p_permit_id:permitId??null});
   // Never let a previous account's result attach telemetry to its replacement.
   if(visit&&state.user?.userId===userId&&state.authId===visitOwner) void state.visitTracker?.accountStarted(snapshot.session,visitOwner,visit);
   notifyTimerChanged();
