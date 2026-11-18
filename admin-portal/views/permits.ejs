@@ -4,8 +4,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Parking permits</h1>
   <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="/">Home</a>
-    <a class="btn btn-primary" href="/addPermit">Add permit</a>
+    <a class="btn btn-outline-secondary" href="/portal">Home</a>
+    <a class="btn btn-primary" href="/portal/addPermit">Add permit</a>
   </div>
 </div>
 
@@ -22,8 +22,8 @@
           <td><%= permit.issuer %></td>
           <td><%= permit.description %></td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-primary" href="/editPermit/<%= permit.permit_id %>">Edit</a>
-            <form action="/deletePermit/<%= permit.permit_id %>" method="POST" class="d-inline"
+            <a class="btn btn-sm btn-outline-primary" href="/portal/editPermit/<%= permit.permit_id %>">Edit</a>
+            <form action="/portal/deletePermit/<%= permit.permit_id %>" method="POST" class="d-inline"
                   onsubmit="return confirm('Delete this permit?');">
               <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
             </form>

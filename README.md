@@ -358,7 +358,7 @@ Before deploying app code that needs a new migration, confirm the migration is a
 
 - **GitHub Pages:** `.github/workflows/pages.yml` runs on every push to `main`. It writes `config.js` from the repository secrets `SUPABASE_URL`, `SUPABASE_ANON_KEY` and optional `GOOGLE_MAPS_API_KEY`, then publishes `index.html`, `admin.html`, the parking timer pages, `css/`, `js/`, `data/` and `assets/`. Set **Settings > Pages > Source** to **GitHub Actions**.
 - **Vercel:** https://provo-parking.vercel.app/ with per-PR preview URLs. Its settings live in the Vercel dashboard, not in this repo.
-- **Admin site (IS 403):** a separate Node + Express + EJS app in [`admin-portal/`](admin-portal/README.md) for logging in and maintaining users, lots and permits. It is its own Vercel project (Root Directory `admin-portal`), separate from the static app.
+- **Admin site (IS 403):** a separate Node + Express + EJS app in [`admin-portal/`](admin-portal/README.md) for logging in and maintaining users, lots and permits. It runs on the same Vercel project at `/portal` (see `vercel.json` and `api/portal.js`).
 - **Edge Function:** `supabase functions deploy parse-find` (manual; not part of either site deploy).
 
 All code reaches `main` through reviewed pull requests, merged with merge commits so each teammate's authorship is kept. See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).

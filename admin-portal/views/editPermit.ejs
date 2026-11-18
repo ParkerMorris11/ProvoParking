@@ -1,11 +1,11 @@
 <%# Form to edit one permit, filled in with its current info. %>
 <%- include("partials/header") %>
 <h1 class="h3 mb-3">Edit permit</h1>
-<form action="/editPermit/<%= permit.permit_id %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
+<form action="/portal/editPermit/<%= permit.permit_id %>" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <%- include("partials/permitFields", { permit: permit }) %>
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a class="btn btn-outline-secondary" href="/permits">Cancel</a>
+    <a class="btn btn-outline-secondary" href="/portal/permits">Cancel</a>
   </div>
 </form>
 <%- include("partials/footer") %>

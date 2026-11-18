@@ -29,7 +29,7 @@ tables (including passwords) are only reachable from this server.
 2. `npm install`
 3. Copy `.env.example` to `.env` and fill in the database password
    (or use your local pgAdmin Postgres and run `db/setup.sql` there first).
-4. `node index.js`, then open http://localhost:3000
+4. `node index.js`, then open http://localhost:3000/portal
 
 ## Database setup (one time)
 
@@ -37,16 +37,16 @@ Open Supabase > SQL Editor, paste `db/setup.sql`, and run it.
 
 ## Deploy on Vercel
 
-Vercel runs `index.js` as an Express function (see `vercel.json`) and serves `public/` as static files.
-Sessions are saved in the `portal.session` table, because Vercel doesn't keep memory between requests.
+The admin site shares the parking app's Vercel project and lives at **/portal**
+(for example https://provo-parking.vercel.app/portal). Nothing about the parking app's pages changes.
 
-1. vercel.com > Add New > Project > import the `ProvoParking` GitHub repo.
-2. **Root Directory:** `admin-portal`. Framework Preset: **Express** (picked up from `vercel.json`).
-3. Environment variables, from Supabase > Connect > **Transaction pooler**:
-   `DB_HOST`, `DB_PORT` (`6543`), `DB_NAME` (`postgres`), `DB_USER` (`postgres.rikekjksneoymybnehpo`),
-   `DB_PASSWORD`, `DB_SSL` (`true`), and a long random `SESSION_SECRET`.
-4. Deploy, then log in at the production URL with the grader login below, in a private window.
-   Preview (branch) URLs may ask for a Vercel login; give graders the production URL.
+- `vercel.json` (repo root) installs this folder's packages and sends every `/portal` request to `api/portal.js`.
+- `api/portal.js` loads the Express app from this folder.
+- Sessions are saved in the `portal.session` table, because Vercel doesn't keep memory between requests.
+
+One-time setup in the existing Vercel project (Settings > Environment Variables), using Supabase > Connect > **Transaction pooler**:
+`DB_HOST`, `DB_PORT` (`6543`), `DB_NAME` (`postgres`), `DB_USER` (`postgres.rikekjksneoymybnehpo`),
+`DB_PASSWORD`, `DB_SSL` (`true`), and a long random `SESSION_SECRET`. Then redeploy.
 
 ## Login for graders
 

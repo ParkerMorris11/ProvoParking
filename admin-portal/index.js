@@ -8,7 +8,7 @@
 //   - Lets a logged-in user add, display, edit, and delete records in each table.
 //   - Logs out by destroying the session and removing the cookie.
 //
-// Run it locally with:  node index.js   (then open http://localhost:3000)
+// Run it locally with:  node index.js   (then open http://localhost:3000/portal)
 
 // Load settings from the .env file (database password, session secret) when running locally.
 // On the hosting site these come from its environment variables instead.
@@ -40,8 +40,12 @@ const port = process.env.PORT || 3000;
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Let Express serve files in "public" (images, css) without writing a route for each one.
-app.use(express.static(path.join(__dirname, "public")));
+// Every page of the admin site lives under /portal, so it can share one website with the parking app
+// (the parking app keeps "/" and its own pages). For example: /portal, /portal/users, /portal/lots.
+const router = express.Router();
+
+// Let Express serve files in "public" (images, css) at /portal/... without writing a route for each one.
+app.use("/portal", express.static(path.join(__dirname, "public"), { redirect: false }));
 
 // Lets us read form inputs with req.body (uses each input's name attribute).
 app.use(express.urlencoded({ extended: true }));
@@ -84,7 +88,7 @@ function requireLogin(req, res, next) {
   if (req.session.loggedIn) {
     next();
   } else {
-    res.redirect("/");
+    res.redirect("/portal");
   }
 }
 
@@ -93,12 +97,12 @@ function requireLogin(req, res, next) {
 // ---------------------------------------------------------------
 
 // Landing page. Shows the login form, or the maintain buttons if logged in.
-app.get("/", (req, res) => {
+router.get("/", (req, res) => {
   res.render("index", { error: null });
 });
 
 // Check the email and password against the users table.
-app.post("/login", (req, res) => {
+router.post("/login", (req, res) => {
   const email = req.body.user_email;
   const password = req.body.user_password;
 
@@ -110,7 +114,7 @@ app.post("/login", (req, res) => {
         // Found a matching user: remember them in the session.
         req.session.loggedIn = true;
         req.session.userName = user.first_name;
-        res.redirect("/");
+        res.redirect("/portal");
       } else {
         res.render("index", { error: "That email and password don't match. Please try again." });
       }
@@ -122,10 +126,10 @@ app.post("/login", (req, res) => {
 });
 
 // Log out: delete the session on the server and remove the cookie in the browser.
-app.get("/logout", (req, res) => {
+router.get("/logout", (req, res) => {
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
-    res.redirect("/");
+    res.redirect("/portal");
   });
 });
 
@@ -134,7 +138,7 @@ app.get("/logout", (req, res) => {
 // ---------------------------------------------------------------
 
 // Display all users.
-app.get("/users", requireLogin, (req, res) => {
+router.get("/users", requireLogin, (req, res) => {
   knex("users")
     .select("user_email", "first_name", "last_name") // never send passwords to the page
     .orderBy("last_name")
@@ -143,12 +147,12 @@ app.get("/users", requireLogin, (req, res) => {
 });
 
 // Show the blank add-user form.
-app.get("/addUser", requireLogin, (req, res) => {
+router.get("/addUser", requireLogin, (req, res) => {
   res.render("addUser");
 });
 
 // Save a new user, then go back to the list.
-app.post("/addUser", requireLogin, (req, res) => {
+router.post("/addUser", requireLogin, (req, res) => {
   knex("users")
     .insert({
       user_email: req.body.user_email,
@@ -156,12 +160,12 @@ app.post("/addUser", requireLogin, (req, res) => {
       first_name: req.body.first_name,
       last_name: req.body.last_name,
     })
-    .then(() => res.redirect("/users"))
+    .then(() => res.redirect("/portal/users"))
     .catch((err) => showError(res, err));
 });
 
 // Show the edit form filled in with one user's info. The email is in the URL (req.params).
-app.get("/editUser/:email", requireLogin, (req, res) => {
+router.get("/editUser/:email", requireLogin, (req, res) => {
   knex("users")
     .where("user_email", req.params.email)
     .first()
@@ -170,7 +174,7 @@ app.get("/editUser/:email", requireLogin, (req, res) => {
 });
 
 // Save changes to a user. The email is the primary key, so it can't be changed here.
-app.post("/editUser/:email", requireLogin, (req, res) => {
+router.post("/editUser/:email", requireLogin, (req, res) => {
   const changes = {
     first_name: req.body.first_name,
     last_name: req.body.last_name,
@@ -183,16 +187,16 @@ app.post("/editUser/:email", requireLogin, (req, res) => {
   knex("users")
     .where("user_email", req.params.email)
     .update(changes)
-    .then(() => res.redirect("/users"))
+    .then(() => res.redirect("/portal/users"))
     .catch((err) => showError(res, err));
 });
 
 // Delete a user.
-app.post("/deleteUser/:email", requireLogin, (req, res) => {
+router.post("/deleteUser/:email", requireLogin, (req, res) => {
   knex("users")
     .where("user_email", req.params.email)
     .del()
-    .then(() => res.redirect("/users"))
+    .then(() => res.redirect("/portal/users"))
     .catch((err) => showError(res, err));
 });
 
@@ -201,7 +205,7 @@ app.post("/deleteUser/:email", requireLogin, (req, res) => {
 // ---------------------------------------------------------------
 
 // Display all parking lots.
-app.get("/lots", requireLogin, (req, res) => {
+router.get("/lots", requireLogin, (req, res) => {
   knex("lots")
     .select()
     .orderBy("lot_name")
@@ -210,20 +214,20 @@ app.get("/lots", requireLogin, (req, res) => {
 });
 
 // Show the blank add-lot form.
-app.get("/addLot", requireLogin, (req, res) => {
+router.get("/addLot", requireLogin, (req, res) => {
   res.render("addLot");
 });
 
 // Save a new lot.
-app.post("/addLot", requireLogin, (req, res) => {
+router.post("/addLot", requireLogin, (req, res) => {
   knex("lots")
     .insert(lotFromForm(req.body))
-    .then(() => res.redirect("/lots"))
+    .then(() => res.redirect("/portal/lots"))
     .catch((err) => showError(res, err));
 });
 
 // Show the edit form for one lot.
-app.get("/editLot/:id", requireLogin, (req, res) => {
+router.get("/editLot/:id", requireLogin, (req, res) => {
   knex("lots")
     .where("lot_id", req.params.id)
     .first()
@@ -232,20 +236,20 @@ app.get("/editLot/:id", requireLogin, (req, res) => {
 });
 
 // Save changes to a lot.
-app.post("/editLot/:id", requireLogin, (req, res) => {
+router.post("/editLot/:id", requireLogin, (req, res) => {
   knex("lots")
     .where("lot_id", req.params.id)
     .update(lotFromForm(req.body))
-    .then(() => res.redirect("/lots"))
+    .then(() => res.redirect("/portal/lots"))
     .catch((err) => showError(res, err));
 });
 
 // Delete a lot.
-app.post("/deleteLot/:id", requireLogin, (req, res) => {
+router.post("/deleteLot/:id", requireLogin, (req, res) => {
   knex("lots")
     .where("lot_id", req.params.id)
     .del()
-    .then(() => res.redirect("/lots"))
+    .then(() => res.redirect("/portal/lots"))
     .catch((err) => showError(res, err));
 });
 
@@ -267,7 +271,7 @@ function lotFromForm(body) {
 // ---------------------------------------------------------------
 
 // Display all permits.
-app.get("/permits", requireLogin, (req, res) => {
+router.get("/permits", requireLogin, (req, res) => {
   knex("permits")
     .select()
     .orderBy("permit_code")
@@ -276,12 +280,12 @@ app.get("/permits", requireLogin, (req, res) => {
 });
 
 // Show the blank add-permit form.
-app.get("/addPermit", requireLogin, (req, res) => {
+router.get("/addPermit", requireLogin, (req, res) => {
   res.render("addPermit");
 });
 
 // Save a new permit.
-app.post("/addPermit", requireLogin, (req, res) => {
+router.post("/addPermit", requireLogin, (req, res) => {
   knex("permits")
     .insert({
       permit_code: req.body.permit_code,
@@ -289,12 +293,12 @@ app.post("/addPermit", requireLogin, (req, res) => {
       issuer: req.body.issuer,
       description: req.body.description,
     })
-    .then(() => res.redirect("/permits"))
+    .then(() => res.redirect("/portal/permits"))
     .catch((err) => showError(res, err));
 });
 
 // Show the edit form for one permit.
-app.get("/editPermit/:id", requireLogin, (req, res) => {
+router.get("/editPermit/:id", requireLogin, (req, res) => {
   knex("permits")
     .where("permit_id", req.params.id)
     .first()
@@ -303,7 +307,7 @@ app.get("/editPermit/:id", requireLogin, (req, res) => {
 });
 
 // Save changes to a permit.
-app.post("/editPermit/:id", requireLogin, (req, res) => {
+router.post("/editPermit/:id", requireLogin, (req, res) => {
   knex("permits")
     .where("permit_id", req.params.id)
     .update({
@@ -312,16 +316,16 @@ app.post("/editPermit/:id", requireLogin, (req, res) => {
       issuer: req.body.issuer,
       description: req.body.description,
     })
-    .then(() => res.redirect("/permits"))
+    .then(() => res.redirect("/portal/permits"))
     .catch((err) => showError(res, err));
 });
 
 // Delete a permit.
-app.post("/deletePermit/:id", requireLogin, (req, res) => {
+router.post("/deletePermit/:id", requireLogin, (req, res) => {
   knex("permits")
     .where("permit_id", req.params.id)
     .del()
-    .then(() => res.redirect("/permits"))
+    .then(() => res.redirect("/portal/permits"))
     .catch((err) => showError(res, err));
 });
 
@@ -335,8 +339,14 @@ function showError(res, err) {
   res.status(500).render("error", { message: "Something went wrong saving or loading that record." });
 }
 
+// Put all the routes above under /portal.
+app.use("/portal", router);
+
+// When running on your own computer, send http://localhost:3000/ to the admin home page.
+app.get("/", (req, res) => res.redirect("/portal"));
+
 // Start the server last, after all the routes are set up.
-// On Vercel, Vercel starts the app itself using the export below, so we only call listen when run with "node index.js".
+// On Vercel, api/portal.js (in the repo root) loads the app through the export below, so we only call listen when run with "node index.js".
 if (require.main === module) {
   app.listen(port, () => console.log(`Admin site running on http://localhost:${port}`));
 }

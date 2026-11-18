@@ -4,8 +4,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Parking lots</h1>
   <div class="d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="/">Home</a>
-    <a class="btn btn-primary" href="/addLot">Add lot</a>
+    <a class="btn btn-outline-secondary" href="/portal">Home</a>
+    <a class="btn btn-primary" href="/portal/addLot">Add lot</a>
   </div>
 </div>
 
@@ -24,8 +24,8 @@
           <td><%= lot.total_spaces === null ? "Unknown" : lot.total_spaces %></td>
           <td><%= lot.is_free ? "Yes" : "No" %></td>
           <td class="text-end text-nowrap">
-            <a class="btn btn-sm btn-outline-primary" href="/editLot/<%= lot.lot_id %>">Edit</a>
-            <form action="/deleteLot/<%= lot.lot_id %>" method="POST" class="d-inline"
+            <a class="btn btn-sm btn-outline-primary" href="/portal/editLot/<%= lot.lot_id %>">Edit</a>
+            <form action="/portal/deleteLot/<%= lot.lot_id %>" method="POST" class="d-inline"
                   onsubmit="return confirm('Delete this lot?');">
               <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
             </form>

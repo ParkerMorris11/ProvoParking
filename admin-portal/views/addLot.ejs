@@ -1,11 +1,11 @@
 <%# Form to add a new parking lot. %>
 <%- include("partials/header") %>
 <h1 class="h3 mb-3">Add lot</h1>
-<form action="/addLot" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
+<form action="/portal/addLot" method="POST" class="card card-body shadow-sm" style="max-width: 520px;">
   <%- include("partials/lotFields", { lot: {} }) %>
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary">Save</button>
-    <a class="btn btn-outline-secondary" href="/lots">Cancel</a>
+    <a class="btn btn-outline-secondary" href="/portal/lots">Cancel</a>
   </div>
 </form>
 <%- include("partials/footer") %>
