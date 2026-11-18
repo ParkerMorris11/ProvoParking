@@ -571,6 +571,50 @@ body.car-sheet-open .car-fab { display: none; }
 main { padding-bottom: calc(48px + 72px); }
 @media (max-width: 600px) { main { padding-bottom: calc(32px + 72px); } .car-fab { bottom: calc(var(--bottom-nav) + 12px); } }
 @media (prefers-reduced-motion: reduce) { .car-fab { transition: none; } }
+/* Simple timer form (Nov 2026): lot search, hour/minute wheels, reminder row */
+.car-form { display: grid; gap: 12px; }
+.car-form > label, .car-duration legend { font-weight: 700; color: var(--label); }
+.car-picked { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid var(--brand); border-radius: 12px; background: var(--brand-wash); }
+.car-picked[hidden], .car-search[hidden] { display: none; }
+.car-picked strong { display: block; color: var(--text); }
+.car-picked .link-button { margin: 0; flex: none; }
+.car-suggestions { list-style: none; margin: 6px 0 0; padding: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.car-suggestions:empty { display: none; }
+.car-option { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 12px; cursor: pointer; border-top: 1px solid var(--border); background: var(--card); }
+.car-option:first-child { border-top: 0; }
+.car-option:hover, .car-option[aria-selected="true"] { background: var(--hover); }
+.car-option-icon { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--brand-tint); color: var(--brand-ink); font-size: .9rem; font-weight: 700; }
+.car-option-favorite .car-option-icon { color: var(--fav); }
+.car-option-title { display: block; font-weight: 650; color: var(--text); }
+.car-option-sub { display: block; font-size: .82rem; color: var(--soft); }
+.car-search .hint { margin-top: 6px; }
+.car-duration { margin: 0; padding: 0; border: 0; min-width: 0; }
+.car-duration legend { padding: 0; margin-bottom: 6px; }
+.time-wheels { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 4px 0; border-radius: 16px; background: var(--surface-2); }
+.time-wheels::before { content: ""; position: absolute; left: 12px; right: 12px; top: 50%; height: 44px; transform: translateY(-50%); border-radius: 10px; background: var(--brand-tint); pointer-events: none; }
+.time-wheel { position: relative; width: 72px; height: 132px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-radius: 10px; mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); }
+.time-wheel::-webkit-scrollbar { display: none; }
+.time-wheel:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.time-wheel-track { padding: 44px 0; }
+.time-wheel-item { height: 44px; display: grid; place-items: center; scroll-snap-align: center; font-size: 1.6rem; font-variant-numeric: tabular-nums; color: var(--soft); cursor: pointer; user-select: none; }
+.time-wheel-item.selected { color: var(--text); font-weight: 700; }
+.time-wheel-unit { position: relative; font-weight: 700; color: var(--ink-2); margin-right: 10px; }
+.car-leave-by { margin: 8px 0 0; text-align: center; color: var(--muted); }
+.car-leave-by strong { color: var(--text); }
+.car-reminder-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700; color: var(--label); }
+.car-reminder-row select { width: auto; min-width: 150px; }
+.car-start { width: 100%; }
+.timer-running { text-align: center; }
+.timer-running .countdown { font-size: clamp(3.2rem, 14vw, 4.4rem); margin: 6px 0 0; }
+.timer-running .car-leave-by { margin: 0 0 12px; }
+.timer-running .reminder, .timer-running .hint { text-align: left; }
+.timer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.timer-actions > * { width: 100%; justify-content: center; text-align: center; margin: 0; }
+.timer-actions > :only-child { grid-column: 1 / -1; }
+.car-note { text-align: left; margin-bottom: 10px; }
+.car-note summary { cursor: pointer; padding: 10px 0; font-weight: 650; color: var(--brand-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.car-note form { display: grid; gap: 8px; }
+@media (prefers-reduced-motion: reduce) { .time-wheel { scroll-behavior: auto; } }
 
 /* All Lots: the directory keeps campus rules and city source records separate. */
 .catalog-group { margin-block: 1.5rem; }
@@ -902,10 +946,7 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
 .parking-account-prompt > button, .car-guest > button { width: 100%; min-height: 44px; margin: 0 0 6px; }
 .parking-account-prompt .primary:not([hidden]) + .secondary, .car-guest .primary:not([hidden]) + .secondary { background: transparent; border-color: transparent; }
 .parking-account-prompt form { text-align: center; }
-.car-trip-summary, #car-trip-done { display: none; }
 .car-guest > .hint { margin: 0 0 12px; }
-.car-options > summary { min-height: 44px; display: list-item; padding: 10px 0; cursor: pointer; color: var(--ink-2); font-weight: 650; }
-.car-duration { margin-top: 6px; }
 #car-form #car-warning { margin: 8px 0; }
 @media (max-width: 600px) {
   .has-fs-home .car-sheet-backdrop { background: rgb(0 0 0 / .25); }
@@ -917,18 +958,6 @@ input:is([type="text"], [type="email"], [type="password"], [type="search"]) { te
   .has-fs-home .car-sheet-panel h2 { min-height: 44px; display: flex; align-items: center; margin: 0 44px 6px 0; }
   .has-fs-home .car-sheet-close { top: 16px; right: 12px; border: 0; background: transparent; }
   .has-fs-home #car-form { padding: 0; border: 0; background: transparent; box-shadow: none; }
-  .has-fs-home #car-form[data-has-trip]:not([data-edit-trip]) .car-trip-summary {
-    display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0 8px;
-    border-bottom: 1px solid var(--parking-sheet-line);
-  }
-  .car-trip-summary div { min-width: 0; }
-  .car-trip-summary span { display: block; color: var(--muted); font-size: .88rem; overflow-wrap: anywhere; }
-  .car-trip-summary button, #car-trip-done { min-height: 44px; }
-  .has-fs-home #car-form[data-has-trip]:not([data-edit-trip]) #car-trip-fields { display: none; }
-  .has-fs-home #car-form[data-has-trip][data-edit-trip] #car-trip-done { display: inline-flex; margin: 8px 0; }
-  .has-fs-home .car-duration { display: flex; align-items: center; gap: 10px; min-height: 54px; border-bottom: 1px solid var(--parking-sheet-line); }
-  .has-fs-home .car-duration label { flex: 1; margin: 0; }
-  .has-fs-home .car-duration select { width: auto; max-width: 65%; margin: 0; }
   .has-fs-home #car-form button[type="submit"] { width: 100%; margin-top: 4px; min-height: 48px; }
   .has-fs-home .car-local-links { margin: 10px 0 0; font-size: .75rem; }
 }

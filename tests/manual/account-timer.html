@@ -5,9 +5,43 @@
 <div id="car-sheet" class="car-sheet" hidden><div id="car-backdrop" class="car-sheet-backdrop"></div><section class="car-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="h-car">
 <button id="car-close" type="button" class="car-sheet-close" aria-label="Close parking timer">×</button><h2 id="h-car" tabindex="-1">Parking timer</h2><p id="car-action-status" class="hint" role="status" hidden></p>
 <div id="car-guest" hidden></div><div id="car-active" hidden></div>
-<form id="car-form"><label for="car-area">Where are you parking?</label><select id="car-area" required></select><label for="car-destination">Destination</label><select id="car-destination" required></select>
-<label for="car-minutes">Duration</label><select id="car-minutes"><option value="30">30 minutes</option><option value="120">2 hours</option></select>
-<label for="car-reminder">Reminder</label><select id="car-reminder"><option value="10">10 minutes</option></select><label for="car-note">Car note</label><input id="car-note" maxlength="200"><p id="car-warning" class="hint warn" role="status" hidden></p><button type="submit" class="primary">Start timer</button></form>
+<form id="car-form" class="panel car-form" novalidate>
+          <input type="hidden" id="car-area" value="">
+          <input type="hidden" id="car-minutes" value="120">
+          <label for="car-search" id="car-search-label">Where did you park?</label>
+          <div class="car-picked" id="car-picked" hidden>
+            <div><strong id="car-picked-name"></strong><span class="hint" id="car-picked-sub"></span></div>
+            <button type="button" class="link-button" id="car-change">Change</button>
+          </div>
+          <div class="car-search" id="car-search-wrap">
+            <input type="search" id="car-search" autocomplete="off" enterkeyhint="search" placeholder="Lot name or number" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="car-suggestions">
+            <ul id="car-suggestions" class="car-suggestions" role="listbox" aria-labelledby="car-search-label"></ul>
+            <p class="hint" id="car-search-empty" hidden></p>
+          </div>
+
+          <fieldset class="car-duration">
+            <legend>How long?</legend>
+            <div class="time-wheels">
+              <div id="car-hours"></div><span class="time-wheel-unit" aria-hidden="true">hr</span>
+              <div id="car-mins"></div><span class="time-wheel-unit" aria-hidden="true">min</span>
+            </div>
+            <p class="car-leave-by" id="car-leave-by" aria-live="polite"></p>
+          </fieldset>
+
+          <label class="car-reminder-row" for="car-reminder">Remind me
+            <select id="car-reminder">
+              <option value="0">Off</option>
+              <option value="5">5 min before</option>
+              <option value="10" selected>10 min before</option>
+              <option value="15">15 min before</option>
+              <option value="30">30 min before</option>
+            </select>
+          </label>
+          <p id="car-warning" class="hint warn" hidden></p>
+          <p id="car-form-error" class="setup-error" role="alert" hidden></p>
+          <button type="submit" class="primary car-start">Start timer</button>
+          <p class="hint">Reminders show while the app is open.</p>
+        </form>
 </section></div>
 <button type="button" id="car-fab" class="car-fab" aria-label="Parking timer"><span id="car-fab-time" hidden></span>Timer</button></main><footer id="app-footer">Review fixture</footer>
 <script type="module">
@@ -19,17 +53,25 @@ const key="fixture.accountTimer";
 const read=()=>JSON.parse(localStorage.getItem(key)||"null");
 const snapshot=()=>({session:read(),server_now:new Date().toISOString()});
 state.user={userId:1,displayName:"Test driver"};state.authId="fixture";state.authVersion=1;
-state.areas=[{area_id:1,area_name:"BYU Lot 1A",operator:"BYU",latitude:40.25,longitude:-111.65,is_sample_data:false}];
-state.destinations=[{destination_id:1,name:"Test building",building_code:"TEST"}];state.find={permitId:1,destinationId:1,live:true};
+state.areas=[{area_id:1,area_name:"Lot 20 Stadium section A",lot_code:"20",operator:"BYU",latitude:40.2575,longitude:-111.6545,is_sample_data:false},
+ {area_id:2,area_name:"Lot 41 West",lot_code:"41",operator:"BYU",latitude:40.2475,longitude:-111.6545,is_sample_data:false},
+ {area_id:3,area_name:"Lot 2V Visitor",lot_code:"2V",operator:"BYU",latitude:40.2486,longitude:-111.6493,is_sample_data:false},
+ {area_id:4,area_name:"Lot 44 section C",lot_code:"44",operator:"BYU",latitude:40.2600,longitude:-111.6600,is_sample_data:false}];
+state.favoriteIds=new Set([2]);state.favoriteNames=new Map([[2,"Class"]]);
+state.lastPosition={latitude:40.2577,longitude:-111.6547};
+state.destinations=[{destination_id:1,name:"Test building",building_code:"TEST"}];state.find={permitId:1,destinationId:null,live:true};
 state.rulesByArea=new Map([[1,[{days_of_week:"All",start_time:"00:00",end_time:"23:59",permit_id:2}]]]);
 state.db={rpc:async(name,args)=>{
  if(name==="parking_timer_start"){
   if(read())return{error:{code:"23505"}};
   const started=Date.now();
-  localStorage.setItem(key,JSON.stringify({session_id:started,user_id:1,area_id:args.p_area_id,started_at:new Date(started).toISOString(),leave_by:new Date(started+args.p_minutes*60000).toISOString(),reminder_minutes_before:args.p_reminder,car_note:args.p_note,destination_id:1,permit_id_at_start:args.p_permit_id}));
+  localStorage.setItem(key,JSON.stringify({session_id:started,user_id:1,area_id:args.p_area_id,started_at:new Date(started).toISOString(),leave_by:new Date(started+args.p_minutes*60000).toISOString(),reminder_minutes_before:args.p_reminder,car_note:args.p_note,destination_id:args.p_destination_id,permit_id_at_start:args.p_permit_id}));
  }else if(name==="parking_timer_end"&&read()?.session_id===args.p_session_id)localStorage.removeItem(key);
  return{data:snapshot(),error:null};
 }};
+state.db.from=()=>{let note;const q={update(v){note=v.car_note;return q;},eq(){return q;},select(){return q;},async single(){const row=read();if(!row)return{data:null,error:{message:"No active timer"}};row.car_note=note;localStorage.setItem(key,JSON.stringify(row));return{data:row,error:null};}};return q;};
+if(new URLSearchParams(location.search).has("phone"))document.body.classList.add("has-fs-home");
+document.documentElement.dataset.themeActive=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
 initCar({requireAccount:()=>true});initCarFab({go:hash=>location.hash=hash});
 function route(){if(location.hash.startsWith("#car")){renderCar(location.hash.split("/")[1]);openCarSheet();}else{closeCarSheet();document.querySelector("#fixture-content h2").textContent=location.hash==="#help"?"Help":"Parking areas";}}
 window.addEventListener("hashchange",route);
