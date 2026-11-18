@@ -44,6 +44,7 @@ export function renderCarFab() {
   if (!session) {
     if (lastKey !== "idle") {
       lastKey = "idle";
+      fab.hidden = true; // no timer: nothing floats over the map
       fab.classList.remove("running", "soon", "over");
       time.hidden = true;
       time.textContent = "";
@@ -59,6 +60,7 @@ export function renderCarFab() {
   const key = `${text}|${over}|${soon}|${over ? Math.floor(-msLeft / 60000) : ""}`;
   if (key === lastKey) return; // nothing visible changed since the last second
   lastKey = key;
+  fab.hidden = false;
   fab.classList.add("running");
   fab.classList.toggle("soon", soon);
   fab.classList.toggle("over", over);
@@ -67,8 +69,7 @@ export function renderCarFab() {
   fab.setAttribute("aria-label", fabLabel(msLeft));
 }
 
-// The button was taken off the map (2026-11-16); My Car is reached from the sidebar tab and Park here.
-// Kept safe to call so it comes back by adding the #car-fab markup again.
+// The idle car button stays off the map (2026-11-16 decision); the pill appears only while a timer runs.
 export function initCarFab({ go }) {
   const fab = $("car-fab");
   if (!fab) return;

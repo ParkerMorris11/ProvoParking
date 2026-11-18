@@ -262,11 +262,20 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
 /* Other screens: a round close button pinned at the top right of the sheet */
 /* Its own sticky row with the sheet's background, so it never sits on top of Help text, the guest card
    or a lot's schedule, at the top or while scrolling. */
-.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); box-shadow: 0 1px 0 var(--glass-border); }
+.route-bar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: flex-end; margin: 0 -12px; padding: 8px 12px 4px; background: var(--card); }
 .route-bar[hidden] { display: none; }
 .fs-shell .route-bar:not([hidden]) ~ section:not([hidden]) { margin-top: 0; }
 .route-close { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--search-fill); color: var(--ink-2); }
 .route-close svg { width: 18px; height: 18px; }
+/* Menu pages get a "← Back to map" link (like the lot page's back link) instead of a round X, on every width. */
+.fs-shell .route-bar { justify-content: flex-start; }
+.fs-shell .route-bar .route-close { display: inline-flex; align-items: center; width: auto; height: auto; min-height: 44px; border-radius: 0; background: none; box-shadow: none; color: var(--brand-ink); font-weight: 650; font-size: .9rem; text-decoration: none; }
+.fs-shell .route-bar .route-close:hover { text-decoration: underline; }
+.route-close-x { display: none; }
+.route-back-text { display: inline; }
+/* The lot page already has its own back link, so it needs no second control. */
+.fs-shell .home-sheet[data-route="area"] .route-close { display: none; }
+.fs-shell .home-sheet[data-route="area"] #area-back { margin-right: 0; }
 
 /* What used to be separate cards now reads as one list */
 .fs-shell .sheet-body .cards { grid-template-columns: minmax(0, 1fr); }
@@ -321,7 +330,10 @@ html:has(.has-fs-home) { scrollbar-gutter: auto; scroll-padding: 0; }
      otherwise the end of a long screen (Find's arrival time and "Show parking areas") can't be scrolled into view. */
   .fs-shell .home-sheet[data-state="half"] .sheet-body { padding-bottom: calc(46vh + 28px); padding-bottom: calc(46dvh + 28px); }
   .fs-shell.sidebar-open .map-rail, .fs-shell.sidebar-open .map-tile { opacity: 0; pointer-events: none; transition: opacity .2s; }
-  .has-fs-home:has(.sidebar-open) .car-fab { visibility: hidden; }
+  /* Sheet raised: the timer pill moves up under the status tile so the countdown stays in view. */
+  .has-fs-home:has(.sidebar-open) .car-fab { z-index: 40; top: calc(88px + env(safe-area-inset-top, 0px)); bottom: auto; left: 16px; right: auto; height: 44px; padding: 0 16px; }
+  .has-fs-home:has(.sidebar-open) .car-fab-time { font-size: 1.05rem; }
+  .has-fs-home:has(.home-sheet[data-state="full"]) .car-fab { visibility: hidden; }
   .fs-shell.sidebar-open .map-status { display: none; }
 }
 /* At half height on phones the map stays useful: keep the controls when there is room above the sheet. */

@@ -102,7 +102,7 @@ export function renderAreaDetail(areaId) {
       <div class="schedule-heading"><div><p class="detail-eyebrow">Ordinary parking stalls</p><h3 id="detail-schedule-title">24-hour parking rules</h3></div>
         <div class="schedule-day-control"><label for="rules-day">Day</label><select id="rules-day">${fullDays.map((name, i) => `<option value="${i}"${i === day ? " selected" : ""}>${name}</option>`).join("")}</select></div>
       </div>
-      <p class="schedule-intro">Rules for this day, in 24 one-hour blocks. This is not live space availability.</p>
+      <p class="schedule-intro">Rules for this day, from midnight to midnight. This is not live space availability.</p>
       <div id="rules-day-schedule">${ruleScheduleHtml(rules, day, state.permits)}</div>
       ${byu ? '<p class="schedule-footnote">Regular fall/winter week. Unverified periods are not permission to park. Specialty stalls, events, holidays, finals and breaks may have different rules. Vehicle must be registered and active.</p>' : '<p class="schedule-footnote">Based on the rules recorded for this area. Check posted signs.</p>'}
     </section>

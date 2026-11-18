@@ -253,15 +253,10 @@ function observeRenders() {
   for (const node of watch) observer.observe(node, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ["data-match-count"] });
 }
 
-function positionRouteClose(name) {
-  let host = routeBar;
-  if (!isDesktop()) {
-    if (name === "areas" && resultsMode) host = resultsTitle.closest(".results-heading");
-    if (name === "favorites") host = document.querySelector(".favorites-heading");
-    if (name === "find") host = document.querySelector(".find-heading");
-  }
-  host.append(routeClose);
-  routeBar.toggleAttribute("data-inline-close", host !== routeBar);
+// The "← Back to map" link always sits on its own line above the screen's heading (phones and laptops).
+function positionRouteClose() {
+  routeBar.append(routeClose);
+  routeBar.removeAttribute("data-inline-close");
 }
 
 // ---- Dragging --------------------------------------------------------------------------------
@@ -814,28 +809,24 @@ function build() {
   const navTitle = el("h2", { class: "sheet-section-title", id: "nav-heading" }, "Browse");
   nav.setAttribute("aria-labelledby", "nav-heading");
   nav.prepend(navTitle);
-  for (const [original, label] of [[document.getElementById("tab-find"), "Find"], [document.getElementById("tab-areas"), "Browse lots"], [document.getElementById("tab-favorites"), "Favorites"], [carTab, "My Car"]]) {
+  for (const [original, label] of [[document.getElementById("tab-find"), "Find"], [document.getElementById("tab-lots"), "Browse lots"], [document.getElementById("tab-favorites"), "Favorites"], [carTab, "My Car"]]) {
     const button = el("button", { type: "button", class: "tab mobile-shortcut", "data-view": original.dataset.view });
     button.append(original.querySelector("svg").cloneNode(true), document.createTextNode(label));
-    if (original.dataset.view === "areas") button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      document.dispatchEvent(new CustomEvent("parking:show-results"));
-      if (location.hash === "#areas") window.dispatchEvent(new HashChangeEvent("hashchange")); else location.hash = "#areas";
-    });
     shortcuts.append(button);
   }
 
   // Other screens get a bar with a round close button that returns to the map home.
   // (Each screen's own h2 is its title, so the bar only holds the button.)
   routeBar = el("div", { class: "route-bar", hidden: "" });
-  routeClose = el("a", { href: "#areas", class: "route-close", "aria-label": "Close and go back to the map" }, CLOSE_ICON);
+  // A "← Back to map" text link (the X icon is kept hidden in case a screen wants it later).
+  routeClose = el("a", { href: "#areas", class: "route-close", "aria-label": "Back to map" }, `<span class="route-close-x">${CLOSE_ICON}</span><span class="route-back-text" aria-hidden="true">← Back to map</span>`);
   routeBar.append(routeClose);
   routeClose.addEventListener("click", (e) => {
     if (state.currentView !== "areas" || !resultsMode) return;
     e.preventDefault();
     resultsMode = false;
     syncFullscreenRoute("areas");
-    const browse = shortcuts.querySelector('[data-view="areas"]');
+    const browse = shortcuts.querySelector('[data-view="lots"]');
     (isDesktop() ? document.getElementById("map-search-text") : browse)?.focus({ preventScroll: true });
   });
 

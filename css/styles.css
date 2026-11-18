@@ -541,7 +541,8 @@ body:has(#view-areas:not([hidden])) .status:not(.error) { display: none; }
 .car-fab-icon { width: 30px; height: 30px; flex: none; }
 .car-fab-time { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: .01em; line-height: 1; }
 .car-fab.running { padding: 0 22px; }
-.car-fab.running .car-fab-icon { display: none; } /* the pill shows only the time */
+.car-fab[hidden] { display: none; }
+.car-fab.running .car-fab-icon { width: 24px; height: 24px; } /* car icon + time, so it reads as the parking timer */
 .car-fab.soon, .car-fab.soon:hover { background: #b45a00; }
 /* Time is up: red until the user ends the timer (the class is removed only when the session ends). */
 .car-fab.over, .car-fab.over:hover { background: #b3122b; } /* fixed red: white text keeps 4.5:1 in dark mode too */
