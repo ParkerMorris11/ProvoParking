@@ -1,3 +1,11 @@
+[![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Google Maps](https://img.shields.io/badge/Google%20Maps-Photorealistic%203D-4285F4?logo=googlemaps&logoColor=white)](https://developers.google.com/maps)
+[![Gemini](https://img.shields.io/badge/Gemini%203.8%20Flash-Maps%20Grounded-8E75C2?logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.x-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+
+
 # Provo Parking
 
 Provo Parking helps BYU drivers see where their permit lets them park right now, read the rules in plain language, time their stay, and save favorite lots. Provo city lots are shown alongside campus lots as unverified city/OpenStreetMap records.
